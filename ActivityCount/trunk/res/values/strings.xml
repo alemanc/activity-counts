@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Activity Count</string>
+    <string name="chart_title">Activity Count Chart</string>
+    <string name="value">Count</string>
+    <string name="date">Date</string>
+    <string name="service_text">Sensing</string>
+    <string name="service_title">Open Activity Count App</string>
+</resources>
