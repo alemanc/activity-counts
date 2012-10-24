@@ -8,10 +8,12 @@ package edu.cicese;
 public class ActivityCount implements Comparable<ActivityCount> {
 	private long timestamp;
 	private Integer count;
+	private long epoch;
 
-	public ActivityCount(long timestamp, int count) {
+	public ActivityCount(long timestamp, int count, long epoch) {
 		this.timestamp = timestamp;
 		this.count = count;
+		this.epoch = epoch;
 	}
 
 	public long getTimestamp() {
@@ -20,6 +22,10 @@ public class ActivityCount implements Comparable<ActivityCount> {
 
 	public int getCount() {
 		return count;
+	}
+
+	public long getEpoch() {
+		return epoch;
 	}
 
 	public int compareTo(ActivityCount activityCount) {

@@ -49,13 +49,20 @@ public class MainActivity extends Activity {
 
 		btnAction.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
+
 				Intent svc = new Intent(MainActivity.this, AccelerometerService.class);
-				if (btnAction.getText().equals("Start")) {
+//				if (btnAction.getText().equals("Start")) {
+				if (Utilities.stopped) {
 					startService(svc);
 					btnAction.setText("Stop");
+					startBatteryLog();
+
+					Utilities.stopped = false;
 				} else {
 					stopService(svc);
 					btnAction.setText("Start");
+
+					Utilities.resetValues();
 				}
 			}
 		});
@@ -64,6 +71,10 @@ public class MainActivity extends Activity {
 		chartView = activityChart.getView(this, new ArrayList<ActivityCount>());
 		LinearLayout layout = (LinearLayout) findViewById(R.id.Chart);
 		layout.addView(chartView);
+	}
+
+	private void startBatteryLog() {
+		new BatteryThread(this).start();
 	}
 
 	@Override
