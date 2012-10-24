@@ -106,8 +106,7 @@ public class AccelerometerManager implements SensorEventListener {
 
 			long epoch = Utilities.getEpoch();
 			if (elapsedTime >= epoch) {
-				Utilities.sleeping = false;
-				new ActivityCountThread(this, epoch).start();
+				new ActivityCountThread(this).start();
 				begin += epoch;
 				accMeasures.clear();
 			}
@@ -162,16 +161,6 @@ public class AccelerometerManager implements SensorEventListener {
 
 				Utilities.saveString("activity_counts/", "ac_" + activityCount.getTimestamp() + ".json", mapper.writeValueAsString(list));
 
-				/*File file = new File("/sdcard/activity_counts/");
-				file.mkdirs();
-
-				FileWriter fw = new FileWriter(file + "/ac_" + activityCount.getTimestamp() + ".json");
-				BufferedWriter out = new BufferedWriter(fw);
-
-				out.write(mapper.writeValueAsString(list));
-
-				out.flush();
-				out.close();*/
 			}
 			else {
 				Log.d("ACC", "No sdcard");
