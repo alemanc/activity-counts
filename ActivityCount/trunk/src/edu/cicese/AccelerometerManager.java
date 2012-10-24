@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
 import android.util.Log;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -25,10 +26,6 @@ public class AccelerometerManager implements SensorEventListener {
 
 	private Sensor accelerometerSensor;
 
-	private double x;
-	private double y;
-	private double z;
-
 	private List<AccelerometerMeasure> accMeasures = new ArrayList<AccelerometerMeasure>();
 	private long begin;
 
@@ -43,20 +40,20 @@ public class AccelerometerManager implements SensorEventListener {
 
 	public AccelerometerManager() {
 		AccelerometerCountUtil.initiateGravity();
-//		sensorManager = (SensorManager) AccelerometerService.getContext().getSystemService(Context.SENSOR_SERVICE);
-//		List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
-//		if (sensors.size() > 0) {
-//			accelerometerSensor = sensors.get(0);
-//		}
+
+		sensorManager = (SensorManager) AccelerometerService.getContext().getSystemService(Context.SENSOR_SERVICE);
+		if (isSupported()) {
+			accelerometerSensor = getSensorList().get(0);
+		}
 	}
 
 	public void startListening(AccelerometerService accelerometerService) {
-		Log.d("ACC", "Listening...");
-		sensorManager = (SensorManager) AccelerometerService.getContext().getSystemService(Context.SENSOR_SERVICE);
-		List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
-		if (sensors.size() > 0) {
+		if (!Utilities.stopped) {
+			Log.d("ACC", "Listening...");
+
+			accMeasures.clear();
 			begin = System.currentTimeMillis();
-			isRunning = sensorManager.registerListener(this, sensors.get(0), Utilities.RATE /*SensorManager.SENSOR_DELAY_GAME*/);
+			isRunning = sensorManager.registerListener(this, accelerometerSensor, Utilities.RATE /*SensorManager.SENSOR_DELAY_GAME*/);
 			service = accelerometerService;
 		}
 	}
@@ -85,8 +82,7 @@ public class AccelerometerManager implements SensorEventListener {
 		Log.d("ACC", "Is supported?");
 		if (isSupported == null) {
 			if (AccelerometerService.getContext() != null) {
-				sensorManager = (SensorManager) AccelerometerService.getContext().getSystemService(Context.SENSOR_SERVICE);
-				List<Sensor> sensors = sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+				List<Sensor> sensors = getSensorList();
 				isSupported = (sensors.size() > 0);
 			} else {
 				isSupported = false;
@@ -95,19 +91,29 @@ public class AccelerometerManager implements SensorEventListener {
 		return isSupported;
 	}
 
+	private List<Sensor> getSensorList() {
+		return sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
+	}
+
 	public void onSensorChanged(SensorEvent sensorEvent) {
-		x = sensorEvent.values[0];
-		y = sensorEvent.values[1];
-		z = sensorEvent.values[2];
+		if (!Utilities.stopped) {
+			double x = sensorEvent.values[0];
+			double y = sensorEvent.values[1];
+			double z = sensorEvent.values[2];
 
-		accMeasures.add(new AccelerometerMeasure(x, y, z, System.currentTimeMillis()));
+			long timestamp = System.currentTimeMillis();
+			long elapsedTime = timestamp - begin;
 
-		if (System.currentTimeMillis() - begin >= Utilities.EPOCH) {
-			// calculate activity counts
-			new ActivityCountThread(this).start();
+			long epoch = Utilities.getEpoch();
+			if (elapsedTime >= epoch) {
+				Utilities.sleeping = false;
+				new ActivityCountThread(this, epoch).start();
+				begin += epoch;
+				accMeasures.clear();
+			}
 
-			begin += Utilities.EPOCH;
-			accMeasures.clear();
+			AccelerometerMeasure measure = new AccelerometerMeasure(x, y, z, timestamp);
+			accMeasures.add(measure);
 		}
 	}
 
@@ -115,17 +121,16 @@ public class AccelerometerManager implements SensorEventListener {
 		return accMeasures;
 	}
 
-	public void getActivityCounts() {
+	/*public void getActivityCounts() {
 		new ActivityCountThread(new ArrayList<AccelerometerMeasure>(accMeasures)).start();
 	}
 
 	public long getEpoch() {
-		return Utilities.EPOCH;
-	}
+		return Utilities.MAIN_EPOCH;
+	}*/
 
 	public void onAccuracyChanged(Sensor sensor, int i) {
-		Log.e("ACC", "Accuracy changed");
-
+//		Log.e("ACC", "Accuracy changed");
 	}
 
 	/*public void setTextLog(EditText txtLog) {
@@ -148,33 +153,39 @@ public class AccelerometerManager implements SensorEventListener {
 
 		MainActivity.handler.sendMessage(msg);
 
-
+		ObjectMapper mapper = new ObjectMapper();
+		List<ActivityCount> list = new ArrayList<ActivityCount>();
+		list.add(activityCount);
 		try {
 			if (isSDCardWriteable()) {
+				Log.d("ACC", "Saving at: " + "/ac_" + activityCount.getTimestamp() + ".json --> " + mapper.writeValueAsString(list));
+
+				Utilities.saveString("activity_counts/", "ac_" + activityCount.getTimestamp() + ".json", mapper.writeValueAsString(list));
 
 				/*File file = new File("/sdcard/activity_counts/");
 				file.mkdirs();
 
-				FileWriter fw = new FileWriter(file + "/" + activityCount.getTimestamp() + ".ac");
+				FileWriter fw = new FileWriter(file + "/ac_" + activityCount.getTimestamp() + ".json");
 				BufferedWriter out = new BufferedWriter(fw);
 
-				out.write(activityCount.getCount() + "");
+				out.write(mapper.writeValueAsString(list));
 
 				out.flush();
 				out.close();*/
 			}
 			else {
-				FileOutputStream fOut = service.openFileOutput("/activity_counts/" + activityCount.getTimestamp() + ".ac", Context.MODE_WORLD_READABLE);
+				Log.d("ACC", "No sdcard");
+				FileOutputStream fOut = service.openFileOutput("/activity_counts/ac_" + activityCount.getTimestamp() + ".json", Context.MODE_WORLD_READABLE);
 				OutputStreamWriter osw = new OutputStreamWriter(fOut);
 
-				osw.write(activityCount.getCount());
+				osw.write(mapper.writeValueAsString(list));
 
 				osw.flush();
 				osw.close();
 			}
 
 		} catch (IOException e) {
-			e.printStackTrace();
+			Log.d("ACC", e.getMessage());
 		}
 	}
 

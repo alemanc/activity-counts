@@ -18,4 +18,7 @@
         
         <service android:name=".AccelerometerService"/>
     </application>
+
+    <!--<uses-library android:name="com.fasterxml.jackson.databind"/>-->
+    <!--<uses-library android:name="java.beans"/>-->
 </manifest>
