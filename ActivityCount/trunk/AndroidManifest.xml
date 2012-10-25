@@ -16,7 +16,7 @@
             </intent-filter>
         </activity>
         
-        <service android:name=".AccelerometerService"/>
+        <service android:name=".SensingService"/>
     </application>
 
     <!--<uses-library android:name="com.fasterxml.jackson.databind"/>-->
