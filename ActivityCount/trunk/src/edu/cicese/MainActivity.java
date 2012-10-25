@@ -9,9 +9,11 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 import org.achartengine.GraphicalView;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -19,9 +21,6 @@ import java.util.ArrayList;
  * Time: 03:49 PM
  */
 public class MainActivity extends Activity {
-
-	private AccelerometerService mBoundService;
-	private boolean mIsBound;
 
 	private Button btnAction;
 	private static EditText txtLog;
@@ -50,20 +49,31 @@ public class MainActivity extends Activity {
 		btnAction.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
 
-				Intent svc = new Intent(MainActivity.this, AccelerometerService.class);
-//				if (btnAction.getText().equals("Start")) {
-				if (Utilities.stopped) {
-					startService(svc);
+				Intent AccelerometerIntent = new Intent(MainActivity.this, SensingService.class);
+				// Send unique id for this action
+				long actionId = UUID.randomUUID().getLeastSignificantBits();
+				AccelerometerIntent.putExtra(SensingService.ACTION_ID_FIELD_NAME, actionId);
+
+				if (!Utilities.isSensing) {
+//					startService(AccelerometerIntent);
+//					startBatteryLog();
+//					Utilities.isSensing = true;
+
+					// Point out the action triggered by a user
+					AccelerometerIntent.setAction(SensingService.SENSING_START_ACTION);
+
 					btnAction.setText("Stop");
-					startBatteryLog();
-
-					Utilities.stopped = false;
 				} else {
-					stopService(svc);
-					btnAction.setText("Start");
+//					stopService(AccelerometerIntent);
+//					Utilities.resetValues();
 
-					Utilities.resetValues();
+					// Point out the action triggered by a user
+					AccelerometerIntent.setAction(SensingService.SENSING_STOP_ACTION);
+
+					btnAction.setText("Start");
 				}
+
+				WakefulIntentService.sendWakefulWork(MainActivity.this, AccelerometerIntent);
 			}
 		});
 
@@ -81,9 +91,7 @@ public class MainActivity extends Activity {
 	public void onResume() {
 		super.onResume();
 		
-		mBoundService = AccelerometerService.getInstance();
-
-		if (Utilities.isServiceRunning) {
+		if (Utilities.isSensing) {
 			btnAction.setText("Stop");
 		} else {
 			btnAction.setText("Start");
@@ -122,7 +130,7 @@ public class MainActivity extends Activity {
 			// interact with the service.  Because we have bound to a explicit
 			// service that we know is running in our own process, we can
 			// cast its IBinder to a concrete class and directly access it.
-			mBoundService = ((AccelerometerService.MyBinder) service).getService();
+			mBoundService = ((SensingService.MyBinder) service).getService();
 		}
 
 		public void onServiceDisconnected(ComponentName className) {
@@ -139,7 +147,7 @@ public class MainActivity extends Activity {
 		// class name because we want a specific service implementation that
 		// we know will be running in our own process (and thus won't be
 		// supporting component replacement by other applications).
-		bindService(new Intent(MainActivity.this, AccelerometerService.class), mConnection, Context.BIND_AUTO_CREATE);
+		bindService(new Intent(MainActivity.this, SensingService.class), mConnection, Context.BIND_AUTO_CREATE);
 		mIsBound = true;
 	}
 

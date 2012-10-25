@@ -12,6 +12,7 @@ import java.io.IOException;
  */
 public class Utilities {
 	public static boolean sleeping = true;
+	public static boolean isSensing = false;
 
 	public static int checkingCounts = 0;
 	public static long checkingTimestamp;
@@ -29,19 +30,16 @@ public class Utilities {
 	public static final int GRAPH_RANGE = 600000; // milliseconds
 
 	// No-movement threshold
-	public static final int THRESHOLD = 100; // activity counts
+	public static final int THRESHOLD = 5; // activity counts
 
 	// Sample period when checking if there is movement
-	public static final int CHECK_EPOCH = 2000; // milliseconds
+	public static final int CHECK_EPOCH = 3000; // milliseconds
 
 	// No-movement sleep time
 	public static final int SLEEP_TIME = 10000; // milliseconds
 
-	public static boolean isServiceRunning;
-	public static boolean stopped = true;
-
 	// Battery level sample rate
-	public static final int BATTERY_RATE = 600000; // milliseconds
+	public static final int BATTERY_RATE = 60000; // milliseconds
 
 	public static long getEpoch() {
 		if (!sleeping) {
@@ -70,6 +68,6 @@ public class Utilities {
 	public static void resetValues() {
 		sleeping = true;
 		checkingCounts = 0;
-		stopped = true;
+		isSensing = false;
 	}
 }

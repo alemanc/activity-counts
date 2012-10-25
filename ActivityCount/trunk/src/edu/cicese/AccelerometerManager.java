@@ -22,7 +22,7 @@ import java.util.Queue;
 public class AccelerometerManager implements SensorEventListener {
 
 	private static SensorManager sensorManager;
-	private static AccelerometerService service;
+	private static SensingService service;
 
 	private Sensor accelerometerSensor;
 
@@ -41,20 +41,20 @@ public class AccelerometerManager implements SensorEventListener {
 	public AccelerometerManager() {
 		AccelerometerCountUtil.initiateGravity();
 
-		sensorManager = (SensorManager) AccelerometerService.getContext().getSystemService(Context.SENSOR_SERVICE);
+		sensorManager = (SensorManager) SensingService.getContext().getSystemService(Context.SENSOR_SERVICE);
 		if (isSupported()) {
 			accelerometerSensor = getSensorList().get(0);
 		}
 	}
 
-	public void startListening(AccelerometerService accelerometerService) {
-		if (!Utilities.stopped) {
+	public void startListening(SensingService sensingService) {
+		if (Utilities.isSensing) {
 			Log.d("ACC", "Listening...");
 
 			accMeasures.clear();
 			begin = System.currentTimeMillis();
 			isRunning = sensorManager.registerListener(this, accelerometerSensor, Utilities.RATE /*SensorManager.SENSOR_DELAY_GAME*/);
-			service = accelerometerService;
+			service = sensingService;
 		}
 	}
 
@@ -81,7 +81,7 @@ public class AccelerometerManager implements SensorEventListener {
 	public boolean isSupported() {
 		Log.d("ACC", "Is supported?");
 		if (isSupported == null) {
-			if (AccelerometerService.getContext() != null) {
+			if (SensingService.getContext() != null) {
 				List<Sensor> sensors = getSensorList();
 				isSupported = (sensors.size() > 0);
 			} else {
@@ -96,7 +96,7 @@ public class AccelerometerManager implements SensorEventListener {
 	}
 
 	public void onSensorChanged(SensorEvent sensorEvent) {
-		if (!Utilities.stopped) {
+		if (Utilities.isSensing) {
 			double x = sensorEvent.values[0];
 			double y = sensorEvent.values[1];
 			double z = sensorEvent.values[2];

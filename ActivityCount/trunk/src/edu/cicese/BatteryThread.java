@@ -18,6 +18,7 @@ import java.util.List;
  */
 public class BatteryThread extends Thread {
 
+	private boolean done = false;
 	private Intent battery;
 
 	public BatteryThread(Context context) {
@@ -25,9 +26,12 @@ public class BatteryThread extends Thread {
 		battery = context.registerReceiver(null, filter);
 	}
 
-	public void run() {
-		while(!Utilities.stopped) {
+	public void done() {
+		done = true;
+	}
 
+	public void run() {
+		while(!done) {
 			int level = battery.getIntExtra(BatteryManager.EXTRA_LEVEL, 0);
 			int scale = battery.getIntExtra(BatteryManager.EXTRA_SCALE, 100);
 			float batteryPct = (level * 100) / (float) scale;
