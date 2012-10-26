@@ -45,6 +45,7 @@ public class BatteryThread extends Thread {
 			Log.d("ACC", "Battery level: " + batteryPct + "%");
 
 			try {
+				Utilities.batteryLevel = batteryPct;
 				Utilities.saveString("activity_counts/", "b_" + timestamp + ".json", mapper.writeValueAsString(list));
 			} catch (JsonProcessingException e) {
 				Log.d("ACC", e.getMessage());

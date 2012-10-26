@@ -13,6 +13,7 @@ import java.io.IOException;
 public class Utilities {
 	public static boolean sleeping = true;
 	public static boolean isSensing = false;
+	public static float batteryLevel = 100;
 
 	public static int checkingCounts = 0;
 	public static long checkingTimestamp;
@@ -39,7 +40,7 @@ public class Utilities {
 	public static final int SLEEP_TIME = 10000; // milliseconds
 
 	// Battery level sample rate
-	public static final int BATTERY_RATE = 60000; // milliseconds
+	public static final int BATTERY_RATE = 600000; // milliseconds
 
 	public static long getEpoch() {
 		if (!sleeping) {
@@ -69,5 +70,9 @@ public class Utilities {
 		sleeping = true;
 		checkingCounts = 0;
 		isSensing = false;
+	}
+
+	public static int getBatteryLevel() {
+		return (int) batteryLevel;
 	}
 }

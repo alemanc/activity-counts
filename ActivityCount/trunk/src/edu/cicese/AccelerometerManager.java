@@ -22,14 +22,13 @@ import java.util.Queue;
 public class AccelerometerManager implements SensorEventListener {
 
 	private static SensorManager sensorManager;
-	private static SensingService service;
+	private static SensingService sensingService;
 
 	private Sensor accelerometerSensor;
 
 	private List<AccelerometerMeasure> accMeasures = new ArrayList<AccelerometerMeasure>();
 	private long begin;
 
-//	public static List<ActivityCount> activityCounts = new ArrayList<ActivityCount>();
 	public static Queue<ActivityCount> activityCounts = new LinkedList<ActivityCount>();
 
 	// indicates whether or not Accelerometer Sensor is isSupported
@@ -54,12 +53,12 @@ public class AccelerometerManager implements SensorEventListener {
 			accMeasures.clear();
 			begin = System.currentTimeMillis();
 			isRunning = sensorManager.registerListener(this, accelerometerSensor, Utilities.RATE /*SensorManager.SENSOR_DELAY_GAME*/);
-			service = sensingService;
+			AccelerometerManager.sensingService = sensingService;
 		}
 	}
 
 	public void startListening() {
-		startListening(service);
+		startListening(sensingService);
 	}
 
 	// Unregisters listener
@@ -143,7 +142,7 @@ public class AccelerometerManager implements SensorEventListener {
 		}
 		activityCounts.add(activityCount);
 
-		service.updateNotification(activityCount.getCount());
+		sensingService.updateNotification(activityCount.getCount());
 
 		Message msg = new Message();
 		Bundle bundle = new Bundle();
@@ -175,7 +174,7 @@ public class AccelerometerManager implements SensorEventListener {
 			}
 			else {
 				Log.d("ACC", "No sdcard");
-				FileOutputStream fOut = service.openFileOutput("/activity_counts/ac_" + activityCount.getTimestamp() + ".json", Context.MODE_WORLD_READABLE);
+				FileOutputStream fOut = sensingService.openFileOutput("/activity_counts/ac_" + activityCount.getTimestamp() + ".json", Context.MODE_WORLD_READABLE);
 				OutputStreamWriter osw = new OutputStreamWriter(fOut);
 
 				osw.write(mapper.writeValueAsString(list));

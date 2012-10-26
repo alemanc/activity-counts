@@ -3,23 +3,26 @@ package edu.cicese;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.util.Log;
-import com.commonsware.cwac.wakeful.WakefulIntentService;
 
 /**
  * Created by: Eduardo Quintana Contreras
  * Date: 23/08/12
  * Time: 02:39 PM
  */
-public class SensingService extends WakefulIntentService {
+public class SensingService extends Service/* extends WakefulIntentService*/ {
 
-	private static final String TAG = "SensingService";
-	public final static String SENSING_START_ACTION = "edu.cicese.SENSING_START_ACTION";
+	public static final String TAG = "SensingService";
+	public static PowerManager.WakeLock WAKE_LOCK = null;
+
+	/*public final static String SENSING_START_ACTION = "edu.cicese.SENSING_START_ACTION";
 	public final static String SENSING_STOP_ACTION = "edu.cicese.SENSING_STOP_ACTION";
-	public final static String ACTION_ID_FIELD_NAME = "action_id";
+	public final static String ACTION_ID_FIELD_NAME = "action_id";*/
 
 	private NotificationManager notificationManager;
 	private Notification notification;
@@ -35,9 +38,9 @@ public class SensingService extends WakefulIntentService {
 	 * This constructor is never used directly, it is used by the superclass
 	 * methods when it's first created.
 	 */
-	public SensingService() {
+	/*public SensingService() {
 		super("SensingService");
-	}
+	}*/
 
 	@Override
 	public void onCreate() {
@@ -53,9 +56,9 @@ public class SensingService extends WakefulIntentService {
 
 	@Override
 	public void onDestroy() {
-		Log.d(TAG, "DESTROY!");
-
 		super.onDestroy();
+
+		Log.d(TAG, "Destroy Sensing Service.");
 
 		// Cancel the persistent notification.
 		notificationManager.cancel(NOTIFICATION);
@@ -72,10 +75,10 @@ public class SensingService extends WakefulIntentService {
 	/**
 	 * This method is invoked on the worker thread with a request to process.
 	 */
-	protected void doWakefulWork(Intent intent) {
+	/*protected void doWakefulWork(Intent intent) {
 		Log.d(TAG, "Action received: " + intent.getAction());
 
-		/* SENSING ACTION */
+		*//* SENSING ACTION *//*
 		if (intent.getAction().compareTo(SENSING_START_ACTION) == 0) {
 			startSensing();
 		} else if (intent.getAction().compareTo(SENSING_STOP_ACTION) == 0) {
@@ -84,17 +87,15 @@ public class SensingService extends WakefulIntentService {
 			Log.e(TAG, "Unknown action received: " + intent.getAction());
 			return;
 		}
-	}
+	}*/
 
-	/*@Override
+	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		Utilities.isSensing = true;
-
-		startListening();
+		startSensing();
 
 		// We want this service to continue running until it is explicitly stopped, so return sticky.
 		return START_STICKY;
-	}*/
+	}
 
 	private void startSensing() {
 		Log.d(TAG, "Start sensing");
@@ -108,7 +109,6 @@ public class SensingService extends WakefulIntentService {
 		if (accelerometerManager.isSupported()) {
 			accelerometerManager.startListening(this);
 		}
-
 	}
 
 	private void stopSensing() {
@@ -116,7 +116,11 @@ public class SensingService extends WakefulIntentService {
 
 		Utilities.resetValues();
 		// Start sensing battery level
-		batteryThread.done();
+		if (batteryThread != null) {
+			batteryThread.done();
+		}
+		WAKE_LOCK.release();
+		WAKE_LOCK = null;
 
 		// Stop sensing activity counts
 		if (accelerometerManager.isListening()) {
@@ -163,7 +167,8 @@ public class SensingService extends WakefulIntentService {
 		intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-		notification.setLatestEventInfo(this, getText(R.string.service_title), getText(R.string.service_text) + " / " + count + " acs (last minute)", contentIntent);
+		notification.setLatestEventInfo(this, getText(R.string.service_title), getText(R.string.service_text) + " / " +
+				count + " acs (last epoch) / " + Utilities.getBatteryLevel() + "%", contentIntent);
 
 		startForeground(1234, notification);
 	}
