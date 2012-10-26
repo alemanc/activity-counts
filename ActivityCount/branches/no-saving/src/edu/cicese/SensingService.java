@@ -6,116 +6,93 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Binder;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.util.Log;
 
 /**
  * Created by: Eduardo Quintana Contreras
  * Date: 23/08/12
  * Time: 02:39 PM
  */
-public class AccelerometerService extends Service {
+public class SensingService extends Service/* extends WakefulIntentService*/ {
+
+	public static final String TAG = "SensingService";
+	public static PowerManager.WakeLock WAKE_LOCK = null;
 
 	private NotificationManager notificationManager;
 	private Notification notification;
 
-	// Unique Identification Number for the Notification.
+	// Unique ID for the Notification.
 	// We use it on Notification start, and to cancel it.
 	private int NOTIFICATION = R.string.service_text;
-
-	private static Context appContext;
-	private static AccelerometerService instance;
 	private AccelerometerManager accelerometerManager;
-
-	private PowerManager.WakeLock wakeLock;
-
-
-	public class MyBinder extends Binder {
-		public AccelerometerService getService() {
-			return AccelerometerService.this;
-		}
-	}
-	private final IBinder mBinder = new MyBinder();
-	
-	@Override
-	public IBinder onBind(Intent intent) {
-		return mBinder;
-	}
-
-	// BroadcastReceiver for handling ACTION_SCREEN_OFF.
-	/*public BroadcastReceiver receiver = new BroadcastReceiver() {
-		@Override
-		public void onReceive(Context context, Intent intent) {
-			// Check action just to be on the safe side.
-			if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
-				Log.d("shake mediator screen off", "trying re-registration");
-				// Unregisters the listener and registers it again.
-				stopListening();
-				startListening();
-			}
-		}
-	};*/
+	private BatteryThread batteryThread;
+	private static Context appContext;
 
 	@Override
 	public void onCreate() {
-		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		super.onCreate();
 
-		// Display a notification about us starting.  Put an icon in the status bar.
+		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+		// Display a notification about us starting. Put an icon in the status bar.
 		showNotification();
 
-		instance = this;
 		appContext = this.getApplicationContext();
-
 		accelerometerManager = new AccelerometerManager();
-
-		/*IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_OFF);
-		registerReceiver(receiver, filter);*/
-
-//		PowerManager powerManager = (PowerManager) appContext.getSystemService(Context.POWER_SERVICE);
-//		wakeLock = powerManager.newWakeLock(PowerManager.FULL_WAKE_LOCK, "Dim screen");
-
-		/*
-
-            @Override
-        protected void onPause() {
-            super.onPause();
-            wl.release();
-        }//End of onPause*/
-	}
-
-	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		Utilities.isServiceRunning = true;
-
-		startListening();
-//		wakeLock.acquire();
-		// We want this service to continue running until it is explicitly stopped, so return sticky.
-
-		return START_STICKY;
 	}
 
 	@Override
 	public void onDestroy() {
-		Utilities.isServiceRunning = false;
-		// Unregister our receiver.
-//		unregisterReceiver(receiver);
+		super.onDestroy();
+
+		Log.d(TAG, "Destroy Sensing Service.");
 
 		// Cancel the persistent notification.
 		notificationManager.cancel(NOTIFICATION);
 
-		stopListening();
-
-//		wakeLock.release();
+		stopSensing();
 	}
 
-	private void startListening() {
+	@Override
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
+
+	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		startSensing();
+
+		// We want this service to continue running until it is explicitly stopped, so return sticky.
+		return START_STICKY;
+	}
+
+	private void startSensing() {
+		Log.d(TAG, "Start sensing");
+		Utilities.isSensing = true;
+
+		// Start sensing battery level
+		batteryThread = new BatteryThread(this);
+		batteryThread.start();
+
+		// Start sensing activity counts
 		if (accelerometerManager.isSupported()) {
 			accelerometerManager.startListening(this);
 		}
 	}
 
-	private void stopListening() {
+	private void stopSensing() {
+		Log.d(TAG, "Stop sensing");
+
+		Utilities.resetValues();
+		// Start sensing battery level
+		if (batteryThread != null) {
+			batteryThread.done();
+		}
+		WAKE_LOCK.release();
+		WAKE_LOCK = null;
+
+		// Stop sensing activity counts
 		if (accelerometerManager.isListening()) {
 			accelerometerManager.stopListening();
 		}
@@ -123,10 +100,6 @@ public class AccelerometerService extends Service {
 
 	public static Context getContext() {
 		return appContext;
-	}
-
-	public static AccelerometerService getInstance() {
-		return instance;
 	}
 
 	/**
@@ -138,6 +111,8 @@ public class AccelerometerService extends Service {
 
 		// Set the icon, scrolling text and timestamp
 		notification = new Notification(R.drawable.icon, text, System.currentTimeMillis());
+
+		//TODO change to Notification.Bundle API 11
 
 		// The PendingIntent to launch our activity if the user selects this notification
 		Intent intent = new Intent(this, MainActivity.class);
@@ -164,7 +139,8 @@ public class AccelerometerService extends Service {
 		intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
-		notification.setLatestEventInfo(this, getText(R.string.service_title), getText(R.string.service_text) + " / " + count + " acs (last minute)", contentIntent);
+		notification.setLatestEventInfo(this, getText(R.string.service_title), getText(R.string.service_text) + " / " +
+				count + " acs (last epoch) / " + Utilities.getBatteryLevel() + "%", contentIntent);
 
 		startForeground(1234, notification);
 	}

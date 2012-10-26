@@ -11,6 +11,9 @@ import java.io.IOException;
  * Time: 02:57 PM
  */
 public class Utilities {
+	public static boolean isSensing;
+	public static float batteryLevel = 100;
+
 	// Log entries
 	public static final int LOG_SIZE = 100;
 
@@ -23,8 +26,7 @@ public class Utilities {
 	// Activity count chart range
 	public static final int GRAPH_RANGE = 600000; // milliseconds
 
-	public static boolean isServiceRunning;
-	public static boolean stopped = true;
+
 
 	// Battery level sample rate
 	public static final int BATTERY_RATE = 600000; // milliseconds
@@ -50,6 +52,10 @@ public class Utilities {
 	}
 
 	public static void resetValues() {
-		stopped = true;
+		isSensing = false;
+	}
+
+	public static int getBatteryLevel() {
+		return (int)batteryLevel;
 	}
 }
