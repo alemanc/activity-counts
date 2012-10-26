@@ -67,14 +67,16 @@ public class ActivityChart {
 		renderer.setAxesColor(axesColor);
 		renderer.setLabelsColor(labelsColor);
 
+		renderer.setMarginsColor(Color.WHITE);
+
 		renderer.setAxesColor(Color.LTGRAY);
 		renderer.setAxisTitleTextSize(16);
 		renderer.setFitLegend(true);
 		renderer.setGridColor(Color.LTGRAY);
 		renderer.setPanEnabled(true, true);
 		renderer.setPointSize(2);
-		renderer.setMargins(new int[]{20, 30, 15, 0});
-		renderer.setZoomButtonsVisible(true);
+		renderer.setMargins(new int[]{10, 30, 8, 15}); //top, left, bottom, right
+//		renderer.setZoomButtonsVisible(true);
 		renderer.setBarSpacing(5);
 		renderer.setShowGrid(true);
 	}
