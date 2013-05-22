@@ -1,4 +1,4 @@
-package edu.cicese;
+package edu.cicese.sensit;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -24,10 +24,12 @@ public class AccelerometerManager implements SensorEventListener {
 	private static SensorManager sensorManager;
 	private static SensingService sensingService;
 
+	private ActivityCountThread activityCountThread;
+
 	private Sensor accelerometerSensor;
 
 	private List<AccelerometerMeasure> accMeasures = new ArrayList<AccelerometerMeasure>();
-	private long begin;
+	private long beginTimestamp;
 
 	public static Queue<ActivityCount> activityCounts = new LinkedList<ActivityCount>();
 
@@ -37,22 +39,31 @@ public class AccelerometerManager implements SensorEventListener {
 	// indicates whether or not Accelerometer Sensor is running
 	private boolean isRunning = false;
 
+	private long lastTimestamp;
+	private long wantedPeriod;
+
 	public AccelerometerManager() {
 		AccelerometerCountUtil.initiateGravity();
 
-		sensorManager = (SensorManager) SensingService.getContext().getSystemService(Context.SENSOR_SERVICE);
+		activityCountThread = new ActivityCountThread(this);
+
+		/*sensorManager = (SensorManager) SensingService().getSystemService(Context.SENSOR_SERVICE);
 		if (isSupported()) {
 			accelerometerSensor = getSensorList().get(0);
-		}
+		}*/
 	}
 
 	public void startListening(SensingService sensingService) {
-		if (Utilities.isSensing) {
-			Log.d("ACC", "Listening...");
+		if (Utilities.sensing) {
+			Log.i("ACC", "Listening...");
+
+			lastTimestamp = 0;
+			wantedPeriod = Utilities.RATE * 1000000L;
 
 			accMeasures.clear();
-			begin = System.currentTimeMillis();
-			isRunning = sensorManager.registerListener(this, accelerometerSensor, Utilities.RATE /*SensorManager.SENSOR_DELAY_GAME*/);
+			beginTimestamp = System.currentTimeMillis();
+//			isRunning = sensorManager.registerListener(this, accelerometerSensor, Utilities.RATE /*SensorManager.SENSOR_DELAY_GAME*/);
+			isRunning = sensorManager.registerListener(this, accelerometerSensor, SensorManager.SENSOR_DELAY_NORMAL);
 			AccelerometerManager.sensingService = sensingService;
 		}
 	}
@@ -64,7 +75,7 @@ public class AccelerometerManager implements SensorEventListener {
 	// Unregisters listener
 	public void stopListening() {
 		isRunning = false;
-		Log.d("ACC", "Unregister");
+		Log.i("ACC", "Unregister");
 		if (sensorManager != null/* && sensorEventListener != null*/) {
 			sensorManager.unregisterListener(this);
 		}
@@ -72,21 +83,21 @@ public class AccelerometerManager implements SensorEventListener {
 
 	// Returns true if the manager is listening to orientation changes
 	public boolean isListening() {
-		Log.d("ACC", "Is listening?");
+		Log.i("ACC", "Is listening?");
 		return isRunning;
 	}
 
 	// Returns true if at least one Accelerometer sensor is available
 	public boolean isSupported() {
-		Log.d("ACC", "Is supported?");
-		if (isSupported == null) {
+		Log.i("ACC", "Is supported?");
+		/*if (isSupported == null) {
 			if (SensingService.getContext() != null) {
 				List<Sensor> sensors = getSensorList();
 				isSupported = (sensors.size() > 0);
 			} else {
 				isSupported = false;
 			}
-		}
+		}*/
 		return isSupported;
 	}
 
@@ -94,26 +105,71 @@ public class AccelerometerManager implements SensorEventListener {
 		return sensorManager.getSensorList(Sensor.TYPE_ACCELEROMETER);
 	}
 
-	public void onSensorChanged(SensorEvent sensorEvent) {
-		if (Utilities.isSensing) {
+	/*public void onSensorChanged(SensorEvent sensorEvent) {
+		if (Utilities.sensing && !Utilities.sleeping) {
 			double x = sensorEvent.values[0];
 			double y = sensorEvent.values[1];
 			double z = sensorEvent.values[2];
 
 			long timestamp = System.currentTimeMillis();
-			long elapsedTime = timestamp - begin;
+			long elapsedTime = timestamp - beginTimestamp;
 
-			long epoch = Utilities.getEpoch();
-			if (elapsedTime >= epoch) {
-				Utilities.sleeping = false;
-				new ActivityCountThread(this, epoch).start();
-				begin += epoch;
+//			long epoch = Utilities.getEpoch();
+			if (elapsedTime >= Utilities.epoch) {
+//				Utilities.sleeping = false;
+				if (!activityCountThread.isAlive()) {
+					activityCountThread.setEpoch(Utilities.epoch);
+					activityCountThread.run();
+				}
+				beginTimestamp += Utilities.epoch;
 				accMeasures.clear();
 			}
 
 			AccelerometerMeasure measure = new AccelerometerMeasure(x, y, z, timestamp);
 			accMeasures.add(measure);
 		}
+	}*/
+
+	public void onSensorChanged(SensorEvent event) {
+		long currentTimestamp = System.currentTimeMillis();
+		long period = event.timestamp - lastTimestamp;
+
+		/*try {
+			Thread.sleep(40);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}*/
+
+		if (Utilities.sensing && /*!Utilities.sleeping && */period >= wantedPeriod) {
+			double x = event.values[0];
+			double y = event.values[1];
+			double z = event.values[2];
+
+//			Log.i("ACC", x + ", " + y + ", " + z);
+
+			long elapsedTime = currentTimestamp - beginTimestamp;
+
+			if (elapsedTime >= Utilities.epoch) {
+
+				beginTimestamp += Utilities.epoch;
+
+				if (!activityCountThread.isAlive()) {
+					activityCountThread.setEpoch(Utilities.epoch);
+					activityCountThread.run();
+				}
+
+				accMeasures.clear();
+			}
+
+			AccelerometerMeasure measure = new AccelerometerMeasure(x, y, z, currentTimestamp);
+			accMeasures.add(measure);
+
+			lastTimestamp = event.timestamp;
+		}
+	}
+
+	public void setBeginTimestamp(long timestamp) {
+		beginTimestamp += timestamp;
 	}
 
 	public List<AccelerometerMeasure> getAccMeasures() {
@@ -142,7 +198,7 @@ public class AccelerometerManager implements SensorEventListener {
 		}
 		activityCounts.add(activityCount);
 
-		sensingService.updateNotification(activityCount.getCount());
+//		sensingService.updateNotification(activityCount.getCount());
 
 		Message msg = new Message();
 		Bundle bundle = new Bundle();
@@ -150,14 +206,14 @@ public class AccelerometerManager implements SensorEventListener {
 		bundle.putInt("count", activityCount.getCount());
 		msg.setData(bundle);
 
-		MainActivity.handler.sendMessage(msg);
+		MainActivity.handlerUI.sendMessage(msg);
 
 		ObjectMapper mapper = new ObjectMapper();
 		List<ActivityCount> list = new ArrayList<ActivityCount>();
 		list.add(activityCount);
 		try {
 			if (isSDCardWriteable()) {
-				Log.d("ACC", "Saving at: " + "/ac_" + activityCount.getTimestamp() + ".json --> " + mapper.writeValueAsString(list));
+				Log.i("ACC", "Saving at: " + "/ac_" + activityCount.getTimestamp() + ".json --> " + mapper.writeValueAsString(list));
 
 				Utilities.saveString("activity_counts/", "ac_" + activityCount.getTimestamp() + ".json", mapper.writeValueAsString(list));
 
@@ -173,7 +229,7 @@ public class AccelerometerManager implements SensorEventListener {
 				out.close();*/
 			}
 			else {
-				Log.d("ACC", "No sdcard");
+				Log.i("ACC", "No sdcard");
 				FileOutputStream fOut = sensingService.openFileOutput("/activity_counts/ac_" + activityCount.getTimestamp() + ".json", Context.MODE_WORLD_READABLE);
 				OutputStreamWriter osw = new OutputStreamWriter(fOut);
 
@@ -184,7 +240,7 @@ public class AccelerometerManager implements SensorEventListener {
 			}
 
 		} catch (IOException e) {
-			Log.d("ACC", e.getMessage());
+			Log.e("ACC", e.getMessage());
 		}
 	}
 

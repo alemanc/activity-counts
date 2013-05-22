@@ -1,80 +1,256 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="fill_parent"
-              android:layout_height="fill_parent"
-              android:background="@color/white"
-        >
-    <Button android:id="@+id/ButtonAction"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:padding="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:descendantFocusability="beforeDescendants"
+        android:focusableInTouchMode="true">
+
+        <Button
+            android:id="@+id/btn_start"
             android:background="@drawable/btn_blue"
             style="@style/ButtonText"
             android:text="Start"
-            android:clickable="true"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="10dip"
-            android:gravity="center_horizontal"
-            android:layout_centerVertical="true"
-            />
+            android:gravity="center_horizontal" />
 
-    <!--<Button android:text=" Back" android:id="@+id/back" android:background="@values/customButton"
-            android:cursorVisible="true"
-            android:layout_width="wrap_content" android:layout_height="wrap_content"
-            android:layout_centerVertical="true"/>
-    android:layout_width="70dip"
-    android:layout_height="wrap_content"
-    android:textSize="20sp"
-    android:width="70dip"
-    android:maxWidth="70dip"-->
+        <LinearLayout
+            android:id="@+id/chart"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="2dp" />
 
-    <LinearLayout android:id="@+id/Chart"
-                  android:orientation="horizontal"
-                  android:layout_width="fill_parent"
-                  android:layout_height="180dip"
-                  android:layout_marginTop="5dip"
-                  android:layout_marginBottom="2dip"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Home location (latitude, longitude)"
+            android:textColor="@color/gray" />
 
-    <ScrollView
-            android:id="@+id/sv"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_marginLeft="10dip"
-            android:layout_marginRight="10dip"
-            android:layout_marginBottom="5dip"
-            >
-        <EditText android:id="@+id/TextLog"
-                  android:layout_width="fill_parent"
-                  android:layout_height="fill_parent"
-                  android:longClickable="false"
-                  android:selectAllOnFocus="false"
-                  android:editable="false"
-                  android:background="#00000000"/>
-    </ScrollView>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true">
+
+            <EditText
+                android:id="@+id/txt_latitude"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="numberDecimal"
+                android:hint="Ej. 31.8595769"
+                android:textSize="15sp" />
+
+            <EditText
+                android:id="@+id/txt_longitude"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="numberDecimal"
+                android:hint="Ej. -116.606428"
+                android:textSize="15sp" />
+
+            <ImageButton
+                android:id="@+id/btn_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:src="@drawable/btn_save"
+                android:background="@drawable/btn_square"
+                android:contentDescription="Save changes" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sensors ["
+                android:textColor="@color/gray" />
+
+            <LinearLayout
+                android:layout_width="7dp"
+                android:layout_height="7dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginLeft="1dp"
+                android:background="@color/green" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/gray"
+                android:text="on" />
+
+            <LinearLayout
+                android:layout_width="7dp"
+                android:layout_height="7dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginLeft="5dp"
+                android:background="@color/blue" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/gray"
+                android:text="paused" />
+
+            <LinearLayout
+                android:layout_width="7dp"
+                android:layout_height="7dp"
+                android:layout_marginTop="2dp"
+                android:layout_marginLeft="5dp"
+                android:background="@color/red" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/gray"
+                android:text="off]" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:id="@+id/accelerometer_indicator"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@color/red" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/black"
+                android:text="Accelerometer" />
+
+            <TextView
+                android:id="@+id/acc_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/black" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:id="@+id/gps_indicator"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@color/red" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/black"
+                android:text="GPS" />
+
+            <TextView
+                android:id="@+id/gps_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/black" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:id="@+id/battery_indicator"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@color/red" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/black"
+                android:text="Battery" />
+
+            <TextView
+                android:id="@+id/battery_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/black" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:id="@+id/bluetooth_indicator"
+                android:layout_width="10dp"
+                android:layout_height="10dp"
+                android:background="@color/red" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/black"
+                android:text="Bluetooth" />
+
+            <TextView
+                android:id="@+id/bluetooth_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:textColor="@color/black" />
+        </LinearLayout>
+    </LinearLayout>
+
+</ScrollView>
 
     <!--<ScrollView
-            android:id="@+id/ScrollView"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:fillViewport="true"
-            android:isScrollContainer="true"
-            android:saveEnabled="true">
+        android:id="@+id/sv"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:layout_marginLeft="10dip"
+        android:layout_marginRight="10dip"
+        android:layout_marginBottom="5dip">
 
         <EditText
-                android:id="@+id/TextLog"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:gravity="top"
-                android:singleLine="false"
-                android:lines="10"
-                android:layout_marginLeft="10dip"
-                android:layout_marginRight="10dip"/>
+            android:id="@+id/TextLog"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:longClickable="false"
+            android:selectAllOnFocus="false"
+            android:editable="false"
+            android:background="#00000000" />
     </ScrollView>-->
-
-
-    <!--<Button android:layout_height="wrap_content" android:id="@+id/ButtonQuit" android:text="Quit"-->
-    <!--android:textSize="20sp"-->
-    <!--android:layout_alignParentRight="true" android:width="70dip" android:layout_width="70dip"-->
-    <!--android:layout_marginRight="10dip" android:layout_marginTop="10dip" android:clickable="true"-->
-    <!--android:maxWidth="70dip"-->
-    <!--/>-->
-</LinearLayout>
