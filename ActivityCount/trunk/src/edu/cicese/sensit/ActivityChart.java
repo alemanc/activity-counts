@@ -1,4 +1,4 @@
-package edu.cicese;
+package edu.cicese.sensit;
 
 import android.content.Context;
 import android.graphics.Color;
@@ -19,7 +19,7 @@ import java.util.List;
  * Time: 04:53 PM
  */
 public class ActivityChart {
-	private static final String DATE_FORMAT = "HH:mm:ss";
+	private static final String DATE_FORMAT = "HH:mm";
 
 	private TimeSeries timeSeries;
 	private XYMultipleSeriesRenderer renderer;

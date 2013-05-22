@@ -1,4 +1,4 @@
-package edu.cicese;
+package edu.cicese.sensit;
 
 /**
  * Created by: Eduardo Quintana Contreras

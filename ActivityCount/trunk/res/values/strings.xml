@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Activity Count</string>
+    <string name="app_name">SensIt</string>
     <string name="chart_title">Activity Count Chart</string>
     <string name="value">Count</string>
     <string name="date">Date</string>
+    <string name="service_ticker_text">SensIt is active</string>
     <string name="service_text">Sensing</string>
-    <string name="service_title">Open Activity Count</string>
+    <string name="service_title">Open SensIt</string>
 
     <style name="ButtonText">
-        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">#ffffff</item>
         <item name="android:gravity">center</item>

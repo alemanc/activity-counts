@@ -22,9 +22,9 @@ import android.os.PowerManager;
 /**
  * NOTE: Added "working" flag to make sure it releases the lock ONLY when is not
  * working anymore.
- * 
+ *
  * @author mxpxgx
- * 
+ *
  */
 
 abstract public class WakefulIntentService extends IntentService {
@@ -58,17 +58,16 @@ abstract public class WakefulIntentService extends IntentService {
         setIntentRedelivery(true);
     }
 
-    /*@Override
+    @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if ((flags & START_FLAG_REDELIVERY) != 0) { // if crash restart...
-            getLock(this.getApplicationContext()).acquire(); // ...then quick
-                                                             // grab the lock
+            getLock(this.getApplicationContext()).acquire(); // ...then quick grab the lock
         }
 
         super.onStartCommand(intent, flags, startId);
 
-//        return (START_REDELIVER_INTENT);
-	    return START_STICKY;
+        return (START_REDELIVER_INTENT);
+//	    return START_STICKY;
     }
 
     @Override
@@ -78,9 +77,9 @@ abstract public class WakefulIntentService extends IntentService {
         } finally {
             getLock(this.getApplicationContext()).release();
         }
-    }*/
+    }
 
-	@Override
+	/*@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		PowerManager.WakeLock lock = getLock(this.getApplicationContext());
 
@@ -104,5 +103,5 @@ abstract public class WakefulIntentService extends IntentService {
 				lock.release();
 			}
 		}
-	}
+	}*/
 }
