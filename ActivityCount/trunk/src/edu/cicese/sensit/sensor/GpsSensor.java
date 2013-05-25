@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import edu.cicese.sensit.Utilities;
 import edu.cicese.sensit.datatask.data.GpsData;
+import edu.cicese.sensit.util.LocationUtil;
 
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -85,8 +86,6 @@ public class GpsSensor extends Sensor {
 		IntentFilter intentFilter = new IntentFilter(LOCATION_UPDATE_ACTION);
 		getContext().registerReceiver(locationReceiver, intentFilter);
 
-//		handleEnable(Utilities.ENABLE_GPS, true);
-
 		Log.d(TAG, "Starting GPS sensor [done]");
 
 		Utilities.sensorStatus[Utilities.SENSOR_GPS] = Utilities.SENSOR_ON;
@@ -138,16 +137,6 @@ public class GpsSensor extends Sensor {
 
 		Utilities.sensorStatus[Utilities.SENSOR_GPS] = Utilities.SENSOR_OFF;
 		refreshStatus();
-
-		/*Log.d(TAG, "Stopping GPS sensor");
-
-		stpe.shutdown();
-		removeLocationListener();
-		getContext().unregisterReceiver(locationReceiver);
-
-		handleEnable(Utilities.ENABLE_GPS, false);
-
-		Log.d(TAG, "Stopping GPS sensor [done]");*/
 	}
 
 	private void pause() {
@@ -186,6 +175,10 @@ public class GpsSensor extends Sensor {
 				bundle.putDouble("latitude", location.getLatitude());
 				bundle.putDouble("longitude", location.getLongitude());
 				updateUI(Utilities.UPDATE_GPS, bundle);
+
+//				LocationUtil.setAtHome(LocationUtil.inside(location.getLatitude(), location.getLongitude(), LocationUtil.getHomeLatitude(), LocationUtil.getHomeLongitude(), 100));
+				LocationUtil.setAtHome(location.getLatitude(), location.getLongitude(), 100);
+				Log.d(TAG, "At home? " + LocationUtil.isAtHome());
 			}
 		}
 	};

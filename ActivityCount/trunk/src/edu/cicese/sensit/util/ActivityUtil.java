@@ -1,11 +1,26 @@
 package edu.cicese.sensit.util;
 
+import android.util.Log;
+import edu.cicese.sensit.ActivityCount;
+import edu.cicese.sensit.Utilities;
+
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.Queue;
+
 /**
  * Created by: Eduardo Quintana Contreras
  * Date: 16/05/13
  * Time: 03:57 PM
  */
 public class ActivityUtil {
+
+	// Activity count chart ranges
+	public static final int GRAPH_RANGE_X = 20;
+	public static final int GRAPH_RANGE_Y = 6000;
+	public static final double GRAPH_SLEEP_VALUE = 100;
+
+
 	// CPM = Counts per Minute
 	// BM = Body Mass in Kg
 	// kcals = Total Calories for a Single Epoch
@@ -27,23 +42,57 @@ public class ActivityUtil {
 	// kcals = (0.001064 × CPM) + (0.087512 × BM) - 5.500229
 	// NOTE: Previous equations consider data collected from one axis
 
+	// TODO: Add more equations
 	public static final int EE_WILLIAMS = 1;
 	public static final int EE_FREEDSON = 2;
 	public static final int EE_FREEDSON_VM3 = 3;
 
-	// TODO: Add more equations
+	public static float bmi = -1;
+	public static int counts;
+	// stores the CPM from the current minute, and the last 9 minutes to compute the sleep time
+	public static Queue<ActivityCount> countsFrame = new LinkedList<>();
 
-	public static double getCalories(int counts, float bm, int equation) {
-		switch (equation) {
-			case EE_WILLIAMS:
-				return (counts * 0.0000191 * bm);
-			case EE_FREEDSON:
-				return (0.00094 * counts) + (0.1346 * bm) - 7.37418;
-			case EE_FREEDSON_VM3:
-				return (0.001064 * counts) + (0.087512 * bm) - 5.500229;
+	/**
+	 * Computes the calories burned according the activity counts measured.
+	 *
+	 * @param counts the activity counts measured.
+	 * @param bmi the body mass index.
+	 * @param equation the equation to compute calories burned.
+	 *
+	 * @return the calories burned.
+	 */
+	public static int getCalories(int counts, float bmi, int equation) {
+		if (bmi != -1) {
+			switch (equation) {
+				case EE_WILLIAMS:
+					return (int) Math.round(counts * 0.0000191 * bmi);
+				case EE_FREEDSON:
+					return (int) Math.round((0.00094 * counts) + (0.1346 * bmi) - 7.37418);
+				case EE_FREEDSON_VM3:
+					return (int) Math.round((0.001064 * counts) + (0.087512 * bmi) - 5.500229);
+			}
 		}
+		return -1;
+	}
 
-		return 0;
+	/**
+	 * Computes the BMI (body mass index).
+	 *
+	 * @param height the height in centimeters.
+	 * @param weight the weight in kilograms.
+	 *
+	 * @return the BMI.
+	 */
+	public static void setBMI(int height, int weight) {
+		if(height != -1 && weight != -1) {
+			float heightInM = height / 100f;
+			bmi = weight / (heightInM * heightInM);
+			Log.d("SensIt.ActivityUtil", "BMI: " + bmi);
+		}
+	}
+
+	public static float getBmi() {
+		return bmi;
 	}
 
 	////////////////
@@ -115,5 +164,19 @@ public class ActivityUtil {
 
 	public static int getIntensity(double METs) {
 		return 0;
+	}
+
+	public static int getCounts() {
+		int countsTmp = counts;
+		// Just in case the accelerometer updates the value before returning it.
+		counts -= countsTmp;
+		return countsTmp;
+	}
+
+	public static void addToCountsFrame(Date date, int counts) {
+		if (countsFrame.size() > Utilities.LOG_SIZE) {
+			countsFrame.poll();
+		}
+		countsFrame.add(new ActivityCount(date, counts));
 	}
 }

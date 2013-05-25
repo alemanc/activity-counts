@@ -68,7 +68,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 	public static AccelerometerSensor createAccelerometer(Context context, long frameTime, long duration) {
 		AccelerometerSensor sensor = new AccelerometerSensor(context, Sensor.TYPE_ACCELEROMETER, frameTime, duration);
 		Log.d(TAG, "Accelerometer sensor created");
-		sensor.setName("Accel");
+		sensor.setName("A");
 		AccelerometerCountUtil.initiateGravity();
 		return sensor;
 	}
@@ -79,7 +79,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 	public static AccelerometerSensor createGyroscope(Context context, long frameTime, long duration) {
 		AccelerometerSensor sensor = new AccelerometerSensor(context, Sensor.TYPE_GYROSCOPE, frameTime, duration);
 		Log.d(TAG, "Gyroscope sensor created");
-		sensor.setName("Gyro");
+		sensor.setName("GY");
 		return sensor;
 	}
 
@@ -141,9 +141,10 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 			Log.d(TAG, "SensorEventLister NOT registered!");
 		}
 
-//		handleEnable(Utilities.ENABLE_ACCELEROMETER, true);
-
 		Log.d(TAG, "Starting " + getName() + " sensor [done]");
+
+		Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER] = Utilities.SENSOR_ON;
+		refreshStatus();
 
 		if (stpe == null) {
 			stpe = new ScheduledThreadPoolExecutor(1);
@@ -154,19 +155,12 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 
 	@Override
 	public void stop() {
-		super.stop();
 		pause();
 		stpe.shutdown();
+		super.stop();
 
-		/*Log.d(TAG, "Pausing " + getName() + " sensor");
-
-		sensorManager.unregisterListener(this);
-		Log.d(TAG, "SensorEventLister unregistered!");
-
-		handleEnable(Utilities.ENABLE_ACCELEROMETER, false);
-
-		Log.d(TAG, "Pausing " + getName() + " sensor [done]");*/
-
+		Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER] = Utilities.SENSOR_OFF;
+		refreshStatus();
 	}
 
 	private void pause() {
@@ -178,6 +172,9 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 		Log.d(TAG, "SensorEventLister unregistered!");
 
 //		handleEnable(Utilities.ENABLE_ACCELEROMETER, false);
+
+		Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER] = Utilities.SENSOR_PAUSED;
+		refreshStatus();
 
 		Log.d(TAG, "Pausing " + getName() + " sensor [done]");
 	}

@@ -5,12 +5,13 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.util.Log;
 import edu.cicese.sensit.AccelerometerCountUtil;
 import edu.cicese.sensit.Utilities;
 import edu.cicese.sensit.datatask.data.AccelerometerFrameData;
 import edu.cicese.sensit.datatask.data.DataType;
+import edu.cicese.sensit.util.ActivityUtil;
+import edu.cicese.sensit.util.LocationUtil;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -68,7 +69,7 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 	public static AccelerometerSensor createAccelerometer(Context context, long frameTime, long duration) {
 		AccelerometerSensor sensor = new AccelerometerSensor(context, Sensor.TYPE_ACCELEROMETER, frameTime, duration);
 		Log.d(TAG, "Accelerometer sensor created");
-		sensor.setName("Accel");
+		sensor.setName("A");
 		AccelerometerCountUtil.initiateGravity();
 		return sensor;
 	}
@@ -82,62 +83,6 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 		sensor.setName("LA");
 		return sensor;
 	}
-
-	/**
-	 * NOTE: this method doesn't call super.start()
-	 *
-	 * @see edu.cicese.sensit.sensor.Sensor#start()
-	 */
-	public void startf() {
-//		super.setSensing(true);
-		super.start();
-//		resume();
-
-		/*while(Utilities.isSensing) {
-			if (Utilities.charging) {
-				if (isSensing()) {
-					Log.d(TAG, "Stopping sensor [battery check]");
-					stop();
-				}
-			}
-			else if(!isSensing()) {
-				Log.d(TAG, "Registering sensor [battery check]");
-				resume();
-			}
-			try {
-				Log.d(TAG, "Sleeping [battery check]");
-				Thread.sleep(Utilities.ACCELEROMETER_CHECK_TIME);
-			} catch (InterruptedException e) {
-				Log.d(TAG, e.getLocalizedMessage());
-			}
-		}*/
-	}
-
-	/*@Override
-	public void run() {
-		Log.d(TAG, "RUN!");
-		while(isSensing()) {
-			if (Utilities.charging) {
-				if (isRunning()) {
-					Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
-					pause();
-				}
-			}
-			else {
-				if (!isRunning()) {
-					Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
-					resume();
-				}
-			}
-
-			try {
-				Log.d(TAG, "SLEEP NOW!! (please)");
-				Thread.sleep(Utilities.ACCELEROMETER_CHECK_TIME);
-			} catch (Exception e) {
-				Log.e(TAG, "Sleep: " + e);
-			}
-		}
-	}*/
 
 	@Override
 	public void start() {
@@ -177,8 +122,6 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 			Log.d(TAG, "SensorEventLister NOT registered!");
 		}
 
-//		handleEnable(Utilities.ENABLE_ACCELEROMETER, true);
-
 		Log.d(TAG, "Starting " + getName() + " sensor [done]");
 
 		Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER] = Utilities.SENSOR_ON;
@@ -189,8 +132,6 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 			stpe.scheduleAtFixedRate(controller, 0,
 					Utilities.ACCELEROMETER_CHECK_TIME, TimeUnit.MILLISECONDS);
 		}
-
-//		super.start();
 	}
 
 	@Override
@@ -201,17 +142,6 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 
 		Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER] = Utilities.SENSOR_OFF;
 		refreshStatus();
-
-//		Log.d(TAG, "FULL Stop: " + getName() + " sensor [done]");
-
-		/*Log.d(TAG, "Stopping " + getName() + " sensor, counts: " + counts);
-
-		sensorManager.unregisterListener(this);
-		Log.d(TAG, "SensorEventLister unregistered!");
-
-		handleEnable(Utilities.ENABLE_ACCELEROMETER, false);
-
-		Log.d(TAG, "Stopping " + getName() + " sensor [done]");*/
 	}
 
 	private void pause() {
@@ -251,13 +181,13 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 				currentData = createNewData();
 			}
 		} else if (!frame.isEmpty()) {
-			Log.d(TAG, "----------------------------Counts: " + counts);
+			/*Log.d(TAG, "----------------------------Counts [L]: " + counts);
 			Bundle bundle = new Bundle();
 			bundle.putInt("counts", counts);
 			updateUI(Utilities.UPDATE_ACCELEROMETER, bundle);
 			this.counts -= counts;
 			// Make available to DataSource
-			currentData = createNewData();
+			currentData = createNewData();*/
 		}
 	}
 
@@ -348,7 +278,9 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 				double axisZ = event.values[2];
 				if (sensorType == Sensor.TYPE_LINEAR_ACCELERATION) {
 					setNewReadings(axisX, axisY, axisZ, currentTime, counts);
-					counts += Math.floor(Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ)));
+					double magnitude = Math.floor(Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ)));
+					counts += magnitude;
+					ActivityUtil.counts += magnitude;
 				}
 				else {
 					double[] axises = getFilteredReadings(axisX, axisY, axisZ);
@@ -369,7 +301,7 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 	private Runnable controller = new Runnable() {
 		public void run() {
 			Log.d(TAG, "Checking ACC [battery check]");
-			if (Utilities.isCharging()) {
+			if (/*Utilities.isCharging() || */LocationUtil.isAtHome()) {
 				if (isRunning()) {
 					Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
 					pause();

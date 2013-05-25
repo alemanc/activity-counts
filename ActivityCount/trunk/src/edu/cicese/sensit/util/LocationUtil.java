@@ -1,5 +1,7 @@
 package edu.cicese.sensit.util;
 
+import android.util.Log;
+
 /**
  * Created by: Eduardo Quintana Contreras
  * Date: 13/01/12
@@ -8,6 +10,9 @@ package edu.cicese.sensit.util;
 public class LocationUtil {
 	private static final double R = 6371000;  // earths mean radius in m
 	private static final double R2 = 6378137;  // earths mean radius in m
+
+	public static boolean atHome = false;
+	public static double homeLatitude, homeLongitude;
 
 	// Spherical Law of Cosines
 	public static double getSLCDistanceFrom(double lat1, double lon1, double lat2, double lon2) {
@@ -19,7 +24,11 @@ public class LocationUtil {
 	}
 
 	public static boolean inside(double lat1, double lon1, double lat2, double lon2, int radius) {
-		return getSLCDistanceFrom(lat1, lon1, lat2, lon2) <= radius;
+		Log.d("SensIt.LocationUtil", "Computing: " + lat1 + ", " + lon1 + " vs " + lat2 + ", " + lon2);
+		double distance = getSLCDistanceFrom(lat1, lon1, lat2, lon2);
+		double distance2 = getHaversineDistFrom(lat1, lon1, lat2, lon2);
+		Log.d("SensIt.LocationUtil", "Distance: " + distance + " distance2: " + distance2);
+		return distance <= radius;
 	}
 
 	// Haversine
@@ -40,5 +49,29 @@ public class LocationUtil {
 
 		// OffsetPosition, decimal degrees
 		return new double[]{lat + dLat * 180 / Math.PI, lon + dLon * 180 / Math.PI};
+	}
+
+	public static boolean isAtHome() {
+		return atHome;
+	}
+
+	public static void setAtHome(double lat1, double lon1, int radius) {
+		LocationUtil.atHome = homeLatitude != -1 && homeLongitude != -1 && inside(lat1, lon1, homeLatitude, homeLongitude, radius);
+	}
+
+	public static double getHomeLatitude() {
+		return homeLatitude;
+	}
+
+	public static void setHomeLatitude(double homeLatitude) {
+		LocationUtil.homeLatitude = homeLatitude;
+	}
+
+	public static double getHomeLongitude() {
+		return homeLongitude;
+	}
+
+	public static void setHomeLongitude(double homeLongitude) {
+		LocationUtil.homeLongitude = homeLongitude;
 	}
 }

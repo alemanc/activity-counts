@@ -88,7 +88,7 @@ public class ActivityCountThread extends Thread {
 				}
 				Log.i("ACC", "Counts = " + accFilteredMagnitudesRounded);
 				try {
-					accelerometerManager.saveActivityCounts(new ActivityCount(timestamp, accFilteredMagnitudesRounded, Utilities.MAIN_EPOCH));
+//					accelerometerManager.saveActivityCounts(new ActivityCount(timestamp, accFilteredMagnitudesRounded, Utilities.MAIN_EPOCH));
 				}
 				catch(Exception e){ Log.e("ACC", e.getLocalizedMessage()); }
 			}

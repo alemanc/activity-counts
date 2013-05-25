@@ -22,7 +22,7 @@ public class BatterySensor extends Sensor {
 		super(context);
 		Log.d(TAG, "Battery sensor created");
 
-		setName("Battery");
+		setName("B");
 	}
 
 	@Override
