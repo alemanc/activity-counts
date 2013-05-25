@@ -7,8 +7,8 @@ package edu.cicese.sensit;
  */
 public class AccelerometerCountUtil {
 
-	private static float alpha = 0.8f;
-	private static float alphaI = 0.2f;
+	private static float alpha = 0.94f;
+	private static float alphaI = 0.06f;
 	private static double[] gravity = new double[3];
 
 	//Experimental

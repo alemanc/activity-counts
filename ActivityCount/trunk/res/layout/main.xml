@@ -16,61 +16,21 @@
             android:id="@+id/btn_start"
             android:background="@drawable/btn_blue"
             style="@style/ButtonText"
-            android:text="Start"
+            android:text="@string/btn_start"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal" />
 
+        <!--Chart-->
         <LinearLayout
             android:id="@+id/chart"
             android:layout_width="match_parent"
-            android:layout_height="120dp"
+            android:layout_height="180dp"
             android:orientation="horizontal"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="2dp" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Home location (latitude, longitude)"
-            android:textColor="@color/gray" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:descendantFocusability="beforeDescendants"
-            android:focusableInTouchMode="true">
-
-            <EditText
-                android:id="@+id/txt_latitude"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:hint="Ej. 31.8595769"
-                android:textSize="15sp" />
-
-            <EditText
-                android:id="@+id/txt_longitude"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:inputType="numberDecimal"
-                android:hint="Ej. -116.606428"
-                android:textSize="15sp" />
-
-            <ImageButton
-                android:id="@+id/btn_save"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:src="@drawable/btn_save"
-                android:background="@drawable/btn_square"
-                android:contentDescription="Save changes" />
-        </LinearLayout>
-
+        <!--Sensors-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -80,7 +40,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Sensors ["
+                android:text="@string/sensors"
                 android:textColor="@color/gray" />
 
             <LinearLayout
@@ -95,7 +55,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/gray"
-                android:text="on" />
+                android:text="@string/sensor_on" />
 
             <LinearLayout
                 android:layout_width="7dp"
@@ -109,7 +69,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/gray"
-                android:text="paused" />
+                android:text="@string/sensor_paused" />
 
             <LinearLayout
                 android:layout_width="7dp"
@@ -123,7 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/gray"
-                android:text="off]" />
+                android:text="@string/sensor_off" />
         </LinearLayout>
 
         <LinearLayout
@@ -143,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/black"
-                android:text="Accelerometer" />
+                android:text="@string/accelerometer" />
 
             <TextView
                 android:id="@+id/acc_text"
@@ -170,7 +130,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/black"
-                android:text="GPS" />
+                android:text="@string/gps" />
 
             <TextView
                 android:id="@+id/gps_text"
@@ -197,7 +157,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/black"
-                android:text="Battery" />
+                android:text="@string/battery" />
 
             <TextView
                 android:id="@+id/battery_text"
@@ -224,7 +184,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/black"
-                android:text="Bluetooth" />
+                android:text="@string/bluetooth" />
 
             <TextView
                 android:id="@+id/bluetooth_text"
@@ -233,24 +193,150 @@
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/black" />
         </LinearLayout>
+
+        <!--Advanced options-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:text="@string/advanced_options"
+                android:textSize="20sp"
+                android:textColor="@color/black" />
+
+            <ImageButton
+                android:id="@+id/btn_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:src="@drawable/btn_save"
+                android:background="@drawable/btn_square"
+                android:contentDescription="@string/desc_save_changes" />
+        </LinearLayout>
+
+        <!--Home location-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/home_location"
+            android:textColor="@color/black" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/latitude"
+                    android:textColor="@color/gray" />
+
+                <EditText
+                    android:id="@+id/txt_latitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:hint="@string/latitude_example"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/longitude"
+                    android:textColor="@color/gray" />
+
+                <EditText
+                    android:id="@+id/txt_longitude"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal|numberSigned"
+                    android:hint="@string/longitude_example"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <!--BMI-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bmi"
+            android:textColor="@color/black" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:descendantFocusability="beforeDescendants"
+            android:focusableInTouchMode="true"
+            android:baselineAligned="false">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/height"
+                    android:textColor="@color/gray" />
+
+                <EditText
+                    android:id="@+id/txt_height"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:hint="@string/height_example"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_weight="1">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/weight"
+                    android:textColor="@color/gray" />
+
+                <EditText
+                    android:id="@+id/txt_weight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"
+                    android:hint="@string/weight_example"
+                    android:textSize="15sp" />
+            </LinearLayout>
+
+        </LinearLayout>
+
     </LinearLayout>
 
 </ScrollView>
-
-    <!--<ScrollView
-        android:id="@+id/sv"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:layout_marginLeft="10dip"
-        android:layout_marginRight="10dip"
-        android:layout_marginBottom="5dip">
-
-        <EditText
-            android:id="@+id/TextLog"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:longClickable="false"
-            android:selectAllOnFocus="false"
-            android:editable="false"
-            android:background="#00000000" />
-    </ScrollView>-->

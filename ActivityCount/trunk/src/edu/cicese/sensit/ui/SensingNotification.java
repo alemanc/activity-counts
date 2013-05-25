@@ -30,11 +30,12 @@ public class SensingNotification {
 		activeSensors = new ArrayList<String>();
 	}
 
+	//TODO FIX CONCURRENT MODIFICATION ERROR
 	private String createNotificationContent() {
-		StringBuilder sb = new StringBuilder(context.getString(R.string.service_title) + " ");
-		String div = ", ", end = ".";
+		StringBuilder sb = new StringBuilder(context.getString(R.string.service_title) + " [");
+		String div = ", ", end = "]";
 		for (String sensor : activeSensors) {
-			sb.append(sensor.toLowerCase() + div);
+			sb.append(sensor + div);
 		}
 		sb.replace(sb.length() - div.length(), sb.length(), end);
 		return sb.toString();
@@ -64,12 +65,12 @@ public class SensingNotification {
 		activeSensors.remove(sensor);
 	}
 
-	public void updateNotificationWith(String sensor) {
+	public synchronized void updateNotificationWith(String sensor) {
 		add(sensor);
 		updateNotification();
 	}
 
-	public void updateNotificationWithout(String sensor) {
+	public synchronized void updateNotificationWithout(String sensor) {
 		remove(sensor);
 		updateNotification();
 	}

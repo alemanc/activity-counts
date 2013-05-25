@@ -82,5 +82,8 @@ public class BluetoothSensor extends Sensor {
 		}
 //		handleEnable(Utilities.ENABLE_BLUETOOTH, false);
 		Log.d(TAG, "Stopping Bluetooth sensor [done]");
+
+//		Utilities.sensorStatus[Utilities.SENSOR_BLUETOOTH] = Utilities.SENSOR_OFF;
+//		refreshStatus();
 	}
 }

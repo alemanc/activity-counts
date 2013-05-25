@@ -1,19 +1,13 @@
 package edu.cicese.sensit;
 
-import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.os.Environment;
-import android.os.Message;
 import android.util.Log;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -200,22 +194,22 @@ public class AccelerometerManager implements SensorEventListener {
 
 //		sensingService.updateNotification(activityCount.getCount());
 
-		Message msg = new Message();
+		/*Message msg = new Message();
 		Bundle bundle = new Bundle();
 		bundle.putLong("timestamp", activityCount.getTimestamp());
 		bundle.putInt("count", activityCount.getCount());
 		msg.setData(bundle);
 
-		MainActivity.handlerUI.sendMessage(msg);
+		MainActivity.handlerUI.sendMessage(msg);*/
 
 		ObjectMapper mapper = new ObjectMapper();
 		List<ActivityCount> list = new ArrayList<ActivityCount>();
 		list.add(activityCount);
 		try {
 			if (isSDCardWriteable()) {
-				Log.i("ACC", "Saving at: " + "/ac_" + activityCount.getTimestamp() + ".json --> " + mapper.writeValueAsString(list));
-
-				Utilities.saveString("activity_counts/", "ac_" + activityCount.getTimestamp() + ".json", mapper.writeValueAsString(list));
+//				Log.i("ACC", "Saving at: " + "/ac_" + activityCount.getTimestamp() + ".json --> " + mapper.writeValueAsString(list));
+//
+//				Utilities.saveString("activity_counts/", "ac_" + activityCount.getTimestamp() + ".json", mapper.writeValueAsString(list));
 
 				/*File file = new File("/sdcard/activity_counts/");
 				file.mkdirs();
@@ -230,16 +224,16 @@ public class AccelerometerManager implements SensorEventListener {
 			}
 			else {
 				Log.i("ACC", "No sdcard");
-				FileOutputStream fOut = sensingService.openFileOutput("/activity_counts/ac_" + activityCount.getTimestamp() + ".json", Context.MODE_WORLD_READABLE);
+				/*FileOutputStream fOut = sensingService.openFileOutput("/activity_counts/ac_" + activityCount.getTimestamp() + ".json", Context.MODE_WORLD_READABLE);
 				OutputStreamWriter osw = new OutputStreamWriter(fOut);
 
 				osw.write(mapper.writeValueAsString(list));
 
 				osw.flush();
-				osw.close();
+				osw.close();*/
 			}
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			Log.e("ACC", e.getMessage());
 		}
 	}

@@ -7,6 +7,27 @@
     <string name="service_ticker_text">SensIt is active</string>
     <string name="service_text">Sensing</string>
     <string name="service_title">Open SensIt</string>
+    <string name="height">Height (cm)</string>
+    <string name="weight">Weight (kg)</string>
+    <string name="weight_example">e.g. 75</string>
+    <string name="height_example">e.g. 180</string>
+    <string name="bmi">Body Mass Index</string>
+    <string name="desc_save_changes">Save changes</string>
+    <string name="longitude_example">e.g. -116.606428</string>
+    <string name="latitude_example">e.g. 31.8595769</string>
+    <string name="longitude">Longitude</string>
+    <string name="latitude">Latitude</string>
+    <string name="home_location">Home location</string>
+    <string name="advanced_options">Advanced options</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="battery">Battery</string>
+    <string name="gps">GPS</string>
+    <string name="accelerometer">Accelerometer</string>
+    <string name="sensor_off">off]</string>
+    <string name="sensor_paused">paused</string>
+    <string name="sensor_on">on</string>
+    <string name="sensors">Sensors [</string>
+    <string name="btn_start">Start</string>
 
     <style name="ButtonText">
         <item name="android:layout_width">match_parent</item>

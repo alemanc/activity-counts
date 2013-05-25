@@ -2,14 +2,20 @@ package edu.cicese.sensit;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.util.Log;
+import edu.cicese.sensit.util.ActivityUtil;
 import org.achartengine.ChartFactory;
 import org.achartengine.GraphicalView;
+import org.achartengine.chart.BarChart;
 import org.achartengine.chart.PointStyle;
-import org.achartengine.model.TimeSeries;
+import org.achartengine.chart.ScatterChart;
 import org.achartengine.model.XYMultipleSeriesDataset;
+import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -21,36 +27,23 @@ import java.util.List;
 public class ActivityChart {
 	private static final String DATE_FORMAT = "HH:mm";
 
-	private TimeSeries timeSeries;
+	private XYSeries activitySeries, sleepSeries, awakeSeries;
 	private XYMultipleSeriesRenderer renderer;
 
 	public GraphicalView getView(Context context, List<ActivityCount> activityCounts) {
 		String title = context.getString(R.string.chart_title);
 
-		int[] colors = new int[]{Color.GREEN};
-		PointStyle[] styles = new PointStyle[]{PointStyle.POINT};
-		renderer = buildRenderer(colors, styles);
+		renderer = buildRenderer();
 
-		setChartSettings(renderer, context.getString(R.string.chart_title),
+		setChartSettings(renderer, title,
 				context.getString(R.string.date),
 				context.getString(R.string.value),
-				System.currentTimeMillis(),
-				System.currentTimeMillis() + Utilities.GRAPH_RANGE,
-				0, 1000, Color.GRAY, Color.LTGRAY);
+				0, ActivityUtil.GRAPH_RANGE_X,
+				0, ActivityUtil.GRAPH_RANGE_Y,
+				Color.GRAY,
+				Color.LTGRAY);
 
-
-		renderer.setXLabels(3);
-		renderer.setYLabels(5);
-
-		/*XYSeriesRenderer seriesRenderer = (XYSeriesRenderer) renderer.getSeriesRendererAt(0);
-		seriesRenderer.setChartValuesSpacing(5f);
-		seriesRenderer.setDisplayChartValues(false);
-		seriesRenderer.setColor(Color.RED);
-		seriesRenderer.setFillPoints(true);
-		seriesRenderer.setPointStyle(PointStyle.CIRCLE);*/
-
-		return ChartFactory.getTimeChartView(context,
-				buildDateDataset(title, activityCounts), renderer, DATE_FORMAT);
+		return ChartFactory.getCombinedXYChartView(context, buildDateDataset(title, activityCounts), renderer, new String[]{BarChart.TYPE, ScatterChart.TYPE, ScatterChart.TYPE});
 	}
 
 	protected void setChartSettings(XYMultipleSeriesRenderer renderer,
@@ -58,91 +51,140 @@ public class ActivityChart {
 	                                double xMax, double yMin, double yMax, int axesColor,
 	                                int labelsColor) {
 		renderer.setChartTitle("");
-		renderer.setXTitle(xTitle);
-		renderer.setYTitle(yTitle);
+		renderer.setXTitle("");
+		renderer.setYTitle("");
+		renderer.setShowLegend(false);
+//		renderer.setShowLabels(false);
+		renderer.setXLabelsAlign(Paint.Align.CENTER);
+		renderer.setYLabelsAlign(Paint.Align.RIGHT);
 		renderer.setXAxisMin(xMin);
 		renderer.setXAxisMax(xMax);
 		renderer.setYAxisMin(yMin);
 		renderer.setYAxisMax(yMax);
 		renderer.setAxesColor(axesColor);
 		renderer.setLabelsColor(labelsColor);
-
 		renderer.setMarginsColor(Color.WHITE);
-
 		renderer.setAxesColor(Color.LTGRAY);
 		renderer.setAxisTitleTextSize(16);
 		renderer.setFitLegend(true);
 		renderer.setGridColor(Color.LTGRAY);
-		renderer.setPanEnabled(true, true);
-		renderer.setPointSize(2);
-		renderer.setMargins(new int[]{10, 30, 8, 15}); //top, left, bottom, right
-//		renderer.setZoomButtonsVisible(true);
-		renderer.setBarSpacing(5);
+//		renderer.setMargins(new int[]{10, 30, 8, 15}); //top, left, bottom, right
+		renderer.setBarWidth(10f);
+		renderer.setBarSpacing(0.2);
 		renderer.setShowGrid(true);
+
+		renderer.setXLabels(0);
 	}
 
-	protected XYMultipleSeriesRenderer buildRenderer(int[] colors,
-	                                                 PointStyle[] styles) {
+	protected XYMultipleSeriesRenderer buildRenderer() {
 		XYMultipleSeriesRenderer renderer = new XYMultipleSeriesRenderer();
-		setRendererProperties(renderer, colors, styles);
-		return renderer;
-	}
-
-	protected XYMultipleSeriesDataset buildDateDataset(String title,
-	                                                   List<ActivityCount> activityCounts) {
-		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
-		timeSeries = new TimeSeries(title);
-		for (ActivityCount activityCount : activityCounts) {
-			timeSeries.add(TimeUtil.getDate(activityCount.getTimestamp()), activityCount.getCount());
-		}
-		dataset.addSeries(timeSeries);
-		return dataset;
-	}
-
-	protected void setRendererProperties(XYMultipleSeriesRenderer renderer, int[] colors,
-	                                     PointStyle[] styles) {
-//		renderer.setAxisTitleTextSize(16);
-//		renderer.setChartTitleTextSize(20);
 		renderer.setLabelsTextSize(12);
 		renderer.setLegendTextSize(12);
-//		renderer.setPointSize(5f);
-//		renderer.setMargins(new int[]{20, 30, 15, 20});
-
+		renderer.setPanEnabled(true, false);
+		renderer.setZoomEnabled(false, false);
 		renderer.setShowLegend(false);
 		renderer.setShowGridX(false);
 		renderer.setShowCustomTextGrid(true);
 
-		XYSeriesRenderer seriesRenderer = new XYSeriesRenderer();
-		seriesRenderer.setChartValuesSpacing(5f);
-		seriesRenderer.setDisplayChartValues(false);
-		seriesRenderer.setColor(Color.RED);
-		seriesRenderer.setFillPoints(true);
-		seriesRenderer.setPointStyle(PointStyle.CIRCLE);
-		renderer.addSeriesRenderer(seriesRenderer);
+		XYSeriesRenderer activityRenderer = new XYSeriesRenderer();
+		activityRenderer.setColor(Color.BLUE);
 
-		/*int length = colors.length;
-		for (int i = 0; i < length; i++) {
-			XYSeriesRenderer r = new XYSeriesRenderer();
-			r.setColor(colors[i]);
-			r.setPointStyle(styles[i]);
-			renderer.addSeriesRenderer(r);
+		XYSeriesRenderer sleepRenderer = new XYSeriesRenderer();
+		sleepRenderer.setColor(Color.RED);
+		sleepRenderer.setPointStyle(PointStyle.SQUARE);
+		sleepRenderer.setFillPoints(true);
+		sleepRenderer.setPointStrokeWidth(10);
+//		sleepRenderer.setLineWidth(0);
+
+		XYSeriesRenderer awakeRenderer = new XYSeriesRenderer();
+		awakeRenderer.setColor(Color.GREEN);
+		awakeRenderer.setPointStyle(PointStyle.SQUARE);
+		awakeRenderer.setFillPoints(true);
+		awakeRenderer.setPointStrokeWidth(10);
+//		awakeRenderer.setLineWidth(0);
+
+		renderer.addSeriesRenderer(sleepRenderer);
+		renderer.addSeriesRenderer(awakeRenderer);
+		renderer.addSeriesRenderer(0, activityRenderer);
+		return renderer;
+	}
+
+	protected XYMultipleSeriesDataset buildDateDataset(String title, List<ActivityCount> activityCounts) {
+		XYMultipleSeriesDataset dataset = new XYMultipleSeriesDataset();
+		activitySeries = new XYSeries(title);
+		sleepSeries = new XYSeries(title);
+		awakeSeries = new XYSeries(title);
+		for (int i = 0; i < activityCounts.size(); i++) {
+			activitySeries.add(i, activityCounts.get(i).getCounts());
+			sleepSeries.add(i, ActivityUtil.GRAPH_SLEEP_VALUE);
+			awakeSeries.add(i, ActivityUtil.GRAPH_SLEEP_VALUE);
+		}
+		/*activitySeries.add(0, 500);
+		activitySeries.add(1, 160);
+		activitySeries.add(2, 150);
+		activitySeries.add(3, 160);
+		activitySeries.add(4, 170);
+		activitySeries.add(5, 200);
+		activitySeries.add(6, 230);
+		activitySeries.add(7, 200);
+
+		for (int i = 0; i < 4; i++) {
+			sleepSeries.add(i, ActivityUtil.GRAPH_SLEEP_VALUE);
+		}
+		for (int i = 4; i < 8; i++) {
+			awakeSeries.add(i, ActivityUtil.GRAPH_SLEEP_VALUE);
 		}*/
+
+		dataset.addSeries(sleepSeries);
+		dataset.addSeries(awakeSeries);
+		dataset.addSeries(0, activitySeries);
+
+		return dataset;
 	}
 
-	public void addValue(Date date, int count) {
-		timeSeries.add(date, count);
-		setMinMax();
+	public void addCounts(Date date, int counts) {
+		int nextIndex = activitySeries.getItemCount();
+		activitySeries.add(nextIndex, counts);
+		if (counts < 20) {
+			sleepSeries.add(nextIndex, ActivityUtil.GRAPH_SLEEP_VALUE);
+		}
+		else {
+			awakeSeries.add(nextIndex, ActivityUtil.GRAPH_SLEEP_VALUE);
+		}
+
+		Log.d("SensIt.Chart", "nextIndex: " + nextIndex);
+
+		if (nextIndex % 5 == 0) {
+			SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+			renderer.removeXTextLabel(nextIndex);
+			renderer.addXTextLabel(nextIndex, sdf.format(date));
+		}
+
+		setRange();
 	}
 
-	private void setMinMax() {
-		double maxX = timeSeries.getMaxX() + (Utilities.GRAPH_RANGE / 2);
-		double minX = timeSeries.getMaxX() - (Utilities.GRAPH_RANGE / 2);
-		double maxY = timeSeries.getMaxY();
+	private void setRange() {
+		double maxX = activitySeries.getMaxX()/* + (ActivityUtil.GRAPH_RANGE_X / 2)*/;
+		double minX = activitySeries.getMaxX() - ActivityUtil.GRAPH_RANGE_X;
+		double maxY = activitySeries.getMaxY();
 		double minY = 0;
+
+		Log.d("SensIt.Chart", "maxX:" + maxX + ", minX:" + minX + ", maxY:" + maxY + ", minY:" + minY);
 
 		if (maxY < 100) {
 			maxY = 100;
 		}
+		else if (maxY > ActivityUtil.GRAPH_RANGE_Y) {
+			maxY = ActivityUtil.GRAPH_RANGE_Y;
+		}
+
+		if (minX < 0) {
+			minX = 0;
+			maxX = ActivityUtil.GRAPH_RANGE_X;
+		}
+		/*if (maxX < ActivityUtil.GRAPH_RANGE_X) {
+			maxX = ActivityUtil.GRAPH_RANGE_X;
+		}*/
 
 		renderer.setRange(new double[]{minX, maxX, minY, maxY});
 	}

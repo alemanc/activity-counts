@@ -1,5 +1,8 @@
 package edu.cicese.sensit;
 
+import android.content.Context;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
 import java.io.BufferedWriter;
@@ -16,10 +19,7 @@ public class Utilities {
 	public static final int REFRESH_STATUS = 100;
 	public static boolean sensing = false;
 	public static boolean charging = false;
-	public static boolean atHome = false;
-
-	public static double homeLatitude, homeLongitude;
-	public static int counts;
+	public static boolean isReady = true;
 
 	public static final int SENSOR_OFF = 0;
 	public static final int SENSOR_ON = 1;
@@ -62,9 +62,6 @@ public class Utilities {
 	// Sample period
 	public static final int MAIN_EPOCH = 60000; // milliseconds
 
-	// Activity count chart range
-	public static final int GRAPH_RANGE = 600000; // milliseconds
-
 	// No-movement threshold
 	public static final int THRESHOLD = 5; // activity counts
 
@@ -98,6 +95,14 @@ public class Utilities {
 		return sensorStatus[sensor];
 	}
 
+	public static boolean isReady() {
+		return isReady;
+	}
+
+	public static void setReady(boolean ready) {
+		isReady = ready;
+	}
+
 	public static boolean isSensing() {
 		return sensing;
 	}
@@ -112,30 +117,6 @@ public class Utilities {
 
 	public static void setCharging(boolean charging) {
 		Utilities.charging = charging;
-	}
-
-	public static boolean isAtHome() {
-		return atHome;
-	}
-
-	public static void setAtHome(boolean atHome) {
-		Utilities.atHome = atHome;
-	}
-
-	public static double getHomeLatitude() {
-		return homeLatitude;
-	}
-
-	public static void setHomeLatitude(double homeLatitude) {
-		Utilities.homeLatitude = homeLatitude;
-	}
-
-	public static double getHomeLongitude() {
-		return homeLongitude;
-	}
-
-	public static void setHomeLongitude(double homeLongitude) {
-		Utilities.homeLongitude = homeLongitude;
 	}
 
 	public static void setEpoch(long epoch) {
@@ -169,5 +150,11 @@ public class Utilities {
 
 	public static int getBatteryLevel() {
 		return (int) batteryLevel;
+	}
+
+	public static String getMacAddress(Context context) {
+		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+		WifiInfo wInfo = wifiManager.getConnectionInfo();
+		return wInfo.getMacAddress();
 	}
 }

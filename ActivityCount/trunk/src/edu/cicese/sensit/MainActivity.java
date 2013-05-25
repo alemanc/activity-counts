@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
@@ -17,9 +19,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import edu.cicese.sensit.util.ActivityUtil;
+import edu.cicese.sensit.util.LocationUtil;
 import org.achartengine.GraphicalView;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -35,10 +40,12 @@ public class MainActivity extends Activity {
 	private static GraphicalView chartView;
 	private static TextView txtAccelerometer, txtGps, txtBattery, txtBluetooth;
 	private static View accIndicator, gpsIndicator, batteryIndicator, bluetoothIndicator;
-	private EditText txtLatitude, txtLongitude;
+	private EditText txtLatitude, txtLongitude, txtHeight, txtWeight;
 
 	public static final String KEY_PREF_HOME_LATITUDE = "pref_key_home_latitude";
 	public static final String KEY_PREF_HOME_LONGITUDE = "pref_key_home_longitude";
+	public static final String KEY_PREF_HOME_HEIGHT = "pref_key_height";
+	public static final String KEY_PREF_HOME_WEIGHT = "pref_key_weight";
 
 	// Handler gets created on the UI-thread
 	public static final Handler handlerUI = new Handler() {
@@ -48,7 +55,8 @@ public class MainActivity extends Activity {
 			switch (msg.what) {
 				case Utilities.UPDATE_ACCELEROMETER:
 					int counts = bundle.getInt("counts");
-					setAccelerometerText(counts);
+					long timestamp = bundle.getLong("timestamp");
+					setAccelerometerText(timestamp, counts);
 					break;
 				case Utilities.UPDATE_GPS:
 					String provider = bundle.getString("provider");
@@ -72,12 +80,19 @@ public class MainActivity extends Activity {
 		}
 	};
 
+
+
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 
-		Utilities.initiateSensors();
+		Log.d("SensIt", "OnCreated");
+
+		if (!Utilities.isSensing()) {
+			Log.d("SensIt", "Resetting sensor statuses");
+			Utilities.initiateSensors();
+		}
 
 		btnAction = (Button) findViewById(R.id.btn_start);
 		btnSave = (ImageButton) findViewById(R.id.btn_save);
@@ -94,61 +109,61 @@ public class MainActivity extends Activity {
 
 		txtLatitude = (EditText) findViewById(R.id.txt_latitude);
 		txtLongitude = (EditText) findViewById(R.id.txt_longitude);
+		txtHeight = (EditText) findViewById(R.id.txt_height);
+		txtWeight = (EditText) findViewById(R.id.txt_weight);
 
+		// Load settings
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-		float latitude = settings.getFloat(KEY_PREF_HOME_LATITUDE, 31.8595769f);
-		float longitude = settings.getFloat(KEY_PREF_HOME_LONGITUDE, -116.606428f);
-		txtLatitude.setText(latitude + "");
-		txtLongitude.setText(longitude + "");
 
-		Utilities.setHomeLatitude(latitude);
-		Utilities.setHomeLongitude(longitude);
+		// Load home location settings
+		float latitude = settings.getFloat(KEY_PREF_HOME_LATITUDE, -1);
+		float longitude = settings.getFloat(KEY_PREF_HOME_LONGITUDE, -1);
+		if (latitude != -1) {
+			txtLatitude.setText(latitude + "");
+		}
+		if (longitude != -1) {
+			txtLongitude.setText(longitude + "");
+		}
+		LocationUtil.setHomeLatitude(latitude);
+		LocationUtil.setHomeLongitude(longitude);
+
+		// Load user's body information
+		int height = settings.getInt(KEY_PREF_HOME_HEIGHT, -1);
+		int weight = settings.getInt(KEY_PREF_HOME_WEIGHT, -1);
+		if (height != -1) {
+			txtHeight.setText(height + "");
+		}
+		if (weight != -1) {
+			txtWeight.setText(weight + "");
+		}
+		ActivityUtil.setBMI(height, weight);
 
 		// Start service for it to run the sensing session
 		final Intent sensingIntent = new Intent(this, SensingService.class);
 
 		btnAction.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
-
-				/*if (SensingService.WAKE_LOCK == null) {
-					PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-					SensingService.WAKE_LOCK = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, SensingService.TAG);
-					SensingService.WAKE_LOCK.acquire();
-					startService(new Intent(getApplicationContext(), SensingService.class));
-					btnAction.setText("Stop");
-				}
-				else {
-					stopService(new Intent(getApplicationContext(), SensingService.class));
-					btnAction.setText("Start");
-				}*/
-
-
-				// Point out this action was triggered by a user
-//				sensingIntent.setAction(SensingService.SENSING_START_ACTION);
 				// Send unique id for this action
 				long actionId = UUID.randomUUID().getLeastSignificantBits();
 				sensingIntent.putExtra(SensingService.ACTION_ID_FIELD_NAME, actionId);
 
-				if (!Utilities.isSensing()) {
-//					startService(AccelerometerIntent);
-//					startBatteryLog();
-					Utilities.setSensing(true);
+				if (Utilities.isReady()) {
+					if (!Utilities.isSensing()) {
+						Utilities.setReady(false);
+						Utilities.setSensing(true);
+						// Point out the action triggered by a user
+						sensingIntent.setAction(SensingService.SENSING_START_ACTION);
+						WakefulIntentService.sendWakefulWork(MainActivity.this, sensingIntent);
 
-					// Point out the action triggered by a user
-					sensingIntent.setAction(SensingService.SENSING_START_ACTION);
-					WakefulIntentService.sendWakefulWork(MainActivity.this, sensingIntent);
+						btnAction.setText("Stop");
+					} else {
+						Utilities.setReady(false);
+						Utilities.setSensing(false);
 
-					btnAction.setText("Stop");
-				} else {
-//					stopService(AccelerometerIntent);
-//					Utilities.resetValues();
+						Intent broadcastIntent = new Intent(SensingService.SENSING_STOP_ACTION);
+						sendBroadcast(broadcastIntent);
 
-					Utilities.setSensing(false);
-
-					Intent broadcastIntent = new Intent(SensingService.SENSING_STOP_ACTION);
-					sendBroadcast(broadcastIntent);
-
-					// Point out the action triggered by a user
+						// Point out the action triggered by a user
 //					sensingIntent.setAction(SensingService.SENSING_STOP_ACTION);
 
 					/*Intent stopIntent = new Intent(MainActivity.this, SensingService.class);
@@ -159,28 +174,35 @@ public class MainActivity extends Activity {
 					stopIntent.putExtra(SensingService.ACTION_ID_FIELD_NAME, actionID);
 					startService(stopIntent);*/
 
-					btnAction.setText("Start");
+						btnAction.setText("Start");
+					}
 				}
 			}
 		});
 
 		btnSave.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
-				saveHomeCoordinates();
+				saveSettings();
 			}
 		});
 
 		activityChart = new ActivityChart();
 		chartView = activityChart.getView(this, new ArrayList<ActivityCount>());
+		chartView.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View view, MotionEvent motionEvent) {
+				return true;
+			}
+		});
 		LinearLayout layout = (LinearLayout) findViewById(R.id.chart);
 		layout.addView(chartView);
 	}
 
 	private Toast mToast;
 
-	private void saveHomeCoordinates() {
-		txtLatitude.clearFocus();
-		txtLongitude.clearFocus();
+	private void saveSettings() {
+//		txtLatitude.clearFocus();
+//		txtLongitude.clearFocus();
 
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 //		imm.hideSoftInputFromWindow(txtLatitude.getWindowToken(), 0);
@@ -189,9 +211,51 @@ public class MainActivity extends Activity {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = settings.edit();
 
+		// Latitude
+		String latitudeString = txtLatitude.getText().toString();
+		float latitude = -1;
+		if (latitudeString.compareTo("") != 0) {
+			latitude = Float.parseFloat(latitudeString);
+			editor.putFloat(KEY_PREF_HOME_LATITUDE, latitude);
+		}
+		else {
+			editor.remove(KEY_PREF_HOME_LATITUDE);
+		}
+		LocationUtil.setHomeLatitude(latitude);
 
-		editor.putFloat(KEY_PREF_HOME_LATITUDE, Float.parseFloat(txtLatitude.getText().toString()));
-		editor.putFloat(KEY_PREF_HOME_LONGITUDE, Float.parseFloat(txtLongitude.getText().toString()));
+		// Longitude
+		String longitudeString = txtLongitude.getText().toString();
+		float longitude = -1;
+		if (longitudeString.compareTo("") != 0) {
+			longitude = Float.parseFloat(longitudeString);
+			editor.putFloat(KEY_PREF_HOME_LONGITUDE, longitude);
+		} else {
+			editor.remove(KEY_PREF_HOME_LONGITUDE);
+		}
+		LocationUtil.setHomeLongitude(longitude);
+
+		// Height
+		String heightString = txtHeight.getText().toString();
+		int height = -1;
+		if (heightString.compareTo("") != 0) {
+			height = Integer.parseInt(heightString);
+			editor.putInt(KEY_PREF_HOME_HEIGHT, height);
+		} else {
+			editor.remove(KEY_PREF_HOME_HEIGHT);
+		}
+
+		// Weight
+		String weightString = txtWeight.getText().toString();
+		int weight = -1;
+		if (weightString.compareTo("") != 0) {
+			weight = Integer.parseInt(weightString);
+			editor.putInt(KEY_PREF_HOME_WEIGHT, weight);
+		} else {
+			editor.remove(KEY_PREF_HOME_WEIGHT);
+		}
+
+		ActivityUtil.setBMI(height, weight);
+
 		editor.commit();
 
 		if (mToast == null) {
@@ -199,10 +263,6 @@ public class MainActivity extends Activity {
 		}
 		mToast.show();
 	}
-
-	/*private void startBatteryLog() {
-		new BatteryThread(this).start();
-	}*/
 
 	@Override
 	public void onResume() {
@@ -213,23 +273,8 @@ public class MainActivity extends Activity {
 		} else {
 			btnAction.setText("Start");
 		}
+		refreshSensors();
 	}
-
-
-
-	//! Shows a message toast
-	/*public static void updateLog(Bundle bundle) {
-		addValue(bundle.getLong("timestamp"), bundle.getInt("count"));
-	}*/
-
-	/*private static void addValue(long timestamp, int count) {
-		activityChart.addValue(TimeUtil.getDate(timestamp), count);
-		chartView.repaint();
-
-		txtLog.append("[" + TimeUtil.getTime(timestamp) + "] -> " + count + "\n");
-		txtLog.requestFocus();
-		txtLog.setSelection(txtLog.getText().length() - 1);
-	}*/
 
 	private static void setGpsText(double latitude, double longitude, String provider) {
 		txtGps.setText("- [" + provider + "] " + latitude + ", " + longitude);
@@ -239,8 +284,8 @@ public class MainActivity extends Activity {
 		txtBluetooth.setText("- Device: " + device);
 	}
 
-	private static void setAccelerometerText(int counts) {
-		activityChart.addValue(TimeUtil.getDate(System.currentTimeMillis()), counts);
+	private static void setAccelerometerText(long timestamp, int counts) {
+		activityChart.addCounts(new Date(timestamp), counts);
 		chartView.repaint();
 		txtAccelerometer.setText("- " + counts + " CPM");
 	}
@@ -248,31 +293,6 @@ public class MainActivity extends Activity {
 	private static void setBatteryText(int level, int status) {
 		txtBattery.setText("- " + level + "%, status: " + (status != 0 ? "Charging" : "Discharging"));
 	}
-
-	/*private static void resetAccelerometerText() {
-		txtAccelerometer.setText("Accelerometer");
-	}
-
-	private static void resetGpsText() {
-		txtGps.setText("GPS");
-	}
-
-	private static void resetBluetoothText() {
-		txtBluetooth.setText("Bluetooth");
-	}
-
-	private static void resetBatteryText() {
-		txtBattery.setText("Battery");
-	}
-*/
-	/*private static void enable(View view, boolean enable) {
-		if (enable) {
-			view.setBackgroundResource(R.color.green);
-		}
-		else {
-			view.setBackgroundResource(R.color.red);
-		}
-	}*/
 
 	private static void refresh(View view, TextView txt, int status) {
 		switch (status) {
