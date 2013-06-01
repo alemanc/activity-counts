@@ -5,7 +5,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Bundle;
 import android.util.Log;
 import edu.cicese.sensit.AccelerometerCountUtil;
 import edu.cicese.sensit.Utilities;
@@ -201,12 +200,14 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 			}
 		} else if (!frame.isEmpty()) {
 			Log.d(TAG, "----------------------------Counts: " + counts);
-			Bundle bundle = new Bundle();
+			/*Bundle bundle = new Bundle();
 			bundle.putInt("counts", counts);
-			updateUI(Utilities.UPDATE_ACCELEROMETER, bundle);
+			updateUI(Utilities.UPDATE_ACCELEROMETER, bundle);*/
+
 			this.counts -= counts;
+
 			// Make available to DataSource
-			currentData = createNewData();
+//			currentData = createNewData();
 		}
 	}
 

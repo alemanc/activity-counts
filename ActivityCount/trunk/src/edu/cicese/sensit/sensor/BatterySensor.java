@@ -5,10 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
-import android.os.Bundle;
 import android.util.Log;
 import edu.cicese.sensit.Utilities;
-import edu.cicese.sensit.datatask.data.BatteryData;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -77,16 +75,16 @@ public class BatterySensor extends Sensor {
 
 			Log.d(TAG, "Battery data received: Level:" + level + ", Charging:" + plugged);
 
-			Bundle bundle = new Bundle();
+			/*Bundle bundle = new Bundle();
 			bundle.putInt("level", level);
 			bundle.putInt("plugged", plugged);
 			updateUI(Utilities.UPDATE_BATTERY, bundle);
 
-			setData(level, plugged);
+			setData(level, plugged);*/
 		}
 	};
 
-	private void setData(int level, int plugged) {
+	/*private void setData(int level, int plugged) {
 		currentData = new BatteryData(level, plugged);
-	}
+	}*/
 }

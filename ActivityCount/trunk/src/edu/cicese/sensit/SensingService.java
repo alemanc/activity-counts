@@ -87,7 +87,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 //		appContext = this.getApplicationContext();
 //		accelerometerManager = new AccelerometerManager();
 
-//		Thread.setDefaultUncaughtExceptionHandler(onRuntimeError);
+		Thread.setDefaultUncaughtExceptionHandler(onRuntimeError);
 		Log.d(TAG, "SensingService created");
 	}
 
@@ -98,7 +98,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		// Cancel the persistent notification.
 //		notificationManager.cancel(NOTIFICATION);
 
-//		stopSensing();
 		Log.d(TAG, "SensingService stopped");
 		Log.d(TAG, "Unregister broadcast receiver");
 		unregisterReceiver(sensingActionReceiver);
@@ -153,11 +152,11 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 	}*/
 
 
-	private SessionController controller;
+	private static SessionController controller;
 
 	private void startSensing() {
 		Log.d(TAG, "Start sensing");
-//		Utilities.setSensing(true);
+		Utilities.setSensing(true);
 
 		controller = new SessionController(this);
 		controller.start();
@@ -187,6 +186,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		Log.d(TAG, "Stop sensing");
 
 		if (controller != null) {
+			Log.d(TAG, "Stop sensing!!");
 			controller.stop();
 		}
 
@@ -262,22 +262,48 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		startForeground(1234, notification);
 	}*/
 
-			//TODO Catch exceptions and restart
 	private Thread.UncaughtExceptionHandler onRuntimeError = new Thread.UncaughtExceptionHandler() {
 		private long actionId;
 
 		public void uncaughtException(Thread thread, Throwable ex) {
-			Log.d(TAG, "onRuntimeError " + ex);
+			/*Log.e(ex.getClass().getName(), "UncaughtExceptionHandler " + ex.toString(), ex);
 
-			/*// Start service for it to run the recording session
-			Intent sessionServiceIntent = new Intent(SessionService.this.getApplicationContext(), SessionService.class);
-			// Point out this action was triggered by a user
-			sessionServiceIntent.setAction(SessionService.SESSION_START_ACTION);
-			// Send unique id for this action
-			actionId = UUID.randomUUID().getLeastSignificantBits();
-			sessionServiceIntent.putExtra(SessionService.ACTION_ID_FIELDNAME, actionId);
-			// startService(sessionServiceIntent);
-			WakefulIntentService.sendWakefulWork(SessionService.this.getApplicationContext(), sessionServiceIntent);*/
+			Utilities.setSensing(false);
+
+			stopSensing();
+
+			Log.d(TAG, "EMERGENCY SHUTDOWN!");
+			unregisterReceiver(sensingActionReceiver);
+			scheduleTaskExecutor.shutdown();
+			handler.removeCallbacksAndMessages(null);
+			unregisterReceiver(tickReceiver);
+			dbAdapter.close();
+			controller.setState(SessionController.ControllerState.INITIATED);
+			Utilities.setReady(true);
+
+			// Start service for it to run the recording session
+			Intent sensingIntent = new Intent(SensingService.this, SensingService.class);
+			// Point out the action
+			sensingIntent.setAction(SensingService.SENSING_START_ACTION);
+//			WakefulIntentService.sendWakefulWork(SensingService.this, sensingIntent);
+
+//			SensingService.this.onDestroy();
+
+
+//			Log.d("SensIt2", );
+
+			Intent serviceIntent = new Intent(SensingService.this, SensingService.class);
+			serviceIntent.putExtra(TAG, (long) 20000);
+			PendingIntent pendingIntent = PendingIntent.getService(SensingService.this, 0, serviceIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+			long trigger = System.currentTimeMillis() + 20000;
+//			alarmManager.set(AlarmManager.RTC_WAKEUP, trigger, pendingIntent);
+
+			AlarmManager mgr = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//			mgr.set(AlarmManager.RTC, System.currentTimeMillis() + 2000, sensingIntent);
+			mgr.set(AlarmManager.RTC_WAKEUP, trigger, pendingIntent);
+
+			System.exit(0);*/
 		}
 	};
 
@@ -288,12 +314,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 //		scheduleTaskExecutor.scheduleAtFixedRate(new DataStoreThread(), 10, 10, TimeUnit.SECONDS);
 		scheduleTaskExecutor.scheduleAtFixedRate(new DataSyncThread(), 5, 5, TimeUnit.MINUTES);
 //		scheduleTaskExecutor.scheduleAtFixedRate(new SleepAnalysisThread(), 1, 1, TimeUnit.MINUTES);
-
-//		long time = System.currentTimeMillis();
-		Calendar calendar = Calendar.getInstance();
-		int seconds = calendar.get(Calendar.SECOND);
-		int sleepSecs = 60 - seconds;
-		handler.postDelayed(TestRunnable, sleepSecs * 1000);
 	}
 
 	private class DataStoreThread extends Thread {
@@ -312,9 +332,10 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			// Insert activity counts into the SensIt DB
 			dbAdapter.open();
 			int counts = ActivityUtil.getCounts();
-			refreshChart(timestamp, counts);
+			Log.d(TAG, "Stored " + counts + " counts.");
+//			refreshChart(timestamp, counts);
 			dbAdapter.insertCounts(Utilities.getMacAddress(SensingService.this), counts, dateFormat.format(date), 0);
-			dbAdapter.close();
+//			dbAdapter.close();
 		}
 	}
 

@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.os.Message;
 import android.util.Log;
 import edu.cicese.sensit.MainActivity;
-import edu.cicese.sensit.Utilities;
 import edu.cicese.sensit.datatask.data.Data;
 import edu.cicese.sensit.ui.SensingNotification;
 
@@ -220,8 +219,8 @@ public abstract class Sensor/* implements Runnable*/ {
 	}*/
 
 	public void refreshStatus() {
-		Message msg = MainActivity.handlerUI.obtainMessage(Utilities.REFRESH_STATUS);
-		MainActivity.handlerUI.sendMessage(msg);
+//		Message msg = MainActivity.handlerUI.obtainMessage(Utilities.REFRESH_STATUS);
+//		MainActivity.handlerUI.sendMessage(msg);
 	}
 
 	public void updateUI(int sensor, Bundle bundle) {

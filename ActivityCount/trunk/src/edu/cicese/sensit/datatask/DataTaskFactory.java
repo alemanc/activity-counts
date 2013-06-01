@@ -5,7 +5,7 @@ import edu.cicese.sensit.datatask.data.DataType;
 import edu.cicese.sensit.sensor.AccelerometerSensor;
 import edu.cicese.sensit.sensor.BatterySensor;
 import edu.cicese.sensit.sensor.BluetoothSensor;
-import edu.cicese.sensit.sensor.GpsSensor;
+import edu.cicese.sensit.sensor.LocationSensor;
 import edu.cicese.sensit.sensor.LinearAccelerometerSensor;
 import edu.cicese.sensit.sensor.Sensor;
 
@@ -41,9 +41,9 @@ public class DataTaskFactory {
 				dataTask = new DataSource(new BluetoothSensor(context));
 				dataTask.setName("BLUETOOTH");
 				break;
-			case GPS:
-				dataTask = new DataSource(new GpsSensor(context));
-				dataTask.setName("GPS");
+			case LOCATION:
+				dataTask = new DataSource(new LocationSensor(context));
+				dataTask.setName("LOCATION");
 				break;
 			case GYROSCOPE:
 				long frameTime2 = 1000;
