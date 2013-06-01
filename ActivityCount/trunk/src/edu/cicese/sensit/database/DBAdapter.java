@@ -67,12 +67,16 @@ public class DBAdapter {
 	}
 
 	public DBAdapter open() throws SQLException {
-		db = DBHelper.getWritableDatabase();
+		if (db == null || !db.isOpen()) {
+			db = DBHelper.getWritableDatabase();
+		}
 		return this;
 	}
 
 	public void close() {
-		DBHelper.close();
+		if (db != null && db.isOpen()) {
+			DBHelper.close();
+		}
 	}
 
 	public final String COLUMN_ACTIVITY_COUNT_USER_ID = "user_id";

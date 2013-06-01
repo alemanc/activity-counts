@@ -38,8 +38,8 @@ public class MainActivity extends Activity {
 	private ImageButton btnSave;
 	private static ActivityChart activityChart;
 	private static GraphicalView chartView;
-	private static TextView txtAccelerometer, txtGps, txtBattery, txtBluetooth;
-	private static View accIndicator, gpsIndicator, batteryIndicator, bluetoothIndicator;
+	private static TextView txtAccelerometer, txtLocation, txtBattery, txtBluetooth;
+	private static View accIndicator, locationIndicator, batteryIndicator, bluetoothIndicator;
 	private EditText txtLatitude, txtLongitude, txtHeight, txtWeight;
 
 	public static final String KEY_PREF_HOME_LATITUDE = "pref_key_home_latitude";
@@ -56,13 +56,13 @@ public class MainActivity extends Activity {
 				case Utilities.UPDATE_ACCELEROMETER:
 					int counts = bundle.getInt("counts");
 					long timestamp = bundle.getLong("timestamp");
-					setAccelerometerText(timestamp, counts);
+//					setAccelerometerText(timestamp, counts);
 					break;
-				case Utilities.UPDATE_GPS:
+				case Utilities.UPDATE_LOCATION:
 					String provider = bundle.getString("provider");
 					double latitude = bundle.getDouble("latitude");
 					double longitude = bundle.getDouble("longitude");
-					setGpsText(latitude, longitude, provider);
+					setLocationText(latitude, longitude, provider);
 					break;
 				case Utilities.UPDATE_BATTERY:
 					int level = bundle.getInt("level");
@@ -98,12 +98,12 @@ public class MainActivity extends Activity {
 		btnSave = (ImageButton) findViewById(R.id.btn_save);
 
 		accIndicator = findViewById(R.id.accelerometer_indicator);
-		gpsIndicator = findViewById(R.id.gps_indicator);
+		locationIndicator = findViewById(R.id.location_indicator);
 		batteryIndicator = findViewById(R.id.battery_indicator);
 		bluetoothIndicator = findViewById(R.id.bluetooth_indicator);
 
 		txtAccelerometer = (TextView) findViewById(R.id.acc_text);
-		txtGps = (TextView) findViewById(R.id.gps_text);
+		txtLocation = (TextView) findViewById(R.id.location_text);
 		txtBattery = (TextView) findViewById(R.id.battery_text);
 		txtBluetooth = (TextView) findViewById(R.id.bluetooth_text);
 
@@ -201,11 +201,7 @@ public class MainActivity extends Activity {
 	private Toast mToast;
 
 	private void saveSettings() {
-//		txtLatitude.clearFocus();
-//		txtLongitude.clearFocus();
-
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//		imm.hideSoftInputFromWindow(txtLatitude.getWindowToken(), 0);
 		imm.hideSoftInputFromWindow(txtLongitude.getWindowToken(), 0);
 
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
@@ -276,8 +272,8 @@ public class MainActivity extends Activity {
 		refreshSensors();
 	}
 
-	private static void setGpsText(double latitude, double longitude, String provider) {
-		txtGps.setText("- [" + provider + "] " + latitude + ", " + longitude);
+	private static void setLocationText(double latitude, double longitude, String provider) {
+		txtLocation.setText("- [" + provider + "] " + latitude + ", " + longitude);
 	}
 
 	private static void setBluetoothText(String device) {
@@ -312,7 +308,7 @@ public class MainActivity extends Activity {
 	private static void refreshSensors() {
 		refresh(accIndicator, txtAccelerometer, Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER]);
 		refresh(batteryIndicator, txtBattery, Utilities.sensorStatus[Utilities.SENSOR_BATTERY]);
-		refresh(gpsIndicator, txtGps, Utilities.sensorStatus[Utilities.SENSOR_GPS]);
+		refresh(locationIndicator, txtLocation, Utilities.sensorStatus[Utilities.SENSOR_LOCATION]);
 		refresh(bluetoothIndicator, txtBluetooth, Utilities.sensorStatus[Utilities.SENSOR_BLUETOOTH]);
 	}
 }

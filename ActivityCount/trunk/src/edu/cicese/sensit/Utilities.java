@@ -26,7 +26,7 @@ public class Utilities {
 	public static final int SENSOR_PAUSED = 2;
 
 	public static final int SENSOR_LINEAR_ACCELEROMETER = 0;
-	public static final int SENSOR_GPS = 1;
+	public static final int SENSOR_LOCATION = 1;
 	public static final int SENSOR_BATTERY = 2;
 	public static final int SENSOR_BLUETOOTH = 3;
 
@@ -34,17 +34,13 @@ public class Utilities {
 
 
 	public static final int UPDATE_ACCELEROMETER = 1;
-	public static final int UPDATE_GPS = 2;
+	public static final int UPDATE_LOCATION = 2;
 	public static final int UPDATE_BATTERY = 3;
 	public static final int UPDATE_BLUETOOTH = 4;
 
-	public static final int ENABLE_ACCELEROMETER = 101;
-	public static final int ENABLE_GPS = 102;
-	public static final int ENABLE_BATTERY = 103;
-	public static final int ENABLE_BLUETOOTH = 104;
 
 	public static final long ACCELEROMETER_CHECK_TIME = 10000l;
-	public static final long GPS_CHECK_TIME = 10000l;
+	public static final long LOCATION_CHECK_TIME = 10000l;
 
 	public static boolean sleeping = false;
 	public static float batteryLevel = 100;

@@ -9,7 +9,7 @@ package edu.cicese.sensit.datatask.data;
 import android.location.Location;
 import android.os.Bundle;
 
-public class GpsData extends Data {
+public class LocationData extends Data {
 	private double altitude;
 	private double latitude;
 	private double longitude;
@@ -18,8 +18,8 @@ public class GpsData extends Data {
 	private double speed;
 	private String provider;
 
-	public GpsData(Location location) {
-		super(DataType.GPS);
+	public LocationData(Location location) {
+		super(DataType.LOCATION);
 		latitude = location.getLatitude();
 		longitude = location.getLongitude();
 		altitude = location.getAltitude();
