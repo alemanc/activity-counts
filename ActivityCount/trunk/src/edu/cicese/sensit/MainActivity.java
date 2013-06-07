@@ -1,12 +1,13 @@
 package edu.cicese.sensit;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -19,12 +20,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
+import edu.cicese.sensit.database.DBAdapter;
 import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.LocationUtil;
 import org.achartengine.GraphicalView;
 
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -33,13 +35,13 @@ import java.util.UUID;
  * Time: 03:49 PM
  */
 public class MainActivity extends Activity {
+	private static final String TAG = "SensIt.Main";
 
 	private Button btnAction;
-	private ImageButton btnSave;
-	private static ActivityChart activityChart;
-	private static GraphicalView chartView;
-	private static TextView txtAccelerometer, txtLocation, txtBattery, txtBluetooth;
-	private static View accIndicator, locationIndicator, batteryIndicator, bluetoothIndicator;
+	private ActivityChart activityChart;
+	private GraphicalView chartView;
+	private TextView txtAccelerometer, txtLocation, txtBattery, txtBluetooth;
+	private View accIndicator, locationIndicator, batteryIndicator, bluetoothIndicator;
 	private EditText txtLatitude, txtLongitude, txtHeight, txtWeight;
 
 	public static final String KEY_PREF_HOME_LATITUDE = "pref_key_home_latitude";
@@ -47,8 +49,12 @@ public class MainActivity extends Activity {
 	public static final String KEY_PREF_HOME_HEIGHT = "pref_key_height";
 	public static final String KEY_PREF_HOME_WEIGHT = "pref_key_weight";
 
+	private DBAdapter dbAdapter;
+
+	private Toast mToast;
+
 	// Handler gets created on the UI-thread
-	public static final Handler handlerUI = new Handler() {
+	/*public static final Handler handlerUI = new Handler() {
 		@Override
 		public void handleMessage(Message msg) {
 			Bundle bundle = msg.getData();
@@ -78,24 +84,26 @@ public class MainActivity extends Activity {
 					break;
 			}
 		}
-	};
+	};*/
 
 
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
-
 		Log.d("SensIt", "OnCreated");
 
-		if (!Utilities.isSensing()) {
+		setContentView(R.layout.main);
+
+		dbAdapter = new DBAdapter(this);
+
+		/*if (!Utilities.isSensing()) {
 			Log.d("SensIt", "Resetting sensor statuses");
 			Utilities.initiateSensors();
-		}
+		}*/
 
 		btnAction = (Button) findViewById(R.id.btn_start);
-		btnSave = (ImageButton) findViewById(R.id.btn_save);
+		ImageButton btnSave = (ImageButton) findViewById(R.id.btn_save);
 
 		accIndicator = findViewById(R.id.accelerometer_indicator);
 		locationIndicator = findViewById(R.id.location_indicator);
@@ -196,9 +204,42 @@ public class MainActivity extends Activity {
 		});
 		LinearLayout layout = (LinearLayout) findViewById(R.id.chart);
 		layout.addView(chartView);
+
+		refreshSensors();
+		refreshChart();
 	}
 
-	private Toast mToast;
+	@Override
+	public void onStart() {
+		super.onStart();
+
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(SensingService.REFRESH_CHART);
+		intentFilter.addAction(SensingService.REFRESH_SENSOR);
+		registerReceiver(uiRefreshReceiver, intentFilter);
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+
+//		unregisterReceiver(uiRefreshReceiver);
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+
+//		unregisterReceiver(uiRefreshReceiver);
+	}
+
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+
+		unregisterReceiver(uiRefreshReceiver);
+		dbAdapter.close();
+	}
 
 	private void saveSettings() {
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -272,7 +313,7 @@ public class MainActivity extends Activity {
 		refreshSensors();
 	}
 
-	private static void setLocationText(double latitude, double longitude, String provider) {
+	/*private static void setLocationText(double latitude, double longitude, String provider) {
 		txtLocation.setText("- [" + provider + "] " + latitude + ", " + longitude);
 	}
 
@@ -288,7 +329,7 @@ public class MainActivity extends Activity {
 
 	private static void setBatteryText(int level, int status) {
 		txtBattery.setText("- " + level + "%, status: " + (status != 0 ? "Charging" : "Discharging"));
-	}
+	}*/
 
 	private static void refresh(View view, TextView txt, int status) {
 		switch (status) {
@@ -305,10 +346,56 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private static void refreshSensors() {
+	private void refreshSensors() {
 		refresh(accIndicator, txtAccelerometer, Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER]);
 		refresh(batteryIndicator, txtBattery, Utilities.sensorStatus[Utilities.SENSOR_BATTERY]);
 		refresh(locationIndicator, txtLocation, Utilities.sensorStatus[Utilities.SENSOR_LOCATION]);
 		refresh(bluetoothIndicator, txtBluetooth, Utilities.sensorStatus[Utilities.SENSOR_BLUETOOTH]);
 	}
+
+	private void refreshChart() {
+		dbAdapter.open();
+
+		Log.d(TAG, "Query chart data");
+		Cursor cursor = dbAdapter.queryCounts(ActivityUtil.GRAPH_RANGE_X);
+
+		List<ActivityCount> counts = new ArrayList<>();
+
+		/**
+		 COLUMN_ACTIVITY_COUNT_COUNTS,
+		 COLUMN_ACTIVITY_COUNT_DATE,
+		 COLUMN_ACTIVITY_COUNT_CHARGING
+		 */
+
+		// at least one entry
+		if (cursor.moveToFirst()) {
+			do {
+				counts.add(new ActivityCount(cursor.getString(1), cursor.getInt(0), cursor.getInt(2)));
+			} while (cursor.moveToNext());
+		}
+
+		if (!counts.isEmpty()) {
+			activityChart.setCounts(counts);
+			chartView.repaint();
+		}
+
+		if (!cursor.isClosed()) {
+			cursor.close();
+		}
+	}
+
+
+	BroadcastReceiver uiRefreshReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			switch (intent.getAction()){
+				case SensingService.REFRESH_CHART:
+					refreshChart();
+					break;
+				case SensingService.REFRESH_SENSOR:
+					refreshSensors();
+					break;
+			}
+		}
+	};
 }

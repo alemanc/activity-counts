@@ -41,7 +41,7 @@ public class SessionController implements Runnable {
 //		tasks.add(DataTaskFactory.createDataTask(DataType.ACCELEROMETER, context));
 		tasks.add(DataTaskFactory.createDataTask(DataType.LINEAR_ACCELEROMETER, context));
 //		tasks.add(DataTaskFactory.createDataTask(DataType.BLUETOOTH, context));
-		tasks.add(DataTaskFactory.createDataTask(DataType.LOCATION, context));
+//		tasks.add(DataTaskFactory.createDataTask(DataType.LOCATION, context));
 
 		setState(ControllerState.PREPARED);
 	}

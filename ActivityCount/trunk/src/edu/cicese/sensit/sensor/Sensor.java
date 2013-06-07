@@ -1,10 +1,9 @@
 package edu.cicese.sensit.sensor;
 
 import android.content.Context;
-import android.os.Bundle;
-import android.os.Message;
+import android.content.Intent;
 import android.util.Log;
-import edu.cicese.sensit.MainActivity;
+import edu.cicese.sensit.SensingService;
 import edu.cicese.sensit.datatask.data.Data;
 import edu.cicese.sensit.ui.SensingNotification;
 
@@ -219,13 +218,15 @@ public abstract class Sensor/* implements Runnable*/ {
 	}*/
 
 	public void refreshStatus() {
+		Intent broadcastIntent = new Intent(SensingService.REFRESH_SENSOR);
+		context.sendBroadcast(broadcastIntent);
 //		Message msg = MainActivity.handlerUI.obtainMessage(Utilities.REFRESH_STATUS);
 //		MainActivity.handlerUI.sendMessage(msg);
 	}
 
-	public void updateUI(int sensor, Bundle bundle) {
+	/*public void updateUI(int sensor, Bundle bundle) {
 		Message msg = MainActivity.handlerUI.obtainMessage(sensor);
 		msg.setData(bundle);
 		MainActivity.handlerUI.sendMessage(msg);
-	}
+	}*/
 }

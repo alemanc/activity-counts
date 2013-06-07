@@ -19,7 +19,10 @@ public class Utilities {
 	public static final int REFRESH_STATUS = 100;
 	public static boolean sensing = false;
 	public static boolean charging = false;
-	public static boolean isReady = true;
+	public static boolean epochCharging = false;
+	public static boolean ready = true;
+
+	public static String macAddress = null;
 
 	public static final int SENSOR_OFF = 0;
 	public static final int SENSOR_ON = 1;
@@ -92,11 +95,11 @@ public class Utilities {
 	}
 
 	public static boolean isReady() {
-		return isReady;
+		return ready;
 	}
 
 	public static void setReady(boolean ready) {
-		isReady = ready;
+		Utilities.ready = ready;
 	}
 
 	public static boolean isSensing() {
@@ -113,6 +116,18 @@ public class Utilities {
 
 	public static void setCharging(boolean charging) {
 		Utilities.charging = charging;
+	}
+
+	public static boolean isEpochCharging() {
+		return epochCharging;
+	}
+
+	public static void setEpochCharging() {
+		Utilities.epochCharging |= isCharging();
+	}
+
+	public static void resetEpochCharging() {
+		Utilities.epochCharging = isCharging();
 	}
 
 	public static void setEpoch(long epoch) {
@@ -149,8 +164,11 @@ public class Utilities {
 	}
 
 	public static String getMacAddress(Context context) {
-		WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
-		WifiInfo wInfo = wifiManager.getConnectionInfo();
-		return wInfo.getMacAddress();
+		if (macAddress == null) {
+			WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+			WifiInfo wInfo = wifiManager.getConnectionInfo();
+			macAddress = wInfo.getMacAddress();
+		}
+		return macAddress;
 	}
 }

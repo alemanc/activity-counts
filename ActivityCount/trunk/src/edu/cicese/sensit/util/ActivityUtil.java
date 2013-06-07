@@ -2,9 +2,7 @@ package edu.cicese.sensit.util;
 
 import android.util.Log;
 import edu.cicese.sensit.ActivityCount;
-import edu.cicese.sensit.Utilities;
 
-import java.util.Date;
 import java.util.LinkedList;
 import java.util.Queue;
 
@@ -46,6 +44,7 @@ public class ActivityUtil {
 	public static final int EE_WILLIAMS = 1;
 	public static final int EE_FREEDSON = 2;
 	public static final int EE_FREEDSON_VM3 = 3;
+	public static final int SLEEP_THRESHOLD = 20;
 
 	public static float bmi = -1;
 	public static int counts;
@@ -173,10 +172,10 @@ public class ActivityUtil {
 		return countsTmp;
 	}
 
-	public static void addToCountsFrame(Date date, int counts) {
+	/*public static void addToCountsFrame(Date date, int counts) {
 		if (countsFrame.size() > Utilities.LOG_SIZE) {
 			countsFrame.poll();
 		}
 		countsFrame.add(new ActivityCount(date, counts));
-	}
+	}*/
 }

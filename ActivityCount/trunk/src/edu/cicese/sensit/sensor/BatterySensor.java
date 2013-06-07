@@ -72,6 +72,7 @@ public class BatterySensor extends Sensor {
 			int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
 
 			Utilities.setCharging(plugged != 0);
+			Utilities.setEpochCharging();
 
 			Log.d(TAG, "Battery data received: Level:" + level + ", Charging:" + plugged);
 

@@ -130,7 +130,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="5dp"
                 android:textColor="@color/black"
-                android:text="@string/gps" />
+                android:text="@string/location" />
 
             <TextView
                 android:id="@+id/location_text"
