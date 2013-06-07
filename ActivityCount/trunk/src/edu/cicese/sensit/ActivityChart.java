@@ -15,7 +15,9 @@ import org.achartengine.model.XYSeries;
 import org.achartengine.renderer.XYMultipleSeriesRenderer;
 import org.achartengine.renderer.XYSeriesRenderer;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -25,7 +27,11 @@ import java.util.List;
  * Time: 04:53 PM
  */
 public class ActivityChart {
-	private static final String DATE_FORMAT = "HH:mm";
+//	private final String DATE_FORMAT = "HH:mm";
+//	private final String DATE_FORMAT_LONG = "yyyy-MM-dd HH:mm:ss";
+
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
+	private static final SimpleDateFormat DATE_FORMAT_LONG = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private XYSeries activitySeries, sleepSeries, awakeSeries;
 	private XYMultipleSeriesRenderer renderer;
@@ -155,16 +161,49 @@ public class ActivityChart {
 		Log.d("SensIt.Chart", "nextIndex: " + nextIndex);
 
 		if (nextIndex % 5 == 0) {
-			SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
+//			SimpleDateFormat sdf = new SimpleDateFormat(DATE_FORMAT);
 			renderer.removeXTextLabel(nextIndex);
-			renderer.addXTextLabel(nextIndex, sdf.format(date));
+			renderer.addXTextLabel(nextIndex, DATE_FORMAT.format(date));
+		}
+
+		setRange();
+	}
+
+	public void setCounts(List<ActivityCount> counts) {
+		activitySeries.clear();
+		sleepSeries.clear();
+		awakeSeries.clear();
+
+		Collections.reverse(counts);
+
+		int nextIndex = 0;
+		for (ActivityCount count : counts) {
+			activitySeries.add(nextIndex, count.getCounts());
+			if (count.getCounts() < ActivityUtil.SLEEP_THRESHOLD) {
+				sleepSeries.add(nextIndex, ActivityUtil.GRAPH_SLEEP_VALUE);
+			} else {
+				awakeSeries.add(nextIndex, ActivityUtil.GRAPH_SLEEP_VALUE);
+			}
+
+			nextIndex++;
+
+//			Log.d("SensIt.Chart", "nextIndex: " + nextIndex);
+
+			if (nextIndex % 5 == 0) {
+				renderer.removeXTextLabel(nextIndex);
+				try {
+					renderer.addXTextLabel(nextIndex, DATE_FORMAT.format(DATE_FORMAT_LONG.parse(count.getDate())));
+				} catch (ParseException e) {
+					Log.e("SensIt.ActivityChart", e.toString(), e);
+				}
+			}
 		}
 
 		setRange();
 	}
 
 	private void setRange() {
-		double maxX = activitySeries.getMaxX()/* + (ActivityUtil.GRAPH_RANGE_X / 2)*/;
+		double maxX = activitySeries.getMaxX();
 		double minX = activitySeries.getMaxX() - ActivityUtil.GRAPH_RANGE_X;
 		double maxY = activitySeries.getMaxY();
 		double minY = 0;

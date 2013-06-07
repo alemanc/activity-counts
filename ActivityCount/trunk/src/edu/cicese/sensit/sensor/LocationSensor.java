@@ -160,7 +160,7 @@ public class LocationSensor extends Sensor {
 			if (intent.getAction().equalsIgnoreCase(LOCATION_UPDATE_ACTION)) {
 //				try {
 					Location location = intent.getParcelableExtra(LocationManager.KEY_LOCATION_CHANGED);
-				location = null;
+//				location = null;
 				Log.d(TAG, "New location: [" + location.getProvider() + "]" + location.toString());
 
 					LocationUtil.setAtHome(location.getLatitude(), location.getLongitude(), 100);

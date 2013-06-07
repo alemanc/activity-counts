@@ -6,9 +6,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.Bundle;
 import android.util.Log;
-import edu.cicese.sensit.Utilities;
 import edu.cicese.sensit.datatask.data.BluetoothData;
 import edu.cicese.sensit.datatask.data.Data;
 
@@ -40,9 +38,9 @@ public class BluetoothSensor extends Sensor {
 
 			Log.i(TAG, "New device discovered: " + remoteDeviceName + ".");
 
-			Bundle bundle = new Bundle();
+			/*Bundle bundle = new Bundle();
 			bundle.putString("device", remoteDeviceName);
-			updateUI(Utilities.UPDATE_BLUETOOTH, bundle);
+			updateUI(Utilities.UPDATE_BLUETOOTH, bundle);*/
 
 			BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 			BluetoothData data = new BluetoothData(remoteDevice);

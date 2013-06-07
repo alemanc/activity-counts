@@ -21,7 +21,7 @@
     <string name="advanced_options">Advanced options</string>
     <string name="bluetooth">Bluetooth</string>
     <string name="battery">Battery</string>
-    <string name="gps">GPS</string>
+    <string name="location">Location</string>
     <string name="accelerometer">Accelerometer</string>
     <string name="sensor_off">off]</string>
     <string name="sensor_paused">paused</string>
