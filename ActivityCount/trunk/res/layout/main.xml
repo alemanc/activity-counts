@@ -30,183 +30,244 @@
             android:layout_marginTop="5dp"
             android:layout_marginBottom="2dp" />
 
-        <!--Sensors-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/sensors"
-                android:textColor="@color/gray" />
+            android:gravity="center_vertical"
+            android:baselineAligned="false">
 
             <LinearLayout
-                android:layout_width="7dp"
-                android:layout_height="7dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginLeft="1dp"
-                android:background="@color/green" />
-
-            <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/gray"
-                android:text="@string/sensor_on" />
+                android:layout_weight="1"
+                android:orientation="vertical">
 
-            <LinearLayout
-                android:layout_width="7dp"
-                android:layout_height="7dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginLeft="5dp"
-                android:background="@color/blue" />
+                <!--Sensors-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/gray"
-                android:text="@string/sensor_paused" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/sensors"
+                        android:textColor="@color/gray" />
 
-            <LinearLayout
-                android:layout_width="7dp"
-                android:layout_height="7dp"
-                android:layout_marginTop="2dp"
-                android:layout_marginLeft="5dp"
-                android:background="@color/red" />
+                    <LinearLayout
+                        android:layout_width="7dp"
+                        android:layout_height="7dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginLeft="1dp"
+                        android:background="@color/green" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/gray"
-                android:text="@string/sensor_off" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/gray"
+                        android:text="@string/sensor_on" />
+
+                    <LinearLayout
+                        android:layout_width="7dp"
+                        android:layout_height="7dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginLeft="5dp"
+                        android:background="@color/blue" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/gray"
+                        android:text="@string/sensor_paused" />
+
+                    <LinearLayout
+                        android:layout_width="7dp"
+                        android:layout_height="7dp"
+                        android:layout_marginTop="2dp"
+                        android:layout_marginLeft="5dp"
+                        android:background="@color/red" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/gray"
+                        android:text="@string/sensor_off" />
+                </LinearLayout>
+
+                <!--Accelerometer-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:id="@+id/accelerometer_indicator"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@color/red" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/black"
+                        android:text="@string/accelerometer" />
+
+                    <TextView
+                        android:id="@+id/acc_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/black" />
+                </LinearLayout>
+
+                <!--Location-->
+                <!--<LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:id="@+id/location_indicator"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@color/red" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/black"
+                        android:text="@string/location" />
+
+                    <TextView
+                        android:id="@+id/location_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/black" />
+                </LinearLayout>-->
+
+                <!--Battery-->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:id="@+id/battery_indicator"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@color/red" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/black"
+                        android:text="@string/battery" />
+
+                    <TextView
+                        android:id="@+id/battery_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/black" />
+                </LinearLayout>
+
+                <!--Bluetooth-->
+                <!--<LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <LinearLayout
+                        android:id="@+id/bluetooth_indicator"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@color/red" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/black"
+                        android:text="@string/bluetooth" />
+
+                    <TextView
+                        android:id="@+id/bluetooth_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginLeft="5dp"
+                        android:textColor="@color/black" />
+                </LinearLayout>-->
+
+            </LinearLayout>
+
+            <FrameLayout
+                android:layout_width="56dp"
+                android:layout_height="56dp">
+
+                <!--Loading view-->
+                <LinearLayout
+                    android:id="@+id/syncing"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginLeft="0dp"
+                    android:visibility="gone"
+                    android:gravity="center">
+
+                    <ProgressBar
+                        android:indeterminateDrawable="@drawable/progress_small_holo"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:clickable="false"
+                        android:indeterminate="true" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/btn_sync"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:src="@drawable/btn_sync"
+                    android:background="@drawable/btn_square"
+                    android:contentDescription="@string/desc_sync" />
+
+            </FrameLayout>
+
         </LinearLayout>
 
-        <LinearLayout
+        <!--Separator-->
+        <!--<View
+            android:background="@color/gray"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:id="@+id/accelerometer_indicator"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@color/red" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/black"
-                android:text="@string/accelerometer" />
-
-            <TextView
-                android:id="@+id/acc_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/black" />
-        </LinearLayout>
+            android:layout_height="1dp"
+            android:layout_marginTop="15dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:id="@+id/location_indicator"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@color/red" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/black"
-                android:text="@string/location" />
-
-            <TextView
-                android:id="@+id/location_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/black" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:id="@+id/battery_indicator"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@color/red" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/black"
-                android:text="@string/battery" />
-
-            <TextView
-                android:id="@+id/battery_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/black" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:id="@+id/bluetooth_indicator"
-                android:layout_width="10dp"
-                android:layout_height="10dp"
-                android:background="@color/red" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/black"
-                android:text="@string/bluetooth" />
-
-            <TextView
-                android:id="@+id/bluetooth_text"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textColor="@color/black" />
-        </LinearLayout>
-
-        <!--Advanced options-->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
+            android:layout_marginTop="-5dp"
+            android:layout_marginBottom="-12dp"
             android:gravity="center_vertical">
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="5dp"
-                android:text="@string/advanced_options"
-                android:textSize="20sp"
+                android:layout_weight="1"
+                android:text="ACTIVITY CHARTS"
+                android:textSize="14sp"
                 android:textColor="@color/black" />
 
             <ImageButton
@@ -219,8 +280,51 @@
                 android:contentDescription="@string/desc_save_changes" />
         </LinearLayout>
 
+        <LinearLayout
+            android:id="@+id/percentage_chart"
+            android:layout_width="match_parent"
+            android:layout_height="180dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="2dp" />-->
+
+        <!--Separator-->
+        <View
+            android:background="@color/light_gray"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="15dp" />
+
+        <!--Preferences-->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="-5dp"
+            android:layout_marginBottom="-12dp"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/advanced_options"
+                android:textSize="14sp"
+                android:textColor="@color/black" />
+
+            <ImageButton
+                android:id="@+id/btn_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginTop="5dp"
+                android:src="@drawable/btn_save"
+                android:background="@drawable/btn_square"
+                android:contentDescription="@string/desc_save_changes" />
+        </LinearLayout>
+
         <!--Home location-->
-        <TextView
+        <!--<TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/home_location"
@@ -276,7 +380,19 @@
                     android:textSize="15sp" />
             </LinearLayout>
 
-        </LinearLayout>
+        </LinearLayout>-->
+
+        <!--Sync options-->
+        <CheckBox
+            android:id="@+id/chb_wifi_only"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="-7dp"
+            android:button="@drawable/selector_checkbox"
+            android:text="Sync on WiFi only"
+            android:textColor="@color/black"
+            android:textSize="13sp"
+            android:checked="true"/>
 
         <!--BMI-->
         <TextView
@@ -288,7 +404,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center_vertical"
             android:descendantFocusability="beforeDescendants"
             android:focusableInTouchMode="true"
             android:baselineAligned="false">
@@ -303,13 +418,16 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/height"
+                    android:layout_gravity="center_horizontal"
                     android:textColor="@color/gray" />
 
                 <EditText
                     android:id="@+id/txt_height"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:inputType="number"
+                    android:background="@drawable/selector_textfield"
                     android:hint="@string/height_example"
                     android:textSize="15sp" />
             </LinearLayout>
@@ -324,6 +442,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/weight"
+                    android:layout_gravity="center_horizontal"
                     android:textColor="@color/gray" />
 
                 <EditText
@@ -331,11 +450,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
+                    android:gravity="center_horizontal"
+                    android:background="@drawable/selector_textfield"
                     android:hint="@string/weight_example"
                     android:textSize="15sp" />
             </LinearLayout>
 
         </LinearLayout>
+
+
 
     </LinearLayout>
 

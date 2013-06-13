@@ -9,6 +9,8 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -21,8 +23,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import edu.cicese.sensit.database.DBAdapter;
+import edu.cicese.sensit.icat.IcatApiUtil;
 import edu.cicese.sensit.util.ActivityUtil;
-import edu.cicese.sensit.util.LocationUtil;
+import edu.cicese.sensit.util.Preferences;
 import org.achartengine.GraphicalView;
 
 import java.util.ArrayList;
@@ -38,60 +41,43 @@ public class MainActivity extends Activity {
 	private static final String TAG = "SensIt.Main";
 
 	private Button btnAction;
+	private ImageButton btnSync;
 	private ActivityChart activityChart;
 	private GraphicalView chartView;
-	private TextView txtAccelerometer, txtLocation, txtBattery, txtBluetooth;
-	private View accIndicator, locationIndicator, batteryIndicator, bluetoothIndicator;
-	private EditText txtLatitude, txtLongitude, txtHeight, txtWeight;
+	private TextView txtAccelerometer, /*txtLocation, */txtBattery/*, txtBluetooth*/;
+	private View accIndicator, /*locationIndicator, */batteryIndicator/*, bluetoothIndicator*/;
+	private EditText /*txtLatitude, txtLongitude, */txtHeight, txtWeight;
+	private View lySyncing;
 
-	public static final String KEY_PREF_HOME_LATITUDE = "pref_key_home_latitude";
-	public static final String KEY_PREF_HOME_LONGITUDE = "pref_key_home_longitude";
-	public static final String KEY_PREF_HOME_HEIGHT = "pref_key_height";
-	public static final String KEY_PREF_HOME_WEIGHT = "pref_key_weight";
+//	public static final String KEY_PREF_HOME_LATITUDE = "pref_key_home_latitude";
+//	public static final String KEY_PREF_HOME_LONGITUDE = "pref_key_home_longitude";
 
 	private DBAdapter dbAdapter;
 
-	private Toast mToast;
-
-	// Handler gets created on the UI-thread
-	/*public static final Handler handlerUI = new Handler() {
-		@Override
-		public void handleMessage(Message msg) {
-			Bundle bundle = msg.getData();
-			switch (msg.what) {
-				case Utilities.UPDATE_ACCELEROMETER:
-					int counts = bundle.getInt("counts");
-					long timestamp = bundle.getLong("timestamp");
-//					setAccelerometerText(timestamp, counts);
-					break;
-				case Utilities.UPDATE_LOCATION:
-					String provider = bundle.getString("provider");
-					double latitude = bundle.getDouble("latitude");
-					double longitude = bundle.getDouble("longitude");
-					setLocationText(latitude, longitude, provider);
-					break;
-				case Utilities.UPDATE_BATTERY:
-					int level = bundle.getInt("level");
-					int plugged = bundle.getInt("plugged");
-					setBatteryText(level, plugged);
-					break;
-				case Utilities.UPDATE_BLUETOOTH:
-					String device = bundle.getString("device");
-					setBluetoothText(device);
-					break;
-				case Utilities.REFRESH_STATUS:
-					refreshSensors();
-					break;
-			}
-		}
-	};*/
-
-
+	private Toast savedToast, syncedToast;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		Log.d("SensIt", "OnCreated");
+		Log.d("SensIt", "OnCreated " + (savedInstanceState != null));
+
+		// Get unique ID
+		Log.d("SensIt", "ANDROID ID: " + Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
+
+		final TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
+
+		final String tmDevice, tmSerial, androidId;
+		tmDevice = "" + tm.getDeviceId();
+		tmSerial = "" + tm.getSimSerialNumber();
+		androidId = "" + Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
+
+		UUID deviceUuid = new UUID(androidId.hashCode(), ((long) tmDevice.hashCode() << 32) | tmSerial.hashCode());
+		String deviceId = deviceUuid.toString();
+
+		Log.d("SensIt", "tmDevice: " + tmDevice);
+		Log.d("SensIt", "tmSerial: " + tmSerial);
+		Log.d("SensIt", "androidId: " + androidId);
+		Log.d("SensIt", "deviceId: " + deviceId);
 
 		setContentView(R.layout.main);
 
@@ -104,19 +90,22 @@ public class MainActivity extends Activity {
 
 		btnAction = (Button) findViewById(R.id.btn_start);
 		ImageButton btnSave = (ImageButton) findViewById(R.id.btn_save);
+		btnSync = (ImageButton) findViewById(R.id.btn_sync);
+
+		lySyncing = findViewById(R.id.syncing);
 
 		accIndicator = findViewById(R.id.accelerometer_indicator);
-		locationIndicator = findViewById(R.id.location_indicator);
+//		locationIndicator = findViewById(R.id.location_indicator);
 		batteryIndicator = findViewById(R.id.battery_indicator);
-		bluetoothIndicator = findViewById(R.id.bluetooth_indicator);
+//		bluetoothIndicator = findViewById(R.id.bluetooth_indicator);
 
 		txtAccelerometer = (TextView) findViewById(R.id.acc_text);
-		txtLocation = (TextView) findViewById(R.id.location_text);
+//		txtLocation = (TextView) findViewById(R.id.location_text);
 		txtBattery = (TextView) findViewById(R.id.battery_text);
-		txtBluetooth = (TextView) findViewById(R.id.bluetooth_text);
+//		txtBluetooth = (TextView) findViewById(R.id.bluetooth_text);
 
-		txtLatitude = (EditText) findViewById(R.id.txt_latitude);
-		txtLongitude = (EditText) findViewById(R.id.txt_longitude);
+//		txtLatitude = (EditText) findViewById(R.id.txt_latitude);
+//		txtLongitude = (EditText) findViewById(R.id.txt_longitude);
 		txtHeight = (EditText) findViewById(R.id.txt_height);
 		txtWeight = (EditText) findViewById(R.id.txt_weight);
 
@@ -124,7 +113,7 @@ public class MainActivity extends Activity {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 
 		// Load home location settings
-		float latitude = settings.getFloat(KEY_PREF_HOME_LATITUDE, -1);
+		/*float latitude = settings.getFloat(KEY_PREF_HOME_LATITUDE, -1);
 		float longitude = settings.getFloat(KEY_PREF_HOME_LONGITUDE, -1);
 		if (latitude != -1) {
 			txtLatitude.setText(latitude + "");
@@ -133,11 +122,11 @@ public class MainActivity extends Activity {
 			txtLongitude.setText(longitude + "");
 		}
 		LocationUtil.setHomeLatitude(latitude);
-		LocationUtil.setHomeLongitude(longitude);
+		LocationUtil.setHomeLongitude(longitude);*/
 
 		// Load user's body information
-		int height = settings.getInt(KEY_PREF_HOME_HEIGHT, -1);
-		int weight = settings.getInt(KEY_PREF_HOME_WEIGHT, -1);
+		int height = settings.getInt(Preferences.PREF_KEY_HEIGHT, -1);
+		int weight = settings.getInt(Preferences.KEY_PREF_WEIGHT, -1);
 		if (height != -1) {
 			txtHeight.setText(height + "");
 		}
@@ -157,14 +146,19 @@ public class MainActivity extends Activity {
 
 				if (Utilities.isReady()) {
 					if (!Utilities.isSensing()) {
+						Utilities.setManuallyStopped(false);
+
 						Utilities.setReady(false);
 						Utilities.setSensing(true);
+
 						// Point out the action triggered by a user
 						sensingIntent.setAction(SensingService.SENSING_START_ACTION);
 						WakefulIntentService.sendWakefulWork(MainActivity.this, sensingIntent);
 
 						btnAction.setText("Stop");
 					} else {
+						Utilities.setManuallyStopped(true);
+
 						Utilities.setReady(false);
 						Utilities.setSensing(false);
 
@@ -194,6 +188,15 @@ public class MainActivity extends Activity {
 			}
 		});
 
+		btnSync.setOnClickListener(new View.OnClickListener() {
+			public void onClick(View view) {
+//				setSyncing(true);
+//				Intent broadcastIntent = new Intent(SensingService.DATA_SYNCING);
+//				sendBroadcast(broadcastIntent);
+				new Thread(new DataUploadThread(MainActivity.this)).start();
+			}
+		});
+
 		activityChart = new ActivityChart();
 		chartView = activityChart.getView(this, new ArrayList<ActivityCount>());
 		chartView.setOnTouchListener(new View.OnTouchListener() {
@@ -205,51 +208,83 @@ public class MainActivity extends Activity {
 		LinearLayout layout = (LinearLayout) findViewById(R.id.chart);
 		layout.addView(chartView);
 
-		refreshSensors();
-		refreshChart();
+//		refreshSensors();
+//		refreshChart();
+//		refreshSyncing();
 	}
 
 	@Override
 	public void onStart() {
 		super.onStart();
 
-		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(SensingService.REFRESH_CHART);
-		intentFilter.addAction(SensingService.REFRESH_SENSOR);
-		registerReceiver(uiRefreshReceiver, intentFilter);
+		Log.d("SensIt", "onStart");
 	}
 
 	@Override
-	public void onStop() {
-		super.onStop();
+	public void onResume() {
+		super.onResume();
 
-//		unregisterReceiver(uiRefreshReceiver);
+		Log.d("SensIt", "onResume");
+
+		if (Utilities.isSensing()) {
+			btnAction.setText("Stop");
+		} else {
+			btnAction.setText("Start");
+		}
+		refreshSensors();
+		refreshChart();
+		refreshSyncing();
+
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(SensingService.REFRESH_CHART);
+		intentFilter.addAction(SensingService.REFRESH_SENSOR);
+		intentFilter.addAction(SensingService.DATA_SYNCING);
+		intentFilter.addAction(SensingService.DATA_SYNCED);
+		intentFilter.addAction(SensingService.DATA_SYNC_DONE);
+		intentFilter.addAction(SensingService.DATA_SYNC_ERROR);
+		registerReceiver(uiRefreshReceiver, intentFilter);
 	}
 
 	@Override
 	public void onPause() {
 		super.onPause();
 
+		Log.d("SensIt", "onPause");
+
 //		unregisterReceiver(uiRefreshReceiver);
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+
+		Log.d("SensIt", "onStop");
+
+//		unregisterReceiver(uiRefreshReceiver);
+
+		unregisterReceiver(uiRefreshReceiver);
+		dbAdapter.close();
 	}
 
 	@Override
 	public void onDestroy() {
 		super.onDestroy();
 
-		unregisterReceiver(uiRefreshReceiver);
-		dbAdapter.close();
+		Log.d("SensIt", "onDestroy");
+
+//		unregisterReceiver(uiRefreshReceiver);
+//		dbAdapter.close();
 	}
 
 	private void saveSettings() {
 		InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-		imm.hideSoftInputFromWindow(txtLongitude.getWindowToken(), 0);
+		imm.hideSoftInputFromWindow(txtHeight.getWindowToken(), 0);
 
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
 		SharedPreferences.Editor editor = settings.edit();
 
 		// Latitude
-		String latitudeString = txtLatitude.getText().toString();
+		/*String latitudeString = txtLatitude.getText().toString();
 		float latitude = -1;
 		if (latitudeString.compareTo("") != 0) {
 			latitude = Float.parseFloat(latitudeString);
@@ -269,16 +304,16 @@ public class MainActivity extends Activity {
 		} else {
 			editor.remove(KEY_PREF_HOME_LONGITUDE);
 		}
-		LocationUtil.setHomeLongitude(longitude);
+		LocationUtil.setHomeLongitude(longitude);*/
 
 		// Height
 		String heightString = txtHeight.getText().toString();
 		int height = -1;
 		if (heightString.compareTo("") != 0) {
 			height = Integer.parseInt(heightString);
-			editor.putInt(KEY_PREF_HOME_HEIGHT, height);
+			editor.putInt(Preferences.PREF_KEY_HEIGHT, height);
 		} else {
-			editor.remove(KEY_PREF_HOME_HEIGHT);
+			editor.remove(Preferences.PREF_KEY_HEIGHT);
 		}
 
 		// Weight
@@ -286,50 +321,20 @@ public class MainActivity extends Activity {
 		int weight = -1;
 		if (weightString.compareTo("") != 0) {
 			weight = Integer.parseInt(weightString);
-			editor.putInt(KEY_PREF_HOME_WEIGHT, weight);
+			editor.putInt(Preferences.KEY_PREF_WEIGHT, weight);
 		} else {
-			editor.remove(KEY_PREF_HOME_WEIGHT);
+			editor.remove(Preferences.KEY_PREF_WEIGHT);
 		}
 
 		ActivityUtil.setBMI(height, weight);
 
 		editor.commit();
 
-		if (mToast == null) {
-			mToast = Toast.makeText(this, "Saved", Toast.LENGTH_SHORT);
+		if (savedToast == null) {
+			savedToast = Toast.makeText(this, "Saved", Toast.LENGTH_SHORT);
 		}
-		mToast.show();
+		savedToast.show();
 	}
-
-	@Override
-	public void onResume() {
-		super.onResume();
-		
-		if (Utilities.isSensing()) {
-			btnAction.setText("Stop");
-		} else {
-			btnAction.setText("Start");
-		}
-		refreshSensors();
-	}
-
-	/*private static void setLocationText(double latitude, double longitude, String provider) {
-		txtLocation.setText("- [" + provider + "] " + latitude + ", " + longitude);
-	}
-
-	private static void setBluetoothText(String device) {
-		txtBluetooth.setText("- Device: " + device);
-	}
-
-	private static void setAccelerometerText(long timestamp, int counts) {
-		activityChart.addCounts(new Date(timestamp), counts);
-		chartView.repaint();
-		txtAccelerometer.setText("- " + counts + " CPM");
-	}
-
-	private static void setBatteryText(int level, int status) {
-		txtBattery.setText("- " + level + "%, status: " + (status != 0 ? "Charging" : "Discharging"));
-	}*/
 
 	private static void refresh(View view, TextView txt, int status) {
 		switch (status) {
@@ -347,10 +352,10 @@ public class MainActivity extends Activity {
 	}
 
 	private void refreshSensors() {
-		refresh(accIndicator, txtAccelerometer, Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER]);
-		refresh(batteryIndicator, txtBattery, Utilities.sensorStatus[Utilities.SENSOR_BATTERY]);
-		refresh(locationIndicator, txtLocation, Utilities.sensorStatus[Utilities.SENSOR_LOCATION]);
-		refresh(bluetoothIndicator, txtBluetooth, Utilities.sensorStatus[Utilities.SENSOR_BLUETOOTH]);
+		refresh(accIndicator, txtAccelerometer, Utilities.getSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER));
+		refresh(batteryIndicator, txtBattery, Utilities.getSensorStatus(Utilities.SENSOR_BATTERY));
+//		refresh(locationIndicator, txtLocation, Utilities.sensorStatus[Utilities.SENSOR_LOCATION]);
+//		refresh(bluetoothIndicator, txtBluetooth, Utilities.sensorStatus[Utilities.SENSOR_BLUETOOTH]);
 	}
 
 	private void refreshChart() {
@@ -384,16 +389,80 @@ public class MainActivity extends Activity {
 		}
 	}
 
+	private void refreshSyncing() {
+		boolean syncing = Utilities.isSyncing();
+		Log.d(TAG, "Setting " + syncing);
+		btnSync.setEnabled(!syncing);
+		if (syncing) {
+			lySyncing.setVisibility(View.VISIBLE);
+			btnSync.setVisibility(View.GONE);
+		}
+		else {
+			lySyncing.setVisibility(View.GONE);
+			btnSync.setVisibility(View.VISIBLE);
+		}
+	}
 
-	BroadcastReceiver uiRefreshReceiver = new BroadcastReceiver() {
+	public BroadcastReceiver uiRefreshReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			switch (intent.getAction()){
 				case SensingService.REFRESH_CHART:
+					Log.d(TAG, "Refresh Action received");
 					refreshChart();
 					break;
 				case SensingService.REFRESH_SENSOR:
 					refreshSensors();
+					break;
+				case SensingService.DATA_SYNCING:
+//					setSyncing(true);
+					refreshSyncing();
+					break;
+				case SensingService.DATA_SYNCED:
+					Log.d(TAG, "Action DATA_SYNCED received");
+
+					String dateStart = intent.getStringExtra(IcatApiUtil.EXTRA_DATE_START);
+					String dateEnd = intent.getStringExtra(IcatApiUtil.EXTRA_DATE_END);
+
+					Log.d(TAG, "Update");
+//					new Thread(new DataSyncedThread(MainActivity.this, dateStart, dateEnd)).start();
+
+//					if (syncedToast == null) {
+//						syncedToast = Toast.makeText(MainActivity.this, "", Toast.LENGTH_SHORT);
+//					}
+
+//					if (intent.getBooleanExtra(IcatApiUtil.EXTRA_SYNCED, false)) {
+//					}
+
+//					String msg = intent.getStringExtra(IcatApiUtil.EXTRA_MSG);
+//					if (msg != null) {
+//						syncedToast.setText(msg);
+//						syncedToast.show();
+//					}
+
+					Log.d(TAG, "Resetting intent");
+					abortBroadcast();
+
+					break;
+				case SensingService.DATA_SYNC_DONE:
+					Log.d(TAG, "Action DATA_SYNC_DONE received");
+//					setSyncing(false);
+					refreshSyncing();
+					break;
+				case SensingService.DATA_SYNC_ERROR:
+					Log.d(TAG, "Action DATA_SYNC_ERROR received");
+//					setSyncing(false);
+					refreshSyncing();
+
+					if (syncedToast == null) {
+						syncedToast = Toast.makeText(MainActivity.this, "", Toast.LENGTH_SHORT);
+					}
+
+					String msg = intent.getStringExtra(IcatApiUtil.EXTRA_MSG);
+					if (msg != null) {
+						syncedToast.setText(msg);
+						syncedToast.show();
+					}
 					break;
 			}
 		}

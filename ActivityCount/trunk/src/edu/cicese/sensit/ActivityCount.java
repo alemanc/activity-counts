@@ -7,11 +7,7 @@ import com.google.gson.annotations.Expose;
  * Date: 27/08/12
  * Time: 12:24 PM
  */
-public class ActivityCount/* implements Comparable<ActivityCount>*/ {
-//	private long timestamp;
-//	private Integer count;
-//	private long epoch;
-
+public class ActivityCount {
 	private final String TAG = "SensIt.ActivityCount";
 
 //	private Date date;
@@ -19,18 +15,6 @@ public class ActivityCount/* implements Comparable<ActivityCount>*/ {
 	@Expose private int counts;
 	@Expose private boolean charging;
 //	@Expose private int epoch = 60;
-
-	/*public ActivityCount(long timestamp, int count, long epoch) {
-		this.timestamp = timestamp;
-		this.count = count;
-		this.epoch = epoch;
-	}*/
-
-	/*public ActivityCount(Date date, int counts, int charging) {
-		this.date = date;
-		this.counts = counts;
-		this.charging = (charging == 1);
-	}*/
 
 //	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	public ActivityCount(String date, int counts, int charging) {
@@ -46,14 +30,6 @@ public class ActivityCount/* implements Comparable<ActivityCount>*/ {
 		}*/
 	}
 
-	/*public long getTimestamp() {
-		return timestamp;
-	}*/
-
-	/*public int getCount() {
-		return count;
-	}*/
-
 	public String getDate() {
 		return date;
 	}
@@ -61,17 +37,4 @@ public class ActivityCount/* implements Comparable<ActivityCount>*/ {
 	public int getCounts() {
 		return counts;
 	}
-
-	public boolean isCharging() {
-		return charging;
-	}
-
-	/*public int compareTo(ActivityCount activityCount) {
-		return count.compareTo(activityCount.getCount());
-	}*/
-
-	/*@Override
-	public String toString() {
-		return "{\"date\":\"" + date + "\", \"counts\":" + counts + ", \"epoch\":60, \"charging\":" + charging + "}";
-	}*/
 }

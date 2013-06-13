@@ -1,41 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="edu.cicese.sensit"
-    android:versionCode="1"
-    android:versionName="1.0">
+    android:versionCode="2"
+    android:versionName="1.1">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.BLUETOOTH" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <!--<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
+    <!--<uses-permission android:name="android.permission.BLUETOOTH" />-->
+    <!--<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />-->
 
     <application
         android:label="@string/app_name"
         android:icon="@drawable/icon"
-        android:theme="@android:style/Theme.Light"
-        android:launchMode="singleTop">
+        android:theme="@android:style/Theme.Light">
         <activity
             android:name="edu.cicese.sensit.MainActivity"
             android:label="@string/app_name"
             android:windowSoftInputMode="stateAlwaysHidden"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="edu.cicese.sensit.TestActivity"
-            android:label="@string/app_name"
-            android:screenOrientation="portrait">
+        <receiver android:name=".OnBootReceiver">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
-        </activity>
+        </receiver>
+
+        <receiver android:name=".OnAlarmReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!--<receiver android:name=".dataSyncReceiver">
+            <intent-filter android:priority="1">
+                <action android:name="edu.cicese.sensit.DATA_SYNCED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="edu.cicese.sensit.MainActivity.uiRefreshReceiver">
+            <intent-filter android:priority="2">
+                <action android:name="edu.cicese.sensit.DATA_SYNCED" />
+            </intent-filter>
+        </receiver>-->
 
         <service
             android:name=".SensingService"

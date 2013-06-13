@@ -18,7 +18,6 @@ public class ActivityUtil {
 	public static final int GRAPH_RANGE_Y = 6000;
 	public static final double GRAPH_SLEEP_VALUE = 100;
 
-
 	// CPM = Counts per Minute
 	// BM = Body Mass in Kg
 	// kcals = Total Calories for a Single Epoch
@@ -48,8 +47,56 @@ public class ActivityUtil {
 
 	public static float bmi = -1;
 	public static int counts;
+	public static int checkEpochCounts;
 	// stores the CPM from the current minute, and the last 9 minutes to compute the sleep time
-	public static Queue<ActivityCount> countsFrame = new LinkedList<>();
+	private static Queue<ActivityCount> countsFrame = new LinkedList<>();
+
+	// Counter for inactive epochs. Can be used to sleep the accelerometer
+	private static int epochsInactive = 0;
+
+	// No-movement threshold
+	public static final int MIN_ACTIVE_COUNTS = 5; // activity counts
+
+	private static int pauseQueue = 0;
+
+
+	public static int getPauseQueue() {
+		return pauseQueue;
+	}
+
+	public static void resetPauseQueue() {
+		pauseQueue = 0;
+	}
+
+	public static void setPauseQueue(int value) {
+		pauseQueue += value;
+		if (pauseQueue < 0) {
+			pauseQueue = 0;
+		}
+	}
+
+	public static void resetEpochsInactive() {
+	}
+
+	public static int getEpochsInactive() {
+		return epochsInactive;
+	}
+
+	public static void setEpochsInactive(int epochsInactive) {
+		ActivityUtil.epochsInactive = epochsInactive;
+	}
+
+	public static void addEpochInactive() {
+		ActivityUtil.epochsInactive++;
+	}
+
+	public static int getCheckEpochCounts() {
+		return checkEpochCounts;
+	}
+
+	public static void setCheckEpochCounts(int checkEpochCounts) {
+		ActivityUtil.checkEpochCounts = checkEpochCounts;
+	}
 
 	/**
 	 * Computes the calories burned according the activity counts measured.
