@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SensIt</string>
-    <string name="chart_title">Activity Count Chart</string>
+    <string name="chart_title">Activity Chart</string>
     <string name="value">Count</string>
     <string name="date">Date</string>
     <string name="service_ticker_text">SensIt is active</string>
@@ -18,7 +18,7 @@
     <string name="longitude">Longitude</string>
     <string name="latitude">Latitude</string>
     <string name="home_location">Home location</string>
-    <string name="advanced_options">Advanced options</string>
+    <string name="advanced_options">PREFERENCES</string>
     <string name="bluetooth">Bluetooth</string>
     <string name="battery">Battery</string>
     <string name="location">Location</string>
@@ -28,6 +28,7 @@
     <string name="sensor_on">on</string>
     <string name="sensors">Sensors [</string>
     <string name="btn_start">Start</string>
+    <string name="desc_sync">Sync data</string>
 
     <style name="ButtonText">
         <item name="android:layout_width">match_parent</item>

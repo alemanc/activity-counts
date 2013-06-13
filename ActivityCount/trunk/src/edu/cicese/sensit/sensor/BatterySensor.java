@@ -35,7 +35,7 @@ public class BatterySensor extends Sensor {
 
 		Log.d(TAG, "Starting Battery sensor [done]");
 
-		Utilities.sensorStatus[Utilities.SENSOR_BATTERY] = Utilities.SENSOR_ON;
+		Utilities.setSensorStatus(Utilities.SENSOR_BATTERY, Utilities.SENSOR_ON);
 		refreshStatus();
 	}
 
@@ -53,7 +53,7 @@ public class BatterySensor extends Sensor {
 
 		Log.d(TAG, "Stopping Battery sensor [done]");
 
-		Utilities.sensorStatus[Utilities.SENSOR_BATTERY] = Utilities.SENSOR_OFF;
+		Utilities.setSensorStatus(Utilities.SENSOR_BATTERY, Utilities.SENSOR_OFF);
 		refreshStatus();
 
 		super.stop();

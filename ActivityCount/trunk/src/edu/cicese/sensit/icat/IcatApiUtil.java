@@ -27,28 +27,37 @@ import java.util.List;
  * Date: 3/06/13
  * Time: 01:56 PM
  */
-public class IcatUtil {
-	private static final String TAG = "SensIt.IcatUtil";
+public class IcatApiUtil {
+	private static final String TAG = "SensIt.IcatApiUtil";
 
-	private static final String ICAT_URL = "http://icat2013.herokuapp.com";
+	public static final String ICAT_URL = "http://icat2013.herokuapp.com";
+	public static final String EXTRA_SYNCED = "extra_synced";
 	public static final String EXTRA_DATE_START = "extra_date_start";
 	public static final String EXTRA_DATE_END = "extra_date_end";
+	public static final String EXTRA_MSG = "extra_message";
 	private static AsyncHttpClient client = new AsyncHttpClient();
 
-	private static final String ACTIVITY_COUNTS = "/activity_counts/";
+	private static final String API_KEY = "iCAT-2013-1234567890";
 
-	private static final String ICAT_STATUS = "icat_status";
-	private static final int ICAT_STATUS_OK = 200;
-	private static final int ICAT_STATUS_OK_WITH_ERRORS = 250;
+	public static final String ACTIVITY_COUNTS = "/activity_counts/";
+
+	public static final int POST_COUNT_LIMIT = 60;
+
+	public static final String ICAT_STATUS = "icat_status";
+	public static final int ICAT_STATUS_OK = 200;
+	public static final int ICAT_STATUS_OK_WITH_ERRORS = 250;
+
+	public static final int TIMEOUT = 30000; //milliseconds
 
 	private static void post(String url, RequestParams params, AsyncHttpResponseHandler responseHandler) {
 		String encodedUrl;
 		encodedUrl = getAbsoluteUrl(url).replace(" ", "+");
+		client.setTimeout(TIMEOUT);
 		client.post(encodedUrl, params, responseHandler);
 		Log.d(TAG, "POST: " + encodedUrl);
 	}
 
-	private static String getAbsoluteUrl(String relativeUrl) {
+	public static String getAbsoluteUrl(String relativeUrl) {
 		return ICAT_URL + relativeUrl;
 	}
 
@@ -66,7 +75,8 @@ public class IcatUtil {
 //		joCounts.addProperty("activity_counts", s);
 
 		String username = Utilities.getMacAddress(context);
-		params.put("bundle", "{\"api_key\":\"icat1234\",\"username\":\"" + username + "\",\"activity_counts\":" + gsonCounts + "}\n");
+		username = "TestUser";
+		params.put("bundle", "{\"api_key\":\"" + API_KEY + "\",\"username\":\"" + username + "\",\"activity_counts\":" + gsonCounts + "}\n");
 
 		post(ACTIVITY_COUNTS, params, new JsonHttpResponseHandler() {
 			@Override
@@ -75,16 +85,23 @@ public class IcatUtil {
 				Log.d(TAG, "Success! " + response + " status " + status);
 				if (status == ICAT_STATUS_OK || status == ICAT_STATUS_OK_WITH_ERRORS) {
 					Intent broadcastIntent = new Intent(SensingService.DATA_SYNCED);
+					broadcastIntent.putExtra(EXTRA_SYNCED, true);
 					broadcastIntent.putExtra(EXTRA_DATE_START, counts.get(0).getDate());
 					broadcastIntent.putExtra(EXTRA_DATE_END, counts.get(counts.size() - 1).getDate());
-					context.sendBroadcast(broadcastIntent);
+					broadcastIntent.putExtra(EXTRA_MSG, "Data synced");
+					context.sendOrderedBroadcast(broadcastIntent, null);
 				}
 			}
 
 			@Override
 			public void onFailure(Throwable throwable, String response) {
-				String error = response != null ? response : "Null response.";
-				Log.d(TAG, "Error! " + error);
+//				String error = response != null ? response : "Null response.";
+				Log.e(TAG, "", throwable);
+
+				Intent broadcastIntent = new Intent(SensingService.DATA_SYNCED);
+				broadcastIntent.putExtra(EXTRA_SYNCED, false);
+				broadcastIntent.putExtra(EXTRA_MSG, "Sync error");
+				context.sendOrderedBroadcast(broadcastIntent, null);
 			}
 		});
 

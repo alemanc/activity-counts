@@ -179,11 +179,13 @@ public class ActivityChart {
 		int nextIndex = 0;
 		for (ActivityCount count : counts) {
 			activitySeries.add(nextIndex, count.getCounts());
-			if (count.getCounts() < ActivityUtil.SLEEP_THRESHOLD) {
+
+			// Asleep/awake charts
+			/*if (count.getCounts() < ActivityUtil.SLEEP_THRESHOLD) {
 				sleepSeries.add(nextIndex, ActivityUtil.GRAPH_SLEEP_VALUE);
 			} else {
 				awakeSeries.add(nextIndex, ActivityUtil.GRAPH_SLEEP_VALUE);
-			}
+			}*/
 
 			nextIndex++;
 
@@ -208,7 +210,7 @@ public class ActivityChart {
 		double maxY = activitySeries.getMaxY();
 		double minY = 0;
 
-		Log.d("SensIt.Chart", "maxX:" + maxX + ", minX:" + minX + ", maxY:" + maxY + ", minY:" + minY);
+//		Log.d("SensIt.Chart", "maxX:" + maxX + ", minX:" + minX + ", maxY:" + maxY + ", minY:" + minY);
 
 		if (maxY < 100) {
 			maxY = 100;

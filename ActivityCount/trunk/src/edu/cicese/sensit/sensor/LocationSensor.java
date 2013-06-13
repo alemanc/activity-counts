@@ -86,7 +86,7 @@ public class LocationSensor extends Sensor {
 
 		Log.d(TAG, "Starting Location sensor [done]");
 
-		Utilities.sensorStatus[Utilities.SENSOR_LOCATION] = Utilities.SENSOR_ON;
+		Utilities.setSensorStatus(Utilities.SENSOR_LOCATION, Utilities.SENSOR_ON);
 		refreshStatus();
 
 		if (stpe == null) {
@@ -133,7 +133,7 @@ public class LocationSensor extends Sensor {
 		stpe.shutdown();
 		super.stop();
 
-		Utilities.sensorStatus[Utilities.SENSOR_LOCATION] = Utilities.SENSOR_OFF;
+		Utilities.setSensorStatus(Utilities.SENSOR_LOCATION, Utilities.SENSOR_OFF);
 		refreshStatus();
 	}
 
@@ -146,7 +146,7 @@ public class LocationSensor extends Sensor {
 		}catch(IllegalArgumentException ex){
 			Log.e(TAG, ex.toString());
 		}
-		Utilities.sensorStatus[Utilities.SENSOR_LOCATION] = Utilities.SENSOR_PAUSED;
+		Utilities.setSensorStatus(Utilities.SENSOR_LOCATION, Utilities.SENSOR_PAUSED);
 		refreshStatus();
 
 		setRunning(false);

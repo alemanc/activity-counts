@@ -142,7 +142,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 
 		Log.d(TAG, "Starting " + getName() + " sensor [done]");
 
-		Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER] = Utilities.SENSOR_ON;
+		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_ON);
 		refreshStatus();
 
 		if (stpe == null) {
@@ -158,7 +158,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 		stpe.shutdown();
 		super.stop();
 
-		Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER] = Utilities.SENSOR_OFF;
+		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_OFF);
 		refreshStatus();
 	}
 
@@ -172,7 +172,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 
 //		handleEnable(Utilities.ENABLE_ACCELEROMETER, false);
 
-		Utilities.sensorStatus[Utilities.SENSOR_LINEAR_ACCELEROMETER] = Utilities.SENSOR_PAUSED;
+		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_PAUSED);
 		refreshStatus();
 
 		Log.d(TAG, "Pausing " + getName() + " sensor [done]");

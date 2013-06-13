@@ -4,19 +4,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.database.Cursor;
 import android.os.Handler;
 import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import edu.cicese.sensit.database.DBAdapter;
-import edu.cicese.sensit.icat.IcatUtil;
+import edu.cicese.sensit.icat.IcatApiUtil;
 import edu.cicese.sensit.util.ActivityUtil;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -29,34 +26,24 @@ import java.util.concurrent.TimeUnit;
 public class SensingService extends WakefulIntentService/* extends WakefulIntentService*/ {
 
 	public static final String TAG = "SensIt.SensingService";
-//	public static PowerManager.WakeLock WAKE_LOCK = null;
 
 	public final static String SENSING_START_ACTION = "edu.cicese.sensit.SENSING_START_ACTION";
 	public final static String SENSING_STOP_ACTION = "edu.cicese.sensit.SENSING_STOP_ACTION";
 	public final static String SENSING_START_ACTION_COMPLETE = "edu.cicese.sensit.SENSING_START_ACTION_COMPLETE";
 	public final static String SENSING_STOP_ACTION_COMPLETE = "edu.cicese.sensit.SENSING_STOP_ACTION_COMPLETE";
 
+	public static final String DATA_SYNCING = "edu.cicese.sensit.DATA_SYNCING";
 	public final static String DATA_SYNCED = "edu.cicese.sensit.DATA_SYNCED";
-
+	public final static String DATA_SYNC_DONE = "edu.cicese.sensit.DATA_SYNC_DONE";
+	public static final String DATA_SYNC_ERROR = "edu.cicese.sensit.DATA_SYNC_ERROR";
 	public static final String REFRESH_CHART = "edu.cicese.sensit.REFRESH_CHART";
 	public static final String REFRESH_SENSOR = "edu.cicese.sensit.REFRESH_SENSOR";
 
 	public final static String ACTION_ID_FIELD_NAME = "action_id";
-//	private long actionId;
 
 	private ScheduledExecutorService scheduleTaskExecutor;
-
 	private DBAdapter dbAdapter;
 
-//	private NotificationManager notificationManager;
-//	private Notification notification;
-
-	// Unique ID for the Notification.
-	// We use it on Notification start, and to cancel it.
-//	private int NOTIFICATION = R.string.service_text;
-//	private AccelerometerManager accelerometerManager;
-//	private BatteryThread batteryThread;
-//	private static Context appContext;
 
 	/**
 	 * This constructor is never used directly, it is used by the superclass
@@ -89,7 +76,8 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 
 		IntentFilter intentDBFilter = new IntentFilter();
 		intentDBFilter.addAction(SensingService.DATA_SYNCED);
-		registerReceiver(dataSyncedReceiver, intentDBFilter);
+//		intentDBFilter.addAction(SensingService.DATA_SYNCING);
+		registerReceiver(dataSyncReceiver, intentDBFilter);
 
 //		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
 		// Display a notification about us starting. Put an icon in the status bar.
@@ -113,9 +101,11 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		Log.d(TAG, "Unregister broadcast receivers");
 		unregisterReceiver(sensingActionReceiver);
 		unregisterReceiver(tickReceiver);
-		unregisterReceiver(dataSyncedReceiver);
+		unregisterReceiver(dataSyncReceiver);
 		Log.d(TAG, "Shutdown executor");
-		scheduleTaskExecutor.shutdown();
+		if (scheduleTaskExecutor != null) {
+			scheduleTaskExecutor.shutdown();
+		}
 
 		handler.removeCallbacksAndMessages(null);
 
@@ -124,26 +114,40 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		Utilities.setReady(true);
 	}
 
-	/*@Override
-	public IBinder onBind(Intent intent) {
-		return null;
-	}*/
-
-
 	/**
 	 * This method is invoked on the worker thread with a request to process.
 	 */
 	protected void doWakefulWork(Intent intent) {
-		if (intent.getAction().compareTo(SENSING_START_ACTION) == 0) {
+		switch (intent.getAction()) {
+			case SENSING_START_ACTION:
+				// Check if the user manually stopped the service
+				if (!Utilities.isManuallyStopped()) {
+					Log.e(TAG, "START!");
+					startSensing();
+				}
+				else {
+					Log.e(TAG, "Manually stopped! Couldn't restart");
+				}
+				break;
+			case SENSING_STOP_ACTION:
+				Log.e(TAG, "STOP!");
+				stopSensing();
+				break;
+			default:
+				Log.e(TAG, "Unknown action received: " + intent.getAction());
+		}
+		/*if (intent.getAction().compareTo(SENSING_START_ACTION) == 0) {
 			Log.e(TAG, "START!");
 			startSensing();
 
-			/*// Send broadcast the end of this process
+			*//*
+			//Send broadcast the end of this process
 			actionId = intent.getLongExtra(ACTION_ID_FIELD_NAME, -1);
 			// Send broadcast the end of this process
 			Intent broadcastIntent = new Intent(SENSING_START_ACTION_COMPLETE);
 			broadcastIntent.putExtra(ACTION_ID_FIELD_NAME, actionId);
-			sendBroadcast(broadcastIntent);*/
+			sendBroadcast(broadcastIntent);
+			*//*
 
 		} else if (intent.getAction().compareTo(SENSING_STOP_ACTION) == 0) {
 			Log.e(TAG, "STOP!");
@@ -151,7 +155,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		} else {
 			Log.e(TAG, "Unknown action received: " + intent.getAction());
 			return;
-		}
+		}*/
 	}
 
 	/*@Override
@@ -171,26 +175,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 
 		controller = new SessionController(this);
 		controller.start();
-
-		/*Thread thread = new Thread() {
-			@Override
-			public void run() {
-				while (Utilities.isSensing()) {}
-			}
-		};
-		thread.start();
-		Log.d(TAG, "Thread done");*/
-
-//		while(Utilities.isSensing()) {}
-
-		// Start sensing battery level
-		/*batteryThread = new BatteryThread(this);
-		batteryThread.start();
-
-		// Start sensing activity counts
-		if (accelerometerManager.isSupported()) {
-			accelerometerManager.startListening(this);
-		}*/
 	}
 
 	private void stopSensing() {
@@ -200,37 +184,8 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			Log.d(TAG, "Stop sensing!!");
 			controller.stop();
 		}
-
-//		Log.d(TAG, "Shutting down");
-//		scheduleTaskExecutor.shutdown();
-
-		/*while (controller != null && controller.getState() != SessionController.ControllerState.STOPPED) {
-			try {
-				Thread.sleep(100);
-			} catch (Exception e) {
-				Log.e(TAG, "Runnable sleep failed", e);
-			}
-		}*/
-
-//		Utilities.setSensing(false);
-
-		/*Utilities.resetValues();
-		// Start sensing battery level
-		if (batteryThread != null) {
-			batteryThread.done();
-		}
-		WAKE_LOCK.release();
-		WAKE_LOCK = null;
-
-		// Stop sensing activity counts
-		if (accelerometerManager.isListening()) {
-			accelerometerManager.stopListening();
-		}*/
 	}
 
-	/*public static Context getContext() {
-		return appContext;
-	}*/
 
 	/**
 	 * Show a notification while this service is running.
@@ -274,8 +229,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 	}*/
 
 	private Thread.UncaughtExceptionHandler onRuntimeError = new Thread.UncaughtExceptionHandler() {
-		private long actionId;
-
 		public void uncaughtException(Thread thread, Throwable ex) {
 			Log.e(ex.getClass().getName(), "UncaughtExceptionHandler " + ex.toString(), ex);
 
@@ -285,7 +238,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			stopSensing();
 			unregisterReceiver(sensingActionReceiver);
 			unregisterReceiver(tickReceiver);
-			unregisterReceiver(dataSyncedReceiver);
+			unregisterReceiver(dataSyncReceiver);
 			scheduleTaskExecutor.shutdown();
 			handler.removeCallbacksAndMessages(null);
 			dbAdapter.close();
@@ -320,53 +273,45 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		scheduleTaskExecutor = Executors.newScheduledThreadPool(10);
 
 		// Schedule a runnable task every minute
-//		scheduleTaskExecutor.scheduleAtFixedRate(new DataStoreThread(), 10, 10, TimeUnit.SECONDS);
-		scheduleTaskExecutor.scheduleAtFixedRate(dataSyncThread, 1, 1, TimeUnit.MINUTES);
-//		scheduleTaskExecutor.scheduleAtFixedRate(new SleepAnalysisThread(), 1, 1, TimeUnit.MINUTES);
+//		scheduleTaskExecutor.scheduleAtFixedRate(dataSyncThread, 0, 30, TimeUnit.MINUTES);
+		scheduleTaskExecutor.scheduleAtFixedRate(new DataUploadThread(this), 1, 1, TimeUnit.MINUTES);
 	}
 
 	private class DataStoreThread extends Thread {
 		private Date date;
-		private long timestamp;
 		private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-		public DataStoreThread(long timestamp, Date date) {
+		public DataStoreThread(Date date) {
 			this.date = date;
-			this.timestamp = timestamp;
 		}
 
 		@Override
 		public void run() {
 			Log.d(TAG, "Store data");
-			// Insert activity counts into the SensIt DB
 			dbAdapter.open();
 			int counts = ActivityUtil.getCounts();
 			Log.d(TAG, "Stored " + counts + " counts.");
-//			refreshChart(timestamp, counts);
 			boolean epochCharging = Utilities.isEpochCharging();
 			Utilities.resetEpochCharging();
 			dbAdapter.insertCounts(Utilities.getMacAddress(SensingService.this), counts, dateFormat.format(date), epochCharging, 0);
-//			dbAdapter.close();
+			dbAdapter.close();
 
 			Intent broadcastIntent = new Intent(SensingService.REFRESH_CHART);
 			sendBroadcast(broadcastIntent);
 		}
 	}
 
-	/*private void refreshChart(long timestamp, int counts) {
-		Bundle bundle = new Bundle();
-		bundle.putInt("counts", counts);
-		bundle.putLong("timestamp", timestamp);
-		Message msg = MainActivity.handlerUI.obtainMessage(Utilities.UPDATE_ACCELEROMETER);
-		msg.setData(bundle);
-		MainActivity.handlerUI.sendMessage(msg);
-	}*/
-
-	private Runnable dataSyncThread = new Runnable() {
+	/*private Runnable dataSyncThread = new Runnable() {
 		public void run() {
 			Log.d(TAG, "Sync data");
 			// Upload new data to server using the iCAT REST API
 			// Make the necessary changes to the local db to indicate which data has been synced
+
+			// Check connection preferences
+
+
+			// Check if WiFi connection available
+
 
 			dbAdapter.open();
 
@@ -384,21 +329,19 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 
 			if (!counts.isEmpty()) {
 				Log.d(TAG, "Sending from " + counts.get(0).getDate() + " to " + counts.get(counts.size() - 1).getDate());
-				IcatUtil.postActivityCounts(SensingService.this, counts);
+				IcatApiUtil.postActivityCounts(SensingService.this, counts);
+			}
+			else {
+				Log.d(TAG, "Nothing to sync.");
 			}
 
 			if (!cursor.isClosed()) {
 				cursor.close();
 			}
-		}
-	};
 
-	private class SleepAnalysisThread implements Runnable {
-		public void run() {
-			Log.d(TAG, "Compute sleep data");
-			//
+			dbAdapter.close();
 		}
-	}
+	};*/
 
 	BroadcastReceiver sensingActionReceiver = new BroadcastReceiver() {
 		@Override
@@ -423,30 +366,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 
 	private Handler handler = new Handler();
 
-	/*private Runnable TestRunnable = new Runnable() {
-		@Override
-		public void run() {
-			try {
-				long time = System.currentTimeMillis();
-				Date date = new Date(time);
-
-				Calendar calendar = Calendar.getInstance();
-				long time2 = calendar.getTimeInMillis();
-				Date date2 = calendar.getTime();
-
-				long time3 = SystemClock.elapsedRealtime();
-				Date date3 = new Date(time3);
-
-				Log.d(TAG, "Execute at: [1]" + time + " - " + date + " [2]" + time2 + " - " + date2 + " [3]" + time3 + " - " + date3);
-
-			} catch (Exception e) {
-				Log.e(TAG, "Error at Runnable. " + e);
-			} finally {
-				handler.postDelayed(this, 60000);
-			}
-		}
-	};*/
-
 	//Create a broadcast receiver to handle change in time
 	BroadcastReceiver tickReceiver = new BroadcastReceiver() {
 		@Override
@@ -457,7 +376,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			switch (intent.getAction()) {
 				case Intent.ACTION_TIME_TICK:
 					Log.d(TAG, "Action ACTION_TIME_TICK Received at: " + timestamp + ", " + date);
-					(new DataStoreThread(timestamp, date)).start();
+					(new DataStoreThread(date)).start();
 					break;
 				case Intent.ACTION_TIME_CHANGED:
 					Log.d(TAG, "Action ACTION_TIME_CHANGED Received at: " + timestamp + ", " + date);
@@ -469,17 +388,26 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		}
 	};
 
-	BroadcastReceiver dataSyncedReceiver = new BroadcastReceiver() {
+	public BroadcastReceiver dataSyncReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().compareTo(SensingService.DATA_SYNCED) == 0) {
-				Log.d(TAG, "Action DATA_SYNCED received");
-				String dateStart = intent.getStringExtra(IcatUtil.EXTRA_DATE_START);
-				String dateEnd = intent.getStringExtra(IcatUtil.EXTRA_DATE_END);
+			switch (intent.getAction()) {
+				case SensingService.DATA_SYNCED:
+					Log.d(TAG, "Action DATA_SYNCED received");
 
-				Log.d(TAG, "Updating from " + dateStart + " to " + dateEnd);
-				int rowsUpdated = dbAdapter.updateCounts(dateStart, dateEnd);
-				Log.d(TAG, rowsUpdated + " updated");
+					String dateStart = intent.getStringExtra(IcatApiUtil.EXTRA_DATE_START);
+					String dateEnd = intent.getStringExtra(IcatApiUtil.EXTRA_DATE_END);
+
+					Log.d(TAG, "Update");
+//					new Thread(new DataSyncedThread(SensingService.this, dateStart, dateEnd)).start();
+
+//					if (intent.getBooleanExtra(IcatApiUtil.EXTRA_SYNCED, false)) {
+//
+//					}
+
+					Log.d(TAG, "Resetting intent");
+					abortBroadcast();
+					break;
 			}
 		}
 	};

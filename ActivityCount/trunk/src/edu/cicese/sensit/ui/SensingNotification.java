@@ -27,7 +27,7 @@ public class SensingNotification {
 	public SensingNotification(Context context) {
 		this.context = context;
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-		activeSensors = new ArrayList<String>();
+		activeSensors = new ArrayList<>();
 	}
 
 	//TODO FIX CONCURRENT MODIFICATION ERROR
@@ -49,7 +49,7 @@ public class SensingNotification {
 
 	private PendingIntent createNotificationIntent() {
 		Intent intent = new Intent(context, MainActivity.class);
-//		intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
 		return pendingIntent;

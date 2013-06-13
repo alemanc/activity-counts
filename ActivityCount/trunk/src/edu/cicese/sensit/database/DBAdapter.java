@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.util.Log;
 import edu.cicese.sensit.util.ActivityUtil;
 
 /**
@@ -18,7 +17,7 @@ public class DBAdapter {
 	private static final String TAG = "SensIt.DBAdapter";
 
 	private static final String DATABASE_NAME = "sensit.db";
-	private static final int DATABASE_VERSION = 6;
+	private static final int DATABASE_VERSION = 7;
 	private static final String TABLE_ACTIVITY_COUNT = "activity_count";
 
 	private static final String DATABASE_CREATE =
@@ -67,9 +66,9 @@ public class DBAdapter {
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion,
 		                      int newVersion) {
-			Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
+			/*Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
 			db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACTIVITY_COUNT);
-			onCreate(db);
+			onCreate(db);*/
 		}
 	}
 
@@ -121,6 +120,36 @@ public class DBAdapter {
 				null);
 	}
 
+	public Cursor queryPartialCounts(int max) {
+		return db.query(TABLE_ACTIVITY_COUNT,
+				new String[]{
+						COLUMN_ACTIVITY_COUNT_USER_ID,
+						COLUMN_ACTIVITY_COUNT_COUNTS,
+						COLUMN_ACTIVITY_COUNT_CALORIES,
+						COLUMN_ACTIVITY_COUNT_DATE,
+						COLUMN_ACTIVITY_COUNT_CHARGING},
+				COLUMN_ACTIVITY_COUNT_SYNCED + " = 0",
+				null,
+				null,
+				null,
+				COLUMN_ACTIVITY_COUNT_ACTIVITY_COUNT_ID + " ASC",
+				max + "");
+	}
+
+	public Cursor queryCounts(int max) {
+		return db.query(TABLE_ACTIVITY_COUNT,
+				new String[]{
+						COLUMN_ACTIVITY_COUNT_COUNTS,
+						COLUMN_ACTIVITY_COUNT_DATE,
+						COLUMN_ACTIVITY_COUNT_CHARGING},
+				null,
+				null,
+				null,
+				null,
+				COLUMN_ACTIVITY_COUNT_ACTIVITY_COUNT_ID + " DESC",
+				max + "");
+	}
+
 	public int updateCounts(String dateStart, String dateEnd) {
 		ContentValues args = new ContentValues();
 		args.put(COLUMN_ACTIVITY_COUNT_SYNCED, 1);
@@ -129,30 +158,5 @@ public class DBAdapter {
 				args,
 				COLUMN_ACTIVITY_COUNT_DATE + " BETWEEN ? AND ?",
 				new String[]{dateStart, dateEnd});
-	}
-
-	public Cursor queryCounts(int max) {
-/*		db.query(TABLE_ACTIVITY_COUNT,
-				new String[]{
-						COLUMN_ACTIVITY_COUNT_COUNTS,
-						COLUMN_ACTIVITY_COUNT_DATE,
-						COLUMN_ACTIVITY_COUNT_CHARGING},
-				null,
-				null,
-				null,
-				COLUMN_ACTIVITY_COUNT_ACTIVITY_COUNT_ID + " DESC",
-				max + "");*/
-
-		return db.query(TABLE_ACTIVITY_COUNT,
-				new String[]{
-				COLUMN_ACTIVITY_COUNT_COUNTS,
-				COLUMN_ACTIVITY_COUNT_DATE,
-				COLUMN_ACTIVITY_COUNT_CHARGING},
-				null,
-				null,
-				null,
-				null,
-				COLUMN_ACTIVITY_COUNT_ACTIVITY_COUNT_ID + " DESC",
-				max + "");
 	}
 }
