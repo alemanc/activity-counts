@@ -8,6 +8,7 @@ import android.util.Log;
 import edu.cicese.sensit.datatask.DataTask;
 import edu.cicese.sensit.datatask.DataTaskFactory;
 import edu.cicese.sensit.datatask.data.DataType;
+import edu.cicese.sensit.util.SensitActions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +39,8 @@ public class SessionController implements Runnable {
 		tasks.clear();
 
 		tasks.add(DataTaskFactory.createDataTask(DataType.BATTERY_LEVEL, context));
-//		tasks.add(DataTaskFactory.createDataTask(DataType.ACCELEROMETER, context));
 		tasks.add(DataTaskFactory.createDataTask(DataType.LINEAR_ACCELEROMETER, context));
+//		tasks.add(DataTaskFactory.createDataTask(DataType.ACCELEROMETER, context));
 //		tasks.add(DataTaskFactory.createDataTask(DataType.BLUETOOTH, context));
 //		tasks.add(DataTaskFactory.createDataTask(DataType.LOCATION, context));
 
@@ -49,7 +50,7 @@ public class SessionController implements Runnable {
 	public void start() {
 		Log.d(TAG, "Start");
 		// Register receiver to wait until is stopped
-		IntentFilter intentFilter = new IntentFilter(SensingService.SENSING_STOP_ACTION);
+		IntentFilter intentFilter = new IntentFilter(SensitActions.SENSING_STOP_ACTION);
 		context.registerReceiver(sensingStopReceiver, intentFilter);
 
 		if (getState() == ControllerState.INITIATED) {
@@ -114,7 +115,7 @@ public class SessionController implements Runnable {
 		}
 
 		// Send broadcast
-		Intent broadcastIntent = new Intent(SensingService.SENSING_START_ACTION_COMPLETE);
+		Intent broadcastIntent = new Intent(SensitActions.SENSING_START_ACTION_COMPLETE);
 		context.sendBroadcast(broadcastIntent);
 
 		// Block execution until state changes
@@ -143,7 +144,7 @@ public class SessionController implements Runnable {
 		setState(ControllerState.STOPPED);
 
 		// Send broadcast
-		broadcastIntent = new Intent(SensingService.SENSING_STOP_ACTION_COMPLETE);
+		broadcastIntent = new Intent(SensitActions.SENSING_STOP_ACTION_COMPLETE);
 		context.sendBroadcast(broadcastIntent);
 	}
 
@@ -159,7 +160,7 @@ public class SessionController implements Runnable {
 	BroadcastReceiver sensingStopReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().compareTo(SensingService.SENSING_STOP_ACTION) == 0) {
+			if (intent.getAction().compareTo(SensitActions.SENSING_STOP_ACTION) == 0) {
 				Log.d(TAG, "Action SENSING_STOP_ACTION received");
 				context.unregisterReceiver(this);
 				setState(ControllerState.STOPPING);

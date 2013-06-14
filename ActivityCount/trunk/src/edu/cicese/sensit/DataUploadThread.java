@@ -9,19 +9,25 @@ import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import edu.cicese.sensit.database.DBAdapter;
-import edu.cicese.sensit.icat.IcatApiUtil;
+import edu.cicese.sensit.icat.IcatUtil;
 import edu.cicese.sensit.util.Preferences;
+import edu.cicese.sensit.util.SensitActions;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Queries the local DB to obtain unsynced data.
+ * In order to avoid request timeouts, the data is split in smaller requests.
+ * Creates an AsyncTask with these requests, which will execute them sequentially.
+ *
  * Created by: Eduardo Quintana Contreras
  * Date: 10/06/13
  * Time: 07:07 PM
  */
 public class DataUploadThread implements Runnable {
 	public static final String TAG = "SensIt.DataUploadThread";
+
 	private DBAdapter dbAdapter;
 	private Context context;
 
@@ -32,34 +38,30 @@ public class DataUploadThread implements Runnable {
 
 	@Override
 	public void run() {
-		//Upload new data to server using the iCAT REST API
-		// Make the necessary changes to the local db to indicate which data has been synced
-
-		// Check connection preferences
+		// check connection preferences
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
 		boolean wifiOnly = settings.getBoolean(Preferences.KEY_PREF_WIFI_ONLY, true);
 
-		Log.d(TAG, "Checking connection " + wifiOnly);
-
-		// Check if WiFi connection available
-		ConnectivityManager connManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo nWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		NetworkInfo nMobile = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-
-		Log.d(TAG, "Connections: " + nWifi.toString());
-		Log.d(TAG, "Connections: " + nMobile.toString());
+		// check connection
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo nWifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
+//		NetworkInfo nMobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
 		Utilities.setSyncing(true);
-		Intent syncingIntent = new Intent(SensingService.DATA_SYNCING);
+		Intent syncingIntent = new Intent(SensitActions.DATA_SYNCING);
 		context.sendBroadcast(syncingIntent);
 
-		if (nWifi.isConnected()) {
+		if ((wifiOnly && nWifi.isConnected()) || (!wifiOnly && (activeNetworkInfo != null && activeNetworkInfo.isConnected()))) {
 			Log.d(TAG, "Connection available");
 			Log.d(TAG, "Sync data");
 
 			dbAdapter.open();
 
 			Log.d(TAG, "Query data");
+//			COLUMN_ACTIVITY_COUNT_COUNTS,
+//			COLUMN_ACTIVITY_COUNT_DATE,
+//			COLUMN_ACTIVITY_COUNT_CHARGING
 			Cursor cursor = dbAdapter.queryCounts();
 
 			List<ActivityCount> counts = new ArrayList<>();
@@ -67,26 +69,26 @@ public class DataUploadThread implements Runnable {
 			// at least one entry
 			if (cursor.moveToFirst()) {
 				do {
-					counts.add(new ActivityCount(cursor.getString(3), cursor.getInt(1), cursor.getInt(4)));
+					counts.add(new ActivityCount(cursor.getString(1), cursor.getInt(0), cursor.getInt(2)));
 				} while (cursor.moveToNext());
 			}
 
 			if (!counts.isEmpty()) {
 				Log.d(TAG, "Sending from " + counts.get(0).getDate() + " to " + counts.get(counts.size() - 1).getDate());
 
-				// split post request
+				// split post request into smaller requests (max. 60 count insertions)
 				List<List<ActivityCount>> lists = new ArrayList<>();
-				for (int i = 0; i < counts.size(); i += IcatApiUtil.POST_COUNT_LIMIT) {
-					lists.add(counts.subList(i, Math.min(i + IcatApiUtil.POST_COUNT_LIMIT, counts.size())));
+				for (int i = 0; i < counts.size(); i += IcatUtil.POST_COUNT_LIMIT) {
+					lists.add(counts.subList(i, Math.min(i + IcatUtil.POST_COUNT_LIMIT, counts.size())));
 				}
 //				new DataUploadTask(context, lists).execute();
-//				IcatApiUtil.postActivityCounts(context, counts);
+//				IcatUtil.postActivityCounts(context, counts);
 			} else {
 				Log.d(TAG, "Nothing to sync");
 
 				Utilities.setSyncing(false);
-				Intent syncedIntent = new Intent(SensingService.DATA_SYNC_ERROR);
-				syncedIntent.putExtra(IcatApiUtil.EXTRA_MSG, "Nothing to sync");
+				Intent syncedIntent = new Intent(SensitActions.DATA_SYNC_ERROR);
+				syncedIntent.putExtra(SensitActions.EXTRA_MSG, "Nothing to sync");
 				context.sendBroadcast(syncedIntent);
 			}
 
@@ -100,8 +102,8 @@ public class DataUploadThread implements Runnable {
 			Log.d(TAG, "No connection");
 
 			Utilities.setSyncing(false);
-			Intent syncedIntent = new Intent(SensingService.DATA_SYNC_ERROR);
-			syncedIntent.putExtra(IcatApiUtil.EXTRA_MSG, "No connection");
+			Intent syncedIntent = new Intent(SensitActions.DATA_SYNC_ERROR);
+			syncedIntent.putExtra(SensitActions.EXTRA_MSG, "No connection");
 			context.sendBroadcast(syncedIntent);
 		}
 	}

@@ -4,9 +4,9 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.os.BatteryManager;
 import android.util.Log;
 import edu.cicese.sensit.Utilities;
+import edu.cicese.sensit.util.SensitActions;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -28,14 +28,16 @@ public class BatterySensor extends Sensor {
 		super.start();
 		Log.d(TAG, "Starting Battery sensor");
 
-		IntentFilter batteryLevelFilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+		IntentFilter batteryLevelFilter = new IntentFilter();
+		batteryLevelFilter.addAction(Intent.ACTION_POWER_CONNECTED);
+		batteryLevelFilter.addAction(Intent.ACTION_POWER_DISCONNECTED);
 		getContext().registerReceiver(batteryReceiver, batteryLevelFilter);
 
 //		handleEnable(Utilities.ENABLE_BATTERY, true);
 
 		Log.d(TAG, "Starting Battery sensor [done]");
 
-		Utilities.setSensorStatus(Utilities.SENSOR_BATTERY, Utilities.SENSOR_ON);
+		Sensor.setSensorStatus(Sensor.SENSOR_BATTERY, Sensor.SENSOR_ON);
 		refreshStatus();
 	}
 
@@ -45,47 +47,48 @@ public class BatterySensor extends Sensor {
 
 		try {
 			getContext().unregisterReceiver(batteryReceiver);
-		} catch (IllegalArgumentException ex) {
-			Log.e(TAG, ex.toString());
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "", e);
 		}
 
-//		handleEnable(Utilities.ENABLE_BATTERY, false);
+		Sensor.setSensorStatus(Sensor.SENSOR_BATTERY, Sensor.SENSOR_OFF);
+		refreshStatus();
 
 		Log.d(TAG, "Stopping Battery sensor [done]");
-
-		Utilities.setSensorStatus(Utilities.SENSOR_BATTERY, Utilities.SENSOR_OFF);
-		refreshStatus();
 
 		super.stop();
 	}
 
 	BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
-//			context.unregisterReceiver(this);
-			int rawLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+			boolean plugged = false;
+			switch (intent.getAction()) {
+				case Intent.ACTION_POWER_CONNECTED:
+					Log.d(TAG, "Action ACTION_POWER_CONNECTED received");
+					plugged = true;
+					break;
+				case Intent.ACTION_POWER_DISCONNECTED:
+					Log.d(TAG, "Action ACTION_POWER_DISCONNECTED received");
+					plugged = false;
+					break;
+				default:
+					Log.e(TAG, "Unknown action received: " + intent.getAction());
+			}
+
+			Utilities.setCharging(plugged);
+			Utilities.setEpochCharging();
+
+			Intent broadcastIntent = new Intent(SensitActions.BATTERY_CHANGED);
+//			broadcastIntent.putExtra(SensitActions.EXTRA_PLUGGED, plugged);
+			context.sendBroadcast(broadcastIntent);
+
+			/*int rawLevel = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
 			int scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 			int level = -1;
 			if (rawLevel >= 0 && scale > 0) {
 				level = (rawLevel * 100) / scale;
 			}
-
-			int plugged = intent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0);
-
-			Utilities.setCharging(plugged != 0);
-			Utilities.setEpochCharging();
-
-			Log.d(TAG, "Battery data received: Level:" + level + ", Charging:" + plugged);
-
-			/*Bundle bundle = new Bundle();
-			bundle.putInt("level", level);
-			bundle.putInt("plugged", plugged);
-			updateUI(Utilities.UPDATE_BATTERY, bundle);
-
-			setData(level, plugged);*/
+			Log.d(TAG, "Battery data received: Level:" + level + ", Charging:" + plugged);*/
 		}
 	};
-
-	/*private void setData(int level, int plugged) {
-		currentData = new BatteryData(level, plugged);
-	}*/
 }

@@ -80,7 +80,7 @@ public abstract class DataTask implements Runnable {
 	 */
 
 	public void run() {
-		Log.d(TAG, "RUNNING!");
+		Log.i(TAG, "RUNNING!");
 		Looper.prepare();
 		while (isRunning()) {
 //			compute();

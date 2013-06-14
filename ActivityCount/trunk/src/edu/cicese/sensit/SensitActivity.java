@@ -9,8 +9,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,9 +21,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import edu.cicese.sensit.database.DBAdapter;
-import edu.cicese.sensit.icat.IcatApiUtil;
+import edu.cicese.sensit.sensor.Sensor;
 import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.Preferences;
+import edu.cicese.sensit.util.SensitActions;
 import org.achartengine.GraphicalView;
 
 import java.util.ArrayList;
@@ -37,7 +36,7 @@ import java.util.UUID;
  * Date: 23/08/12
  * Time: 03:49 PM
  */
-public class MainActivity extends Activity {
+public class SensitActivity extends Activity {
 	private static final String TAG = "SensIt.Main";
 
 	private Button btnAction;
@@ -60,24 +59,6 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Log.d("SensIt", "OnCreated " + (savedInstanceState != null));
-
-		// Get unique ID
-		Log.d("SensIt", "ANDROID ID: " + Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID));
-
-		final TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
-
-		final String tmDevice, tmSerial, androidId;
-		tmDevice = "" + tm.getDeviceId();
-		tmSerial = "" + tm.getSimSerialNumber();
-		androidId = "" + Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-
-		UUID deviceUuid = new UUID(androidId.hashCode(), ((long) tmDevice.hashCode() << 32) | tmSerial.hashCode());
-		String deviceId = deviceUuid.toString();
-
-		Log.d("SensIt", "tmDevice: " + tmDevice);
-		Log.d("SensIt", "tmSerial: " + tmSerial);
-		Log.d("SensIt", "androidId: " + androidId);
-		Log.d("SensIt", "deviceId: " + deviceId);
 
 		setContentView(R.layout.main);
 
@@ -152,8 +133,8 @@ public class MainActivity extends Activity {
 						Utilities.setSensing(true);
 
 						// Point out the action triggered by a user
-						sensingIntent.setAction(SensingService.SENSING_START_ACTION);
-						WakefulIntentService.sendWakefulWork(MainActivity.this, sensingIntent);
+						sensingIntent.setAction(SensitActions.SENSING_START_ACTION);
+						WakefulIntentService.sendWakefulWork(SensitActivity.this, sensingIntent);
 
 						btnAction.setText("Stop");
 					} else {
@@ -162,13 +143,13 @@ public class MainActivity extends Activity {
 						Utilities.setReady(false);
 						Utilities.setSensing(false);
 
-						Intent broadcastIntent = new Intent(SensingService.SENSING_STOP_ACTION);
+						Intent broadcastIntent = new Intent(SensitActions.SENSING_STOP_ACTION);
 						sendBroadcast(broadcastIntent);
 
 						// Point out the action triggered by a user
 //					sensingIntent.setAction(SensingService.SENSING_STOP_ACTION);
 
-					/*Intent stopIntent = new Intent(MainActivity.this, SensingService.class);
+					/*Intent stopIntent = new Intent(SensitActivity.this, SensingService.class);
 					// Point out this action was triggered by a user
 					stopIntent.setAction(SensingService.SENSING_STOP_ACTION);
 					// Send unique id for this action
@@ -193,7 +174,7 @@ public class MainActivity extends Activity {
 //				setSyncing(true);
 //				Intent broadcastIntent = new Intent(SensingService.DATA_SYNCING);
 //				sendBroadcast(broadcastIntent);
-				new Thread(new DataUploadThread(MainActivity.this)).start();
+				new Thread(new DataUploadThread(SensitActivity.this)).start();
 			}
 		});
 
@@ -236,12 +217,12 @@ public class MainActivity extends Activity {
 		refreshSyncing();
 
 		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(SensingService.REFRESH_CHART);
-		intentFilter.addAction(SensingService.REFRESH_SENSOR);
-		intentFilter.addAction(SensingService.DATA_SYNCING);
-		intentFilter.addAction(SensingService.DATA_SYNCED);
-		intentFilter.addAction(SensingService.DATA_SYNC_DONE);
-		intentFilter.addAction(SensingService.DATA_SYNC_ERROR);
+		intentFilter.addAction(SensitActions.REFRESH_CHART);
+		intentFilter.addAction(SensitActions.REFRESH_SENSOR);
+		intentFilter.addAction(SensitActions.DATA_SYNCING);
+		intentFilter.addAction(SensitActions.DATA_SYNCED);
+		intentFilter.addAction(SensitActions.DATA_SYNC_DONE);
+		intentFilter.addAction(SensitActions.DATA_SYNC_ERROR);
 		registerReceiver(uiRefreshReceiver, intentFilter);
 	}
 
@@ -338,22 +319,22 @@ public class MainActivity extends Activity {
 
 	private static void refresh(View view, TextView txt, int status) {
 		switch (status) {
-			case Utilities.SENSOR_ON:
+			case Sensor.SENSOR_ON:
 				view.setBackgroundResource(R.color.green);
 				break;
-			case Utilities.SENSOR_OFF:
+			case Sensor.SENSOR_OFF:
 				view.setBackgroundResource(R.color.red);
 				txt.setText("");
 				break;
-			case Utilities.SENSOR_PAUSED:
+			case Sensor.SENSOR_PAUSED:
 				view.setBackgroundResource(R.color.blue);
 				break;
 		}
 	}
 
 	private void refreshSensors() {
-		refresh(accIndicator, txtAccelerometer, Utilities.getSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER));
-		refresh(batteryIndicator, txtBattery, Utilities.getSensorStatus(Utilities.SENSOR_BATTERY));
+		refresh(accIndicator, txtAccelerometer, Sensor.getSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER));
+		refresh(batteryIndicator, txtBattery, Sensor.getSensorStatus(Sensor.SENSOR_BATTERY));
 //		refresh(locationIndicator, txtLocation, Utilities.sensorStatus[Utilities.SENSOR_LOCATION]);
 //		refresh(bluetoothIndicator, txtBluetooth, Utilities.sensorStatus[Utilities.SENSOR_BLUETOOTH]);
 	}
@@ -407,34 +388,34 @@ public class MainActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			switch (intent.getAction()){
-				case SensingService.REFRESH_CHART:
+				case SensitActions.REFRESH_CHART:
 					Log.d(TAG, "Refresh Action received");
 					refreshChart();
 					break;
-				case SensingService.REFRESH_SENSOR:
+				case SensitActions.REFRESH_SENSOR:
 					refreshSensors();
 					break;
-				case SensingService.DATA_SYNCING:
+				case SensitActions.DATA_SYNCING:
 //					setSyncing(true);
 					refreshSyncing();
 					break;
-				case SensingService.DATA_SYNCED:
+				case SensitActions.DATA_SYNCED:
 					Log.d(TAG, "Action DATA_SYNCED received");
 
-					String dateStart = intent.getStringExtra(IcatApiUtil.EXTRA_DATE_START);
-					String dateEnd = intent.getStringExtra(IcatApiUtil.EXTRA_DATE_END);
+					String dateStart = intent.getStringExtra(SensitActions.EXTRA_DATE_START);
+					String dateEnd = intent.getStringExtra(SensitActions.EXTRA_DATE_END);
 
 					Log.d(TAG, "Update");
-//					new Thread(new DataSyncedThread(MainActivity.this, dateStart, dateEnd)).start();
+//					new Thread(new DataSyncedThread(SensitActivity.this, dateStart, dateEnd)).start();
 
 //					if (syncedToast == null) {
-//						syncedToast = Toast.makeText(MainActivity.this, "", Toast.LENGTH_SHORT);
+//						syncedToast = Toast.makeText(SensitActivity.this, "", Toast.LENGTH_SHORT);
 //					}
 
-//					if (intent.getBooleanExtra(IcatApiUtil.EXTRA_SYNCED, false)) {
+//					if (intent.getBooleanExtra(IcatUtil.EXTRA_SYNCED, false)) {
 //					}
 
-//					String msg = intent.getStringExtra(IcatApiUtil.EXTRA_MSG);
+//					String msg = intent.getStringExtra(IcatUtil.EXTRA_MSG);
 //					if (msg != null) {
 //						syncedToast.setText(msg);
 //						syncedToast.show();
@@ -444,21 +425,21 @@ public class MainActivity extends Activity {
 					abortBroadcast();
 
 					break;
-				case SensingService.DATA_SYNC_DONE:
+				case SensitActions.DATA_SYNC_DONE:
 					Log.d(TAG, "Action DATA_SYNC_DONE received");
 //					setSyncing(false);
 					refreshSyncing();
 					break;
-				case SensingService.DATA_SYNC_ERROR:
+				case SensitActions.DATA_SYNC_ERROR:
 					Log.d(TAG, "Action DATA_SYNC_ERROR received");
 //					setSyncing(false);
 					refreshSyncing();
 
 					if (syncedToast == null) {
-						syncedToast = Toast.makeText(MainActivity.this, "", Toast.LENGTH_SHORT);
+						syncedToast = Toast.makeText(SensitActivity.this, "", Toast.LENGTH_SHORT);
 					}
 
-					String msg = intent.getStringExtra(IcatApiUtil.EXTRA_MSG);
+					String msg = intent.getStringExtra(SensitActions.EXTRA_MSG);
 					if (msg != null) {
 						syncedToast.setText(msg);
 						syncedToast.show();

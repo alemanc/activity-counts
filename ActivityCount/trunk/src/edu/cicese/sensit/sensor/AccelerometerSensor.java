@@ -1,7 +1,6 @@
 package edu.cicese.sensit.sensor;
 
 import android.content.Context;
-import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
@@ -21,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Date: 9/05/13
  * Time: 12:31 PM
  */
-public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor implements SensorEventListener {
+public class AccelerometerSensor extends Sensor implements SensorEventListener {
 	public static final String ATT_FRAME_TIME = "frameTime";
 	public static final String ATT_DURATION = "duration";
 	public static final int MAX_FRAME_SIZE = 20;
@@ -30,7 +29,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 
 	/* Attributes needed to register SensorEventListener */
 	private SensorManager sensorManager;
-	private Sensor accelerometer;
+	private android.hardware.Sensor accelerometer;
 	private int sensorType;
 
 	/* Attributes need to control sample rate */
@@ -65,7 +64,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 	 * Static method to construct an aAccelerometerSensor with accelerometer readings
 	 */
 	public static AccelerometerSensor createAccelerometer(Context context, long frameTime, long duration) {
-		AccelerometerSensor sensor = new AccelerometerSensor(context, Sensor.TYPE_ACCELEROMETER, frameTime, duration);
+		AccelerometerSensor sensor = new AccelerometerSensor(context, android.hardware.Sensor.TYPE_ACCELEROMETER, frameTime, duration);
 		Log.d(TAG, "Accelerometer sensor created");
 		sensor.setName("A");
 		AccelerometerCountUtil.initiateGravity();
@@ -76,7 +75,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 	 * Static method to construct an aAccelerometerSensor with gyroscope readings
 	 */
 	public static AccelerometerSensor createGyroscope(Context context, long frameTime, long duration) {
-		AccelerometerSensor sensor = new AccelerometerSensor(context, Sensor.TYPE_GYROSCOPE, frameTime, duration);
+		AccelerometerSensor sensor = new AccelerometerSensor(context, android.hardware.Sensor.TYPE_GYROSCOPE, frameTime, duration);
 		Log.d(TAG, "Gyroscope sensor created");
 		sensor.setName("GY");
 		return sensor;
@@ -86,7 +85,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 	 * Static method to construct an aAccelerometerSensor with Linear accelerometer readings
 	 */
 	public static AccelerometerSensor createLinearAccelerometer(Context context, long frameTime, long duration) {
-		AccelerometerSensor sensor = new AccelerometerSensor(context, Sensor.TYPE_LINEAR_ACCELERATION, frameTime, duration);
+		AccelerometerSensor sensor = new AccelerometerSensor(context, android.hardware.Sensor.TYPE_LINEAR_ACCELERATION, frameTime, duration);
 		Log.d(TAG, "Linear Accelerometer sensor created");
 		sensor.setName("LA");
 		return sensor;
@@ -142,7 +141,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 
 		Log.d(TAG, "Starting " + getName() + " sensor [done]");
 
-		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_ON);
+		Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_ON);
 		refreshStatus();
 
 		if (stpe == null) {
@@ -158,7 +157,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 		stpe.shutdown();
 		super.stop();
 
-		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_OFF);
+		Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_OFF);
 		refreshStatus();
 	}
 
@@ -172,7 +171,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 
 //		handleEnable(Utilities.ENABLE_ACCELEROMETER, false);
 
-		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_PAUSED);
+		Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_PAUSED);
 		refreshStatus();
 
 		Log.d(TAG, "Pausing " + getName() + " sensor [done]");
@@ -237,10 +236,10 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 		double[][] doubleFrame = frame.toArray(new double[frame.size()][]);
 		AccelerometerFrameData data;
 		switch (sensorType) {
-			case Sensor.TYPE_ACCELEROMETER:
+			case android.hardware.Sensor.TYPE_ACCELEROMETER:
 				data = new AccelerometerFrameData(DataType.ACCELEROMETER, doubleFrame);
 				break;
-			case Sensor.TYPE_GYROSCOPE:
+			case android.hardware.Sensor.TYPE_GYROSCOPE:
 				data = new AccelerometerFrameData(DataType.GYROSCOPE, doubleFrame);
 				break;
 			default:
@@ -296,7 +295,7 @@ public class AccelerometerSensor extends edu.cicese.sensit.sensor.Sensor impleme
 				double axisX = event.values[0];
 				double axisY = event.values[1];
 				double axisZ = event.values[2];
-				if (sensorType == Sensor.TYPE_LINEAR_ACCELERATION) {
+				if (sensorType == android.hardware.Sensor.TYPE_LINEAR_ACCELERATION) {
 					setNewReadings(axisX, axisY, axisZ, currentTime, counts);
 					counts += Math.floor(Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ)));
 				}

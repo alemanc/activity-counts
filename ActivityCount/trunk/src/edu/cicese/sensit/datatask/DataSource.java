@@ -18,7 +18,7 @@ public class DataSource extends DataTask {
 	public DataSource(Sensor sensor) {
 		super();
 		this.sensor = sensor;
-		outputs = new ArrayList<Output>();
+		outputs = new ArrayList<>();
 		clear();
 	}
 
@@ -52,8 +52,4 @@ public class DataSource extends DataTask {
 	public void addOutput(Output o) {
 		super.addOutput(o);
 	}
-
-	/*public boolean isSensing() {
-		return sensor.isSensing();
-	}*/
 }
