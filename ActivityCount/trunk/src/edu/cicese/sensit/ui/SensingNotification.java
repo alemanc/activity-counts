@@ -5,8 +5,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import edu.cicese.sensit.MainActivity;
 import edu.cicese.sensit.R;
+import edu.cicese.sensit.SensitActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +32,7 @@ public class SensingNotification {
 
 	//TODO FIX CONCURRENT MODIFICATION ERROR
 	private String createNotificationContent() {
-		StringBuilder sb = new StringBuilder(context.getString(R.string.service_title) + " [");
+		StringBuilder sb = new StringBuilder(context.getString(R.string.sensing_notification_text) + " [");
 		String div = ", ", end = "]";
 		for (String sensor : activeSensors) {
 			sb.append(sensor + div);
@@ -42,13 +42,13 @@ public class SensingNotification {
 	}
 
 	private Notification createNotification() {
-		CharSequence tickerText = context.getText(R.string.service_ticker_text);
+		CharSequence tickerText = context.getText(R.string.sensing_notification_ticker_text);
 
 		return new Notification(R.drawable.icon, tickerText, System.currentTimeMillis());
 	}
 
 	private PendingIntent createNotificationIntent() {
-		Intent intent = new Intent(context, MainActivity.class);
+		Intent intent = new Intent(context, SensitActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
@@ -86,7 +86,7 @@ public class SensingNotification {
 				manager.cancel(NOTIFICATION_ID);
 			} else {
 				// Title for the expanded status
-				String contentTitle = context.getString(R.string.service_title);
+				String contentTitle = context.getString(R.string.sensing_notification_title);
 				// Text to display in the extended status window
 				String contentText = createNotificationContent();
 

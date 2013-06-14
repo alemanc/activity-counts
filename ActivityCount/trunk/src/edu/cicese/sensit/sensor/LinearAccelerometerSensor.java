@@ -1,14 +1,16 @@
 package edu.cicese.sensit.sensor;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.hardware.Sensor;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 import edu.cicese.sensit.Utilities;
 import edu.cicese.sensit.util.ActivityUtil;
-import edu.cicese.sensit.util.LocationUtil;
+import edu.cicese.sensit.util.SensitActions;
 
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -18,7 +20,7 @@ import java.util.concurrent.TimeUnit;
  * Date: 9/05/13
  * Time: 12:31 PM
  */
-public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor implements SensorEventListener {
+public class LinearAccelerometerSensor extends Sensor implements SensorEventListener {
 //	public static final String ATT_FRAME_TIME = "frameTime";
 //	public static final String ATT_DURATION = "duration";
 //	public static final int MAX_FRAME_SIZE = 20;
@@ -27,7 +29,7 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 
 	/* Attributes needed to resume SensorEventListener */
 	private SensorManager sensorManager;
-	private Sensor accelerometer;
+	private android.hardware.Sensor accelerometer;
 //	private int sensorType;
 
 	/* Attributes need to control sample rate */
@@ -39,6 +41,8 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 	private long duration; // duration of reading wanted within a frame
 //	private long frameStartTime; // starting time of a frame
 //	private Queue<double[]> frame;
+
+//	private boolean forcedPaused = false;
 
 	private ScheduledThreadPoolExecutor stpe;
 
@@ -56,13 +60,17 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 		accelerometer = sensorManager.getDefaultSensor(sensorType);
 
 		Log.d(TAG, "Sensor initialized: " + accelerometer.getName());
+
+		IntentFilter batteryFilter = new IntentFilter();
+		batteryFilter.addAction(SensitActions.BATTERY_CHANGED);
+		context.registerReceiver(batteryReceiver, batteryFilter);
 	}
 
 	/**
 	 * Static method to construct an LinearAccelerometerSensor with Linear accelerometer readings
 	 */
 	public static LinearAccelerometerSensor createLinearAccelerometer(Context context, long frameTime, long duration) {
-		LinearAccelerometerSensor sensor = new LinearAccelerometerSensor(context, Sensor.TYPE_LINEAR_ACCELERATION, frameTime, duration);
+		LinearAccelerometerSensor sensor = new LinearAccelerometerSensor(context, android.hardware.Sensor.TYPE_LINEAR_ACCELERATION, frameTime, duration);
 		Log.d(TAG, "Linear Accelerometer sensor created");
 		sensor.setName("LA");
 		return sensor;
@@ -71,11 +79,41 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 	@Override
 	public void start() {
 		super.start();
+
+		if (!Utilities.isCharging()) {
+			resume();
+		}
+		else {
+			Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_PAUSED);
+			refreshStatus();
+		}
+	}
+
+	@Override
+	public void stop() {
+		pause();
+		super.stop();
+
+		if (stpe != null) {
+			stpe.shutdown();
+		}
+
+		try {
+			getContext().unregisterReceiver(batteryReceiver);
+		} catch (IllegalArgumentException e) {
+			Log.e(TAG, "", e);
+		}
+
+		Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_OFF);
+		refreshStatus();
+	}
+
+	private void resume() {
+		super.start();
+
 		setRunning(true);
 
 		Log.d(TAG, "Starting " + getName() + " sensor");
-
-//		counts = 0;
 
 		if (duration > frameTime) {
 			duration = frameTime;
@@ -87,18 +125,18 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 		if (getSampleFrequency() == 44 || getSampleFrequency() == 4) {
 			wantedPeriod = 1000000L;
 		}
-//		frameStartTime = System.currentTimeMillis();
 		lastTimestamp = 0;
 		boolean success;
-		if (this.getSampleFrequency() > 4) {
+		/*if (this.getSampleFrequency() > 4) {
 			Log.d(TAG, "SENSOR_DELAY_GAME");
 			success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 		} else {
 			Log.d(TAG, "SENSOR_DELAY_NORMAL");
 			success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-		}
+		}*/
+		success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
-//		wantedPeriod = 40 * 1000000L;
+		wantedPeriod = 40 * 1000000L;
 
 		if (success) {
 			sensingNotification.updateNotificationWith(getName());
@@ -112,23 +150,13 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 
 		Log.d(TAG, "Starting " + getName() + " sensor [done]");
 
-		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_ON);
+		Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_ON);
 		refreshStatus();
 
 		if (stpe == null) {
 			stpe = new ScheduledThreadPoolExecutor(1);
-			stpe.scheduleAtFixedRate(controller, 0, Utilities.ACCELEROMETER_CHECK_TIME, TimeUnit.MILLISECONDS);
+			stpe.scheduleAtFixedRate(pauseController, 0, Utilities.ACCELEROMETER_CHECK_TIME, TimeUnit.MILLISECONDS);
 		}
-	}
-
-	@Override
-	public void stop() {
-		pause();
-		stpe.shutdown();
-		super.stop();
-
-		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_OFF);
-		refreshStatus();
 	}
 
 	private void pause() {
@@ -139,7 +167,7 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 		sensorManager.unregisterListener(this);
 		Log.d(TAG, "SensorEventLister unregistered!");
 
-		Utilities.setSensorStatus(Utilities.SENSOR_LINEAR_ACCELEROMETER, Utilities.SENSOR_PAUSED);
+		Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_PAUSED);
 		refreshStatus();
 
 		Log.d(TAG, "Pausing " + getName() + " sensor [done]");
@@ -249,8 +277,8 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 	 */
 	public void onSensorChanged(SensorEvent event) {
 		long period = event.timestamp - lastTimestamp;
-//		Log.d(TAG, "Substracting: "+event.timestamp+" - "+lastTimestamp+" = "+period);
-//		Log.d(TAG, "Comparing: "+period+" >= "+wantedPeriod);
+		Log.d(TAG, "Substracting: "+event.timestamp+" - "+lastTimestamp+" = "+period);
+		Log.d(TAG, "Comparing: "+period+" >= "+wantedPeriod);
 		if (period >= wantedPeriod) {
 			double axisX = event.values[0];
 			double axisY = event.values[1];
@@ -267,9 +295,9 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 	public void onAccuracyChanged(android.hardware.Sensor sensor, int accuracy) {
 	}
 
-	private Runnable controller = new Runnable() {
+	private Runnable pauseController = new Runnable() {
 		public void run() {
-			Log.d(TAG, "Checking ACC [check]");
+			Log.d(TAG, "Checking ACC [pause controller]");
 
 			// get 10-seconds-epoch (check-epoch) counts
 			int checkEpochCounts = ActivityUtil.checkEpochCounts;
@@ -277,11 +305,11 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 			ActivityUtil.checkEpochCounts -= checkEpochCounts;
 
 			// check if the device was charging within the check-epoch
-			boolean checkEpochCharging = Utilities.isCheckEpochCharging();
+//			boolean checkEpochCharging = Utilities.isCheckEpochCharging();
 			// reset charging-within-check-epoch flag
-			Utilities.resetCheckEpochCharging();
+//			Utilities.resetCheckEpochCharging();
 
-			if (Utilities.isCharging() || LocationUtil.isAtHome()) {
+			/*if (Utilities.isCharging()*//* || LocationUtil.isAtHome()*//*) {
 				if (isRunning()) {
 					Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
 					pause();
@@ -292,7 +320,7 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 					Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
 					start();
 				}
-				/*else {
+				*//*else {
 					// if the user was active in the check-epoch
 					if (isMoving(checkEpochCounts)) {
 						// reset inactivity check-epoch counter
@@ -302,13 +330,13 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 						ActivityUtil.addEpochInactive();
 						if (ActivityUtil.getEpochsInactive() > 3)
 					}
-				}*/
-			}
+				}*//*
+			}*/
 
 
 
-			// check if the user was active in the check-epoch
-			/*boolean isMoving = isMoving(checkEpochCounts);
+			/*// check if the user was active in the check-epoch
+			boolean isMoving = isMoving(checkEpochCounts);
 
 			if (checkEpochCharging) {
 				Log.d(TAG, "Adding pause queue [charging]");
@@ -349,6 +377,37 @@ public class LinearAccelerometerSensor extends edu.cicese.sensit.sensor.Sensor i
 					start();
 				}
 			}*/
+
+			//TODO Bug la primera vez que se desconecta el cable, se queda pausado.
+
+			if (!Utilities.isCharging()) {
+				if (!isRunning()) {
+					Log.d(TAG, "Starting " + getName() + " sensor [check]");
+					resume();
+				}
+				else {
+					if (!isMoving(checkEpochCounts)) {
+						Log.d(TAG, "Pausing " + getName() + " sensor [check]");
+						pause();
+					}
+				}
+			}
+		}
+	};
+
+	BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
+		public void onReceive(Context context, Intent intent) {
+			if (Utilities.isCharging()) {
+				if (isRunning()) {
+					Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
+					pause();
+				}
+			} else {
+				if (!isRunning()) {
+					Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
+					resume();
+				}
+			}
 		}
 	};
 

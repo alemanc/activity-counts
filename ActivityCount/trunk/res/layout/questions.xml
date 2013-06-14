@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scrollbarAlwaysDrawVerticalTrack="true"
+    android:background="@color/white">
+
+    <!--xmlns:tools="http://schemas.android.com/tools"-->
+    <!--tools:ignore="ScrollViewSize"-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_save"
+                style="@style/survey_button"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/survey_btn_save"
+                android:drawableLeft="@drawable/btn_save" />
+
+            <Button
+                android:id="@+id/btn_later"
+                style="@style/survey_button"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/survey_btn_later"
+                android:drawableLeft="@drawable/btn_later" />
+
+            <Button
+                android:id="@+id/btn_cancel"
+                style="@style/survey_button"
+                android:layout_width="wrap_content"
+                android:drawableLeft="@drawable/btn_cancel" />
+        </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!--1-->
+            <TextView
+                android:id="@+id/question_stress"
+                style="@style/question_text"
+                android:text="@string/survey_question_stress" />
+
+            <TextView
+                android:id="@+id/question_stress_value"
+                style="@style/seek_bar_value_text"
+                android:layout_below="@id/question_stress" />
+
+            <SeekBar
+                android:id="@+id/seek_bar_question_stress"
+                style="@style/seek_bar"
+                android:layout_below="@id/question_stress"
+                android:max="9"
+                android:progress="4" />
+
+            <TextView
+                android:id="@+id/question_stress_min"
+                style="@style/seek_bar_label_small"
+                android:layout_alignLeft="@id/seek_bar_question_stress"
+                android:layout_below="@id/seek_bar_question_stress"
+                android:text="@string/survey_question_stress_min" />
+
+            <TextView
+                android:id="@+id/question_stress_max"
+                style="@style/seek_bar_label_small"
+                android:layout_alignRight="@id/seek_bar_question_stress"
+                android:layout_below="@id/seek_bar_question_stress"
+                android:text="@string/survey_question_stress_max" />
+
+            <!--2-->
+            <TextView
+                android:id="@+id/question_challenge"
+                style="@style/question_text"
+                android:layout_below="@id/question_stress_min"
+                android:text="@string/survey_question_challenge" />
+
+            <TextView
+                android:id="@+id/question_challenge_value"
+                style="@style/seek_bar_value_text"
+                android:layout_below="@id/question_challenge" />
+
+            <SeekBar
+                android:id="@+id/seek_bar_question_challenge"
+                style="@style/seek_bar"
+                android:layout_below="@id/question_challenge"
+                android:max="4"
+                android:progress="2" />
+
+            <TextView
+                android:id="@+id/question_challenge_min"
+                style="@style/seek_bar_label"
+                android:layout_alignLeft="@id/seek_bar_question_challenge"
+                android:layout_below="@id/seek_bar_question_challenge"
+                android:text="@string/survey_question_challenge_min" />
+
+            <TextView
+                android:id="@+id/question_challenge_max"
+                style="@style/seek_bar_label"
+                android:layout_alignRight="@id/seek_bar_question_challenge"
+                android:layout_below="@id/seek_bar_question_challenge"
+                android:text="@string/survey_question_challenge_max" />
+
+            <!--3-->
+            <TextView
+                android:id="@+id/question_skill"
+                style="@style/question_text"
+                android:layout_below="@id/question_challenge_min"
+                android:text="@string/survey_question_skill" />
+
+            <TextView
+                android:id="@+id/question_skill_value"
+                style="@style/seek_bar_value_text"
+                android:layout_below="@id/question_skill" />
+
+            <SeekBar
+                android:id="@+id/seek_bar_question_skill"
+                style="@style/seek_bar"
+                android:layout_below="@id/question_skill"
+                android:max="4"
+                android:progress="2" />
+
+            <TextView
+                android:id="@+id/question_skill_min"
+                style="@style/seek_bar_label"
+                android:layout_alignLeft="@id/seek_bar_question_skill"
+                android:layout_below="@id/seek_bar_question_skill"
+                android:text="@string/survey_question_skill_min" />
+
+            <TextView
+                android:id="@+id/question_skill_max"
+                style="@style/seek_bar_label"
+                android:layout_alignRight="@id/seek_bar_question_skill"
+                android:layout_alignTop="@+id/question_skill_min"
+                android:text="@string/survey_question_skill_max" />
+
+            <!--4-->
+            <TextView
+                android:id="@+id/question_avoidance"
+                style="@style/question_text"
+                android:layout_below="@id/question_skill_min"
+                android:text="@string/survey_question_avoidance" />
+
+            <TextView
+                android:id="@+id/question_avoidance_value"
+                style="@style/seek_bar_value_text"
+                android:layout_below="@id/question_avoidance" />
+
+            <SeekBar
+                android:id="@+id/seek_bar_question_avoidance"
+                style="@style/seek_bar"
+                android:layout_below="@id/question_avoidance"
+                android:max="4"
+                android:progress="2" />
+
+            <TextView
+                android:id="@+id/question_avoidance_min"
+                style="@style/seek_bar_label"
+                android:layout_alignLeft="@id/seek_bar_question_avoidance"
+                android:layout_below="@id/seek_bar_question_avoidance"
+                android:text="@string/survey_question_avoidance_min" />
+
+            <TextView
+                android:id="@+id/question_avoidance_max"
+                style="@style/seek_bar_label"
+                android:layout_alignRight="@id/seek_bar_question_avoidance"
+                android:layout_below="@id/seek_bar_question_avoidance"
+                android:text="@string/survey_question_avoidance_max" />
+
+            <!--5-->
+            <TextView
+                android:id="@+id/question_effort"
+                style="@style/question_text"
+                android:layout_below="@id/question_avoidance_min"
+                android:text="@string/survey_question_effort" />
+
+            <TextView
+                android:id="@+id/question_effort_value"
+                android:gravity="center_horizontal"
+                style="@style/seek_bar_value_text"
+                android:layout_below="@id/question_effort" />
+
+            <SeekBar
+                android:id="@+id/seek_bar_question_effort"
+                style="@style/seek_bar"
+                android:layout_below="@id/question_effort"
+                android:max="4"
+                android:progress="2" />
+
+            <TextView
+                android:id="@+id/question_effort_min"
+                style="@style/seek_bar_label"
+                android:layout_alignLeft="@id/seek_bar_question_effort"
+                android:layout_below="@id/seek_bar_question_effort"
+                android:text="@string/survey_question_effort_min" />
+
+            <TextView
+                android:id="@+id/question_effort_max"
+                style="@style/seek_bar_label"
+                android:layout_alignRight="@id/seek_bar_question_effort"
+                android:layout_below="@id/seek_bar_question_effort"
+                android:text="@string/survey_question_effort_max" />
+
+        </RelativeLayout>
+
+    </LinearLayout>
+
+</ScrollView>

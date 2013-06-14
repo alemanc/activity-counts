@@ -5,6 +5,8 @@ import android.util.Log;
 import edu.cicese.sensit.database.DBAdapter;
 
 /**
+ * Makes the necessary changes to the local DB to indicate which data has been synced.
+ *
  * Created by: Eduardo Quintana Contreras
  * Date: 10/06/13
  * Time: 07:56 PM

@@ -4,9 +4,12 @@
     <string name="chart_title">Activity Chart</string>
     <string name="value">Count</string>
     <string name="date">Date</string>
-    <string name="service_ticker_text">SensIt is active</string>
-    <string name="service_text">Sensing</string>
-    <string name="service_title">Open SensIt</string>
+    <string name="sensing_notification_ticker_text">SensIt is active</string>
+    <string name="sensing_notification_text">Sensing</string>
+    <string name="sensing_notification_title">Open SensIt</string>
+    <string name="survey_notification_ticker_text">Daily survey</string>
+    <string name="survey_notification_text">Open survey</string>
+    <string name="survey_notification_title">Daily Survey</string>
     <string name="height">Height (cm)</string>
     <string name="weight">Weight (kg)</string>
     <string name="weight_example">e.g. 75</string>
@@ -30,17 +33,27 @@
     <string name="btn_start">Start</string>
     <string name="desc_sync">Sync data</string>
 
-    <style name="ButtonText">
-        <item name="android:layout_width">match_parent</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:textColor">#ffffff</item>
-        <item name="android:gravity">center</item>
-        <item name="android:layout_margin">3dp</item>
-        <item name="android:textSize">30dp</item>
-        <item name="android:textStyle">bold</item>
-        <item name="android:shadowColor">#000000</item>
-        <item name="android:shadowDx">1</item>
-        <item name="android:shadowDy">1</item>
-        <item name="android:shadowRadius">2</item>
-    </style>
+    <!--Questions-->
+    <string name="survey_title">Contesta este cuestionario por favor</string>
+    <string name="survey_question_stress">1. Indica tu nivel de estrés</string>
+    <string name="survey_question_stress_min">muy relajado</string>
+    <string name="survey_question_stress_max">muy estresado</string>
+    <string name="survey_question_challenge">2. Pienso que mi estudio es</string>
+    <string name="survey_question_challenge_min">1</string>
+    <string name="survey_question_challenge_max">5</string>
+    <string name="survey_question_skill">3. Me siento capacitado para hacer este estudio</string>
+    <string name="survey_question_skill_min">1</string>
+    <string name="survey_question_skill_max">5</string>
+    <string name="survey_question_avoidance">4. Preferiría hacer otra cosa que hacer estudio de maestria</string>
+    <string name="survey_question_avoidance_min">1</string>
+    <string name="survey_question_avoidance_max">5</string>
+    <string name="survey_question_effort">5. Este estudio requiere mucho tiempo y esfuerzo</string>
+    <string name="survey_question_effort_min">1</string>
+    <string name="survey_question_effort_max">5</string>
+
+    <string name="survey_btn_save">Guardar</string>
+    <string name="survey_btn_later">Posponer</string>
+    <string name="survey_btn_cancel">Cancelar</string>
+    <string name="survey_saved_confirmation">Gracias, tu respuestas se han guardado</string>
+
 </resources>

@@ -7,7 +7,8 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import edu.cicese.sensit.icat.IcatApiUtil;
+import edu.cicese.sensit.icat.IcatUtil;
+import edu.cicese.sensit.util.SensitActions;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -30,6 +31,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * Uploads unsynced data to the server using the iCAT REST API.
+ * The constructor receives a list of lists of ActivityCounts. Each list will be sent, sequentially,
+ * in POST requests.
+ * Upon response from each request, a broadcast will be sent indicating what data was synced, in order
+ * to perform the corresponding updates in the local DB.
+ * When the last response is received, another broadcast is sent to inform that the update process is completed,
+ * with or without errors.
+ *
  * Created by: Eduardo Quintana Contreras
  * Date: 12/06/13
  * Time: 05:51 PM
@@ -50,17 +59,12 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 	protected final Void doInBackground(Void... voids) {
 		List<ActivityCount> counts = lists.get(0);
 		if (lists.get(0) != null) {
-
-			if (counts.size() > IcatApiUtil.POST_COUNT_LIMIT) {
-				// split post request
-			}
-
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpPost httpPost = new HttpPost(IcatApiUtil.ICAT_URL + IcatApiUtil.ACTIVITY_COUNTS);
+			HttpPost httpPost = new HttpPost(IcatUtil.ICAT_URL + IcatUtil.ACTIVITY_COUNTS);
 			HttpParams httpParams = httpPost.getParams();
-			ConnManagerParams.setTimeout(httpParams, IcatApiUtil.TIMEOUT);
-			HttpConnectionParams.setSoTimeout(httpParams, IcatApiUtil.TIMEOUT);
-			HttpConnectionParams.setConnectionTimeout(httpParams, IcatApiUtil.TIMEOUT);
+			ConnManagerParams.setTimeout(httpParams, IcatUtil.TIMEOUT);
+			HttpConnectionParams.setSoTimeout(httpParams, IcatUtil.TIMEOUT);
+			HttpConnectionParams.setConnectionTimeout(httpParams, IcatUtil.TIMEOUT);
 
 			try {
 				Type listOfTestObject = new TypeToken<List<ActivityCount>>() {}.getType();
@@ -68,48 +72,51 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 				String gsonCounts = gson.toJson(counts, listOfTestObject);
 				Log.d(TAG, "GSON! " + gsonCounts);
 
-				String username = "b4:07:f9:f5:2c:10";
-				String API_KEY = "iCAT-2013-1234567890";
+				String username = Utilities.getMacAddress(context);
+				if (username != null) {
+					String bundle = "{\"api_key\":\"" + IcatUtil.API_KEY + "\",\"username\":\"" + username + "\",\"activity_counts\":" + gsonCounts + "}\n";
 
-				String bundle = "{\"api_key\":\"" + API_KEY + "\",\"username\":\"" + username + "\",\"activity_counts\":" + gsonCounts + "}\n";
+					// add parameters
+					List<NameValuePair> nameValuePairs = new ArrayList<>();
+					nameValuePairs.add(new BasicNameValuePair("bundle", bundle));
+					httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-				// add parameters
-				List<NameValuePair> nameValuePairs = new ArrayList<>();
-				nameValuePairs.add(new BasicNameValuePair("bundle", bundle));
-				httpPost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+					// execute HTTP Post Request
+					HttpResponse response = httpclient.execute(httpPost);
 
-				// execute HTTP Post Request
-				HttpResponse response = httpclient.execute(httpPost);
+					// get hold of the response entity
+					HttpEntity entity = response.getEntity();
+					// if the response does not enclose an entity, there is no need to worry about connection release
 
-				// get hold of the response entity
-				HttpEntity entity = response.getEntity();
-				// if the response does not enclose an entity, there is no need to worry about connection release
+					if (entity != null) {
+						// a Simple JSON Response Read
+						InputStream inStream = entity.getContent();
+						String result = IcatUtil.convertStreamToString(inStream);
 
-				if (entity != null) {
-					// a Simple JSON Response Read
-					InputStream inStream = entity.getContent();
-					String result = Utilities.convertStreamToString(inStream);
+						Log.d(TAG, "RESPONSE: " + result);
+						JSONObject joResponse = new JSONObject(result);
 
-					Log.d(TAG, "RESPONSE: " + result);
-					JSONObject joResponse = new JSONObject(result);
+						int status = joResponse.optInt(IcatUtil.ICAT_STATUS);
+						if (status == IcatUtil.ICAT_STATUS_OK || status == IcatUtil.ICAT_STATUS_OK_WITH_ERRORS) {
+							Intent broadcastIntent = new Intent(SensitActions.DATA_SYNCED);
+//						broadcastIntent.putExtra(IcatUtil.EXTRA_SYNCED, true);
+							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, counts.get(0).getDate());
+							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, counts.get(counts.size() - 1).getDate());
+							context.sendOrderedBroadcast(broadcastIntent, null);
+						}
 
-					int status = joResponse.optInt(IcatApiUtil.ICAT_STATUS);
-					if (status == IcatApiUtil.ICAT_STATUS_OK || status == IcatApiUtil.ICAT_STATUS_OK_WITH_ERRORS) {
-						Intent broadcastIntent = new Intent(SensingService.DATA_SYNCED);
-//						broadcastIntent.putExtra(IcatApiUtil.EXTRA_SYNCED, true);
-						broadcastIntent.putExtra(IcatApiUtil.EXTRA_DATE_START, counts.get(0).getDate());
-						broadcastIntent.putExtra(IcatApiUtil.EXTRA_DATE_END, counts.get(counts.size() - 1).getDate());
-						context.sendOrderedBroadcast(broadcastIntent, null);
+						// closing the input stream will trigger connection release
+						inStream.close();
+					} else {
+						// error?
+						syncError = true;
 					}
-
-					// closing the input stream will trigger connection release
-					inStream.close();
 				}
 				else {
-					// error?
+					// No username
+					Log.e(TAG, "NULL Username. Well, this is awkward, this was never suppose to happen.");
 					syncError = true;
 				}
-
 
 			} catch (ClientProtocolException e) {
 				syncError = true;
@@ -126,11 +133,6 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 	}
 
 	@Override
-	protected void onPreExecute() {
-
-	}
-
-	@Override
 	protected void onPostExecute(Void unused) {
 		if (syncError) {
 			Log.d(TAG, "Sync Error");
@@ -142,7 +144,7 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 		}
 		else {
 			Utilities.setSyncing(false);
-			Intent broadcastIntent = new Intent(SensingService.DATA_SYNC_DONE);
+			Intent broadcastIntent = new Intent(SensitActions.DATA_SYNC_DONE);
 			context.sendBroadcast(broadcastIntent);
 		}
 	}

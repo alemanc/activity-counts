@@ -3,9 +3,9 @@ package edu.cicese.sensit.sensor;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-import edu.cicese.sensit.SensingService;
 import edu.cicese.sensit.datatask.data.Data;
 import edu.cicese.sensit.ui.SensingNotification;
+import edu.cicese.sensit.util.SensitActions;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +25,18 @@ import java.util.List;
  */
 public abstract class Sensor/* implements Runnable*/ {
 	private final static String TAG = "SensIt.Sensor";
+
+	public static final int SENSOR_OFF = 0;
+	public static final int SENSOR_ON = 1;
+	public static final int SENSOR_PAUSED = 2;
+
+	public static final int SENSOR_LINEAR_ACCELEROMETER = 0;
+	public static final int SENSOR_BATTERY = 1;
+	public static final int SENSOR_LOCATION = 2;
+	public static final int SENSOR_BLUETOOTH = 3;
+
+	private static int[] sensorStatus = new int[SENSOR_BLUETOOTH + 1];
+
 	private final static int DEFAULT_PERIOD_TIME = 1000;
 	private final static String DEFAULT_NAME = "Unknown";
 	private Context context; // Most sensors need context access
@@ -36,7 +48,6 @@ public abstract class Sensor/* implements Runnable*/ {
 	protected List<Data> dataList = null; // Used when the sensor generates a set of data values (e.g. access points found by wifi sensors)
 	protected static SensingNotification sensingNotification;
 
-	private Thread thread = null;
 	private boolean running = false;
 
 	private Sensor() {
@@ -69,12 +80,6 @@ public abstract class Sensor/* implements Runnable*/ {
 		this.running = running;
 	}
 
-
-	/*public void run() {
-
-	}*/
-
-
 	/**
 	 * Starts the sensing process, should be overridden by a child class.
 	 */
@@ -82,9 +87,6 @@ public abstract class Sensor/* implements Runnable*/ {
 		sensing = true;
 		sensingNotification.updateNotificationWith(name);
 		Log.d(TAG, "SensingNotification updated");
-
-//		thread = new Thread(this);
-//		thread.start();
 	}
 
 	/**
@@ -101,8 +103,6 @@ public abstract class Sensor/* implements Runnable*/ {
 	/**
 	 * Returns the data generated/sensed. When data is cleared after accessed
 	 * (similar to a pop() from a stack)
-	 *
-	 * @return
 	 */
 	public Data getData() {
 		if (dataList == null) {
@@ -122,8 +122,6 @@ public abstract class Sensor/* implements Runnable*/ {
 	 * Returns a set of data sensed when required (e.g. access points found by a
 	 * Wi-Fi sensor). If DataList is null (not applicable), Returns a list with
 	 * only one Data element
-	 *
-	 * @return
 	 */
 	public List<Data> getDataList() {
 		if (dataList != null) {
@@ -140,9 +138,6 @@ public abstract class Sensor/* implements Runnable*/ {
 
 	/**
 	 * Computes the period time (milliseconds) based on a sample frequency in Hz
-	 *
-	 * @param sampleFrequency
-	 * @return
 	 */
 	private long computePeriodTime(float sampleFrequency) {
 		long periodTime = (long) ((1.0f / sampleFrequency) * 1000f);
@@ -151,9 +146,6 @@ public abstract class Sensor/* implements Runnable*/ {
 
 	/**
 	 * Computes the sample frequency (Hz) based on a period time in milliseconds
-	 *
-	 * @param periodTime
-	 * @return
 	 */
 	private float computeSampleFrequency(float periodTime) {
 		float sampleFrequency = (float) ((1f / periodTime) * 1000f);
@@ -209,24 +201,23 @@ public abstract class Sensor/* implements Runnable*/ {
 		return name;
 	}
 
-	/*public void handleEnable(int sensor, boolean enable) {
-		Message msg = MainActivity.handlerUI.obtainMessage(sensor);
-		Bundle bundle = new Bundle();
-		bundle.putBoolean("enable", enable);
-		msg.setData(bundle);
-		MainActivity.handlerUI.sendMessage(msg);
-	}*/
 
 	public void refreshStatus() {
-		Intent broadcastIntent = new Intent(SensingService.REFRESH_SENSOR);
+		Intent broadcastIntent = new Intent(SensitActions.REFRESH_SENSOR);
 		context.sendBroadcast(broadcastIntent);
-//		Message msg = MainActivity.handlerUI.obtainMessage(Utilities.REFRESH_STATUS);
-//		MainActivity.handlerUI.sendMessage(msg);
 	}
 
-	/*public void updateUI(int sensor, Bundle bundle) {
-		Message msg = MainActivity.handlerUI.obtainMessage(sensor);
-		msg.setData(bundle);
-		MainActivity.handlerUI.sendMessage(msg);
-	}*/
+	public static void initiateSensors() {
+		for (int i = 0; i < sensorStatus.length; i++) {
+			sensorStatus[i] = SENSOR_OFF;
+		}
+	}
+
+	public static int getSensorStatus(int sensor) {
+		return sensorStatus[sensor];
+	}
+
+	public static void setSensorStatus(int sensor, int value) {
+		sensorStatus[sensor] = value;
+	}
 }

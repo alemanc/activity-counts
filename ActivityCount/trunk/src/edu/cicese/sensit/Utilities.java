@@ -3,11 +3,10 @@ package edu.cicese.sensit;
 import android.content.Context;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import android.os.Build;
+import android.provider.Settings;
+import android.telephony.TelephonyManager;
+import android.util.Log;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -15,26 +14,18 @@ import java.io.InputStreamReader;
  * Time: 02:57 PM
  */
 public class Utilities {
+	private static final String TAG = "SensIt.Utilities";
+
 	private static boolean sensing = false;
 	private static boolean charging = false;
 	private static boolean epochCharging = false;
 	private static boolean checkEpochCharging = false;
 	private static boolean ready = true;
-
 	private static boolean manuallyStopped = false;
+	private static boolean syncing;
 
 	private static String macAddress = null;
-
-	public static final int SENSOR_OFF = 0;
-	public static final int SENSOR_ON = 1;
-	public static final int SENSOR_PAUSED = 2;
-
-	public static final int SENSOR_LINEAR_ACCELEROMETER = 0;
-	public static final int SENSOR_LOCATION = 1;
-	public static final int SENSOR_BATTERY = 2;
-	public static final int SENSOR_BLUETOOTH = 3;
-
-	private static int[] sensorStatus = new int[SENSOR_BLUETOOTH + 1];
+	private static String userID = null;
 
 	public static final long ACCELEROMETER_CHECK_TIME = 10000l;
 	public static final long LOCATION_CHECK_TIME = 10000l;
@@ -43,19 +34,6 @@ public class Utilities {
 //	public static final int RATE = 40000; // 1000000 = 1 second | 40000 -> 25 samples per second (1000000/40000) = 25Hz
 	public static final int RATE = 40;
 
-	public static void initiateSensors() {
-		for (int i = 0; i <= SENSOR_BLUETOOTH; i++) {
-			sensorStatus[i] = SENSOR_OFF;
-		}
-	}
-
-	public static int getSensorStatus(int sensor) {
-		return sensorStatus[sensor];
-	}
-
-	public static void setSensorStatus(int sensor, int value) {
-		sensorStatus[sensor] = value;
-	}
 
 	public static boolean isReady() {
 		return ready;
@@ -123,39 +101,46 @@ public class Utilities {
 		return macAddress;
 	}
 
-	/**
-	 * To convert the InputStream to String we use the BufferedReader.readLine()
-	 * method. We iterate until the BufferedReader return null which means
-	 * there's no more data to read. Each line will appended to a StringBuilder
-	 * and returned as String.
-	 */
-	public static String convertStreamToString(InputStream is) {
-		BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-		StringBuilder sb = new StringBuilder();
+	public static String getUserID(Context context) {
+		if (userID == null) {
+			/*TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+			String tmDevice, tmSerial, androidId;
+			tmDevice = "" + tm.getDeviceId();
+			tmSerial = "" + tm.getSimSerialNumber();
+			androidId = "" + Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 
-		String line;
-		try {
-			while ((line = reader.readLine()) != null) {
-				sb.append(line + "\n");
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				is.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			UUID deviceUuid = new UUID(androidId.hashCode(), (long) tmDevice.hashCode() << 32);
+			userID = deviceUuid.toString();*/
+
+			userID = Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		}
-		return sb.toString();
+		return userID;
 	}
 
-	private static boolean syncing;
 	public static void setSyncing(boolean syncing) {
 		Utilities.syncing = syncing;
 	}
 
 	public static boolean isSyncing() {
 		return Utilities.syncing;
+	}
+
+	public static String getDeviceId(Context context) {
+		if (userID == null) {
+			String buildSerial = Build.SERIAL;
+			if (buildSerial != null) {
+				userID = buildSerial;
+			}
+			else {
+				String deviceId = ((TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE)).getDeviceId();
+				if (deviceId != null) {
+					userID = deviceId;
+				} else {
+					userID = Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);;
+				}
+			}
+			Log.d(TAG, "UserID:" + userID);
+		}
+		return userID;
 	}
 }
