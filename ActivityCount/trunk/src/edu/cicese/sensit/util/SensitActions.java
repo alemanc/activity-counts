@@ -20,10 +20,9 @@ public class SensitActions {
 	public static final String REFRESH_SENSOR = "edu.cicese.sensit.REFRESH_SENSOR";
 
 	public static final String BATTERY_CHANGED = "edu.cicese.sensit.BATTERY_CHANGED";
-//	public static final String EXTRA_PLUGGED = "extra_plugged";
 
-	public static final String EXTRA_SYNCED = "extra_synced";
 	public static final String EXTRA_DATE_START = "extra_date_start";
 	public static final String EXTRA_DATE_END = "extra_date_end";
 	public static final String EXTRA_MSG = "extra_message";
+	public static final String EXTRA_SYNCED_TYPE = "extra_synced_type";
 }

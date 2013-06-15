@@ -1,26 +1,14 @@
 package edu.cicese.sensit.icat;
 
-import android.content.Context;
-import android.content.Intent;
 import android.util.Log;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
-import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
-import edu.cicese.sensit.ActivityCount;
-import edu.cicese.sensit.Utilities;
-import edu.cicese.sensit.util.SensitActions;
-import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Type;
-import java.util.List;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -35,8 +23,9 @@ public class IcatUtil {
 
 	public static final String API_KEY = "iCAT-2013-1234567890";
 	public static final String ACTIVITY_COUNTS = "/activity_counts/";
+	public static final String SURVEYS = "/surveys/";
 
-	public static final int POST_COUNT_LIMIT = 60;
+	public static final int POST_LIMIT = 60;
 
 	public static final String ICAT_STATUS = "icat_status";
 	public static final int ICAT_STATUS_OK = 200;
@@ -56,7 +45,7 @@ public class IcatUtil {
 		return ICAT_URL + relativeUrl;
 	}
 
-	public static void postActivityCounts(final Context context, final List<ActivityCount> counts) {
+	/*public static void postActivityCounts(final Context context, final List<ActivityCount> counts) {
 		RequestParams params = new RequestParams();
 //		params.put("username", Utilities.getMacAddress(context));
 //		params.put("username", "Eduardo");
@@ -98,7 +87,7 @@ public class IcatUtil {
 				context.sendOrderedBroadcast(broadcastIntent, null);
 			}
 		});
-	}
+	}*/
 
 	/**
 	 * To convert the InputStream to String we use the BufferedReader.readLine()

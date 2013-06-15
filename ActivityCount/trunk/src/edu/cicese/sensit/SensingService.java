@@ -9,7 +9,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-import edu.cicese.sensit.database.DBAdapter;
+import edu.cicese.sensit.db.DBAdapter;
 import edu.cicese.sensit.ui.SurveyNotification;
 import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.SensitActions;
@@ -91,7 +91,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 
 		IntentFilter intentDBFilter = new IntentFilter();
 		intentDBFilter.addAction(SensitActions.DATA_SYNCED);
-//		intentDBFilter.addAction(SensingService.DATA_SYNCING);
 		registerReceiver(dataSyncReceiver, intentDBFilter);
 
 //		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -292,7 +291,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 
 		// Schedule a runnable task every minute
 //		scheduleTaskExecutor.scheduleAtFixedRate(dataSyncThread, 0, 30, TimeUnit.MINUTES);
-		scheduleTaskExecutor.scheduleAtFixedRate(new DataUploadThread(this), 1, 1, TimeUnit.MINUTES);
+		scheduleTaskExecutor.scheduleAtFixedRate(new DataUploadThread(this), 30, 30, TimeUnit.MINUTES);
 	}
 
 	private class DataStoreThread extends Thread {
@@ -414,11 +413,12 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 				case SensitActions.DATA_SYNCED:
 					Log.d(TAG, "Action DATA_SYNCED received");
 
+					int type = intent.getIntExtra(SensitActions.EXTRA_SYNCED_TYPE, -1);
 					String dateStart = intent.getStringExtra(SensitActions.EXTRA_DATE_START);
 					String dateEnd = intent.getStringExtra(SensitActions.EXTRA_DATE_END);
 
 					Log.d(TAG, "Update");
-//					new Thread(new DataSyncedThread(SensingService.this, dateStart, dateEnd)).start();
+//					new Thread(new DataSyncedThread(SensingService.this, type, dateStart, dateEnd)).start();
 
 					Log.d(TAG, "Resetting intent");
 					abortBroadcast();

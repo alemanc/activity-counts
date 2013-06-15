@@ -277,8 +277,8 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 	 */
 	public void onSensorChanged(SensorEvent event) {
 		long period = event.timestamp - lastTimestamp;
-		Log.d(TAG, "Substracting: "+event.timestamp+" - "+lastTimestamp+" = "+period);
-		Log.d(TAG, "Comparing: "+period+" >= "+wantedPeriod);
+//		Log.d(TAG, "Substracting: "+event.timestamp+" - "+lastTimestamp+" = "+period);
+//		Log.d(TAG, "Comparing: "+period+" >= "+wantedPeriod);
 		if (period >= wantedPeriod) {
 			double axisX = event.values[0];
 			double axisY = event.values[1];
@@ -380,7 +380,7 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 
 			//TODO Bug la primera vez que se desconecta el cable, se queda pausado.
 
-			if (!Utilities.isCharging()) {
+			/*if (!Utilities.isCharging()) {
 				if (!isRunning()) {
 					Log.d(TAG, "Starting " + getName() + " sensor [check]");
 					resume();
@@ -391,12 +391,13 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 						pause();
 					}
 				}
-			}
+			}*/
 		}
 	};
 
 	BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
+			Log.d(TAG, "Action BATTERY_CHANGED received");
 			if (Utilities.isCharging()) {
 				if (isRunning()) {
 					Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");

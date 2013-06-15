@@ -1,4 +1,4 @@
-package edu.cicese.sensit.database;
+package edu.cicese.sensit.db;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -18,13 +18,15 @@ public class DBAdapter {
 	private static final String TAG = "SensIt.DBAdapter";
 
 	private static final String DATABASE_NAME = "sensit.db";
-	private static final int DATABASE_VERSION = 7;
+	private static final int DATABASE_VERSION = 9;
 	private static final String TABLE_ACTIVITY_COUNT = "activity_count";
 	private static final String TABLE_SURVEY = "survey";
 
 	private static final String COLUMN_ACTIVITY_COUNT_ACTIVITY_COUNT_ID = "activity_count_id";
+	//TODO Remove user_id field from the table activity_count
 	private static final String COLUMN_ACTIVITY_COUNT_USER_ID = "user_id";
 	private static final String COLUMN_ACTIVITY_COUNT_COUNTS = "counts";
+	//TODO Remove calories field from the table activity_count
 	private static final String COLUMN_ACTIVITY_COUNT_CALORIES = "calories";
 	private static final String COLUMN_ACTIVITY_COUNT_DATE = "date";
 	private static final String COLUMN_ACTIVITY_COUNT_CHARGING = "charging";
@@ -33,11 +35,6 @@ public class DBAdapter {
 	private static final String COLUMN_SURVEY_SURVEY_ID = "survey_id";
 	private static final String COLUMN_SURVEY_DATE = "date";
 	private static final String COLUMN_SURVEY_SYNCED = "synced";
-//	public final String COLUMN_SURVEY_QUESTION_STRESS = "question_stress";
-//	public final String COLUMN_SURVEY_QUESTION_CHALLENGE = "question_challenge";
-//	public final String COLUMN_SURVEY_QUESTION_SKILL = "question_skill";
-//	public final String COLUMN_SURVEY_QUESTION_AVOIDANCE = "question_avoidance";
-//	public final String COLUMN_SURVEY_QUESTION_EFFORT = "question_effort";
 	private static final String COLUMN_SURVEY_VALUE_STRESS = "value_stress";
 	private static final String COLUMN_SURVEY_VALUE_CHALLENGE = "value_challenge";
 	private static final String COLUMN_SURVEY_VALUE_SKILL = "value_skill";
@@ -51,32 +48,49 @@ public class DBAdapter {
 			COLUMN_SURVEY_VALUE_EFFORT};
 
 	private static final String CREATE_ACTIVITY_COUNT =
-			"CREATE TABLE IF NOT EXISTS [activity_count] (\n" +
-					"[activity_count_id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
-					"[user_id] STRING NOT NULL,\n" +
-					"[counts] INTEGER DEFAULT '-1' NOT NULL,\n" +
-					"[calories] INTEGER DEFAULT '-1' NOT NULL,\n" +
-					"[date] DATETIME NOT NULL,\n" +
-					"[charging] INTEGER DEFAULT '0' NOT NULL,\n" +
-					"[synced] INTEGER DEFAULT '0' NOT NULL\n" +
+			"CREATE TABLE IF NOT EXISTS [" + TABLE_ACTIVITY_COUNT + "] (\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_ACTIVITY_COUNT_ID + "] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_USER_ID + "] STRING NOT NULL,\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_COUNTS + "] INTEGER DEFAULT '-1' NOT NULL,\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_CALORIES + "] INTEGER DEFAULT '-1' NOT NULL,\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_DATE + "] DATETIME NOT NULL,\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_CHARGING + "] INTEGER DEFAULT '0' NOT NULL,\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_SYNCED + "] INTEGER DEFAULT '0' NOT NULL\n" +
 					");\n" +
 					"\n" +
-					"CREATE UNIQUE INDEX [ux_activity_count_date] ON [activity_count](\n" +
-					"[date] ASC\n" +
+					"CREATE UNIQUE INDEX [ux_activity_count_date] ON [" + TABLE_ACTIVITY_COUNT + "](\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_DATE + "] ASC\n" +
 					");\n" +
 					"\n" +
-					"CREATE UNIQUE INDEX [pk_activity_count] ON [activity_count](\n" +
-					"[activity_count_id] ASC\n" +
+					"CREATE UNIQUE INDEX [pk_activity_count] ON [" + TABLE_ACTIVITY_COUNT + "](\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_ACTIVITY_COUNT_ID + "] ASC\n" +
 					");\n" +
 					"\n" +
-					"CREATE INDEX [ix_activity_count_synced] ON [activity_count](\n" +
-					"[synced]  ASC\n" +
+					"CREATE INDEX [ix_activity_count_synced] ON [" + TABLE_ACTIVITY_COUNT + "](\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_SYNCED + "]  ASC\n" +
 					");";
+
+	//TODO Create indexes!!!!!!!!!!!!!!!!!!!
+	//Check alarms
+	//Test development mode, rails
+	//Update project to heroku (with migration)
+	//Tests
+	//Power saving (on/off 10 minutes)
+	//Power saving bug when un/plugging
+	//Wakeful on Galaxy Ace
+
+	private static final String CREATE_INDEX_PK_ACTIVITY_COUNT = "";
+	private static final String CREATE_INDEX_UX_ACTIVITY_COUNT_DATE = "";
+	private static final String CREATE_INDEX_IX_ACTIVITY_COUNT_SYNCED = "";
+
+	private static final String CREATE_INDEX_PK_SURVEY = "";
+	private static final String CREATE_INDEX_UX_SURVEY_DATE = "";
+	private static final String CREATE_INDEX_IX_SURVEY_SYNCED = "";
 
 	private static final String CREATE_SURVEY =
 			"CREATE TABLE IF NOT EXISTS [" + TABLE_SURVEY + "] (\n" +
 					"[" + COLUMN_SURVEY_SURVEY_ID + "] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
-					"[" + COLUMN_SURVEY_DATE + "] DATETIME NOT NULL,\n" +
+					"[" + COLUMN_SURVEY_DATE + "] DATETIME NOT NULL UNIQUE,\n" +
 					"[" + COLUMN_SURVEY_VALUE_STRESS + "] STRING DEFAULT '3' NOT NULL,\n" +
 					"[" + COLUMN_SURVEY_VALUE_CHALLENGE + "] STRING DEFAULT '3' NOT NULL,\n" +
 					"[" + COLUMN_SURVEY_VALUE_SKILL + "] STRING DEFAULT '3' NOT NULL,\n" +
@@ -114,6 +128,7 @@ public class DBAdapter {
 		@Override
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL(CREATE_ACTIVITY_COUNT);
+			db.execSQL(CREATE_SURVEY);
 		}
 
 		@Override
@@ -122,6 +137,8 @@ public class DBAdapter {
 			/*Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
 			db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACTIVITY_COUNT);
 			onCreate(db);*/
+			db.execSQL("DROP TABLE IF EXISTS " + TABLE_SURVEY);
+			onCreate(db);
 		}
 	}
 
@@ -192,8 +209,11 @@ public class DBAdapter {
 	}
 
 	// Surveys
-		public long insertSurvey(int[] likertValues, String date, boolean synced) {
-		// date example: "2010-11-17 14:12:23"
+	public long insertSurvey(int[] likertValues, String date, int synced) {
+		// date example: "2010-11-17"
+
+		Log.d(TAG, "Date: " + date);
+
 		ContentValues values = new ContentValues();
 		for (int i = 0; i < SURVEY_VALUES.length; i++) {
 			values.put(SURVEY_VALUES[i], likertValues[i]);

@@ -6,7 +6,7 @@
 
     <uses-sdk
         android:minSdkVersion="9"
-        android:targetSdkVersion="16" />
+        android:targetSdkVersion="11" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -22,7 +22,7 @@
     <application
         android:label="@string/app_name"
         android:icon="@drawable/icon"
-        android:theme="@android:style/Theme.Light">
+        android:theme="@style/SensIt.Theme">
         <activity
             android:name=".SensitActivity"
             android:label="@string/app_name"
@@ -53,6 +53,18 @@
         <receiver android:name=".OnBootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".OnSurveyAlarmReceiver">
+        </receiver>
+
+        <receiver android:name=".OnSensingAlarmReceiver">
+        </receiver>
+
+        <receiver android:name=".OnConnectionReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
 

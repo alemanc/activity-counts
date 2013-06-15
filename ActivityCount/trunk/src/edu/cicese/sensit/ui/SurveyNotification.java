@@ -31,7 +31,7 @@ public class SurveyNotification {
 		manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 	}
 
-	private String createNotificationContent() {
+	/*private String createNotificationContent() {
 		String text = context.getString(R.string.survey_notification_text);
 		return "";
 	}
@@ -47,7 +47,7 @@ public class SurveyNotification {
 		PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
 
 		return pendingIntent;
-	}
+	}*/
 
 	public void updateNotification() {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -57,27 +57,6 @@ public class SurveyNotification {
 	private Runnable notificationUpdater = new Runnable() {
 		public void run() {
 			Log.d(TAG, "Creating notification");
-			/*// title for the expanded status
-			String contentTitle = context.getString(R.string.questions_notification_title);
-			// text to display in the extended status window
-			String contentText = createNotificationContent();
-
-			// intent to launch the activity when the extended text is clicked
-			PendingIntent pendingIntent = createNotificationIntent();
-
-			Notification notification = createNotification();
-			notification.setLatestEventInfo(context, contentTitle, contentText, pendingIntent);
-
-			notification.flags |= Notification.FLAG_NO_CLEAR;
-
-			manager.notify(NOTIFICATION_ID, notification);*/
-
-
-//			Intent intent = new Intent(context, SurveyActivity.class);
-//			intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-//			PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-
-
 			// instantiate a Builder object.
 			NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
 			// creates an Intent for the Activity

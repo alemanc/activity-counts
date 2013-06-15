@@ -1,6 +1,10 @@
 package edu.cicese.sensit;
 
 import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -9,8 +13,12 @@ import android.widget.Button;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
+import edu.cicese.sensit.db.DBAdapter;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class SurveyActivity extends Activity implements OnSeekBarChangeListener {
 	private static final String TAG = "SensIt.SurveyActivity";
@@ -45,7 +53,6 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 		final TextView tvAvoidance = (TextView) findViewById(R.id.question_avoidance_value);
 		final TextView tvEffort = (TextView) findViewById(R.id.question_effort_value);
 
-
 		final Button btnSave = (Button) findViewById(R.id.btn_save);
 		final Button btnCancel = (Button) findViewById(R.id.btn_cancel);
 		final Button btnLater = (Button) findViewById(R.id.btn_later);
@@ -62,14 +69,16 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 		seekBars.add(sbAvoidance);
 		seekBars.add(sbEffort);
 
-		int stressProgress = sbStress.getProgress();
-		tvStress.setText(stressValues[stressProgress]);
-		values[0] = stressProgress + 1;
-		for (int i = 1; i < values.length; i++) {
-			int progress = seekBars.get(i).getProgress();
-			textViews.get(i).setText(likertTextValues[progress]);
-			values[i] = progress + 1;
-		}
+//		int stressProgress = sbStress.getProgress();
+//		tvStress.setText(stressValues[stressProgress]);
+//		values[0] = stressProgress + 1;
+//		for (int i = 1; i < values.length; i++) {
+//			int progress = seekBars.get(i).getProgress();
+//			textViews.get(i).setText(likertTextValues[progress]);
+//			values[i] = progress + 1;
+//		}
+
+		setAnswers();
 
 //		tvStress.setText(stressValues[sbStress.getProgress()]);
 //		tvChallenge.setText(likertTextValues[sbChallenge.getProgress()]);
@@ -163,11 +172,18 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 
 		btnSave.setOnClickListener(new OnClickListener() {
 			public void onClick(View v) {
+				setAnswers();
 				Log.d(TAG, "Yei!");
 				for (int i = 0; i < values.length; i++) {
 //					int answer = stringAnswers[i];
 					Log.d(TAG, "Answer " + i + ": " + values[i]);
 				}
+
+				Calendar calendar = Calendar.getInstance();
+				Date date = calendar.getTime();
+				new DataStoreThread(SurveyActivity.this, date).start();
+
+				SurveyActivity.super.onBackPressed();
 			}
 		});
 
@@ -175,6 +191,7 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 			@Override
 			public void onClick(View view) {
 				Log.d(TAG, "I don't want to take your freaking survey");
+				cancelAlarms();
 				SurveyActivity.super.onBackPressed();
 			}
 		});
@@ -182,17 +199,61 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 		btnLater.setOnClickListener(new OnClickListener() {
 			@Override
 			public void onClick(View view) {
-				Log.d(TAG, "Sigh, I'll take it later... maybe");
+				Log.d(TAG, "Sigh, I'll take it later okay?... maybe");
+				// set alarm
+				AlarmManager alarmManager = (AlarmManager) SurveyActivity.this.getSystemService(Context.ALARM_SERVICE);
+
+				// schedule alarms for SurveyNotification
+				Calendar calendar = Calendar.getInstance();
+				// 08:00 PM
+				calendar.set(Calendar.HOUR_OF_DAY, 20);
+				calendar.set(Calendar.MINUTE, 0);
+				calendar.set(Calendar.SECOND, 0);
+
+				long nextTimeInMillis = calendar.getTimeInMillis();
+
+//				long offset = 300000;
+//				if ((System.currentTimeMillis() - offset) < nextTimeInMillis) {
+//					// readjust
+//					Calendar calendarNow = Calendar.getInstance();
+//					calendar.get(Calendar.HOUR_OF_DAY)
+//				}
+
+				Intent alarmSurveyIntent = new Intent(SurveyActivity.this, OnSurveyAlarmReceiver.class);
+				PendingIntent piSurvey = PendingIntent.getBroadcast(SurveyActivity.this, 0, alarmSurveyIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+				Log.d(TAG, "" + calendar.getTimeInMillis());
+
+				alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 20000, piSurvey);
+
 				SurveyActivity.super.onBackPressed();
 			}
 		});
 
 	}
 
-	private void setControlsByAnswers() {
+	private void cancelAlarms() {
+		AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+		Intent alarmSurveyIntent = new Intent(this, OnSurveyAlarmReceiver.class);
+		PendingIntent piSurvey = PendingIntent.getBroadcast(SurveyActivity.this, 0, alarmSurveyIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+		alarmManager.cancel(piSurvey);
+	}
+
+	/*private void setControlsByAnswers() {
 		textViews.get(0).setText(String.valueOf(stressValues[0]));
 		for (int i = 1; i < 5; i++) {
 			textViews.get(i).setText(String.valueOf(likertTextValues[i]));
+		}
+	}*/
+
+	private void setAnswers() {
+		int stressProgress = seekBars.get(0).getProgress();
+		textViews.get(0).setText(stressValues[stressProgress]);
+		values[0] = stressProgress + 1;
+		for (int i = 1; i < values.length; i++) {
+			int progress = seekBars.get(i).getProgress();
+			textViews.get(i).setText(likertTextValues[progress]);
+			values[i] = progress + 1;
 		}
 	}
 
@@ -212,5 +273,25 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 	@Override
 	public void onStopTrackingTouch(SeekBar seekBar) {
 		// TODO Auto-generated method stub
+	}
+
+	private class DataStoreThread extends Thread {
+		private Date date;
+		private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		private DBAdapter dbAdapter;
+
+		public DataStoreThread(Context context, Date date) {
+			this.date = date;
+			dbAdapter = new DBAdapter(context);
+		}
+
+		@Override
+		public void run() {
+			Log.d(TAG, "Store survey data");
+			dbAdapter.open();
+			long inserted = dbAdapter.insertSurvey(values, dateFormat.format(date), 0);
+			Log.d(TAG, "Inserted at row ID " + inserted);
+			dbAdapter.close();
+		}
 	}
 }

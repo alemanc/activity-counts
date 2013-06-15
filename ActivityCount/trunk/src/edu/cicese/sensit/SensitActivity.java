@@ -20,7 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-import edu.cicese.sensit.database.DBAdapter;
+import edu.cicese.sensit.db.DBAdapter;
 import edu.cicese.sensit.sensor.Sensor;
 import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.Preferences;
@@ -171,10 +171,10 @@ public class SensitActivity extends Activity {
 
 		btnSync.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
-//				setSyncing(true);
-//				Intent broadcastIntent = new Intent(SensingService.DATA_SYNCING);
-//				sendBroadcast(broadcastIntent);
-				new Thread(new DataUploadThread(SensitActivity.this)).start();
+				if (!Utilities.isSyncing()) {
+					new Thread(new DataUploadThread(SensitActivity.this)).start();
+//					Utilities.startDataUploadThread(SensitActivity.this);
+				}
 			}
 		});
 
@@ -188,10 +188,6 @@ public class SensitActivity extends Activity {
 		});
 		LinearLayout layout = (LinearLayout) findViewById(R.id.chart);
 		layout.addView(chartView);
-
-//		refreshSensors();
-//		refreshChart();
-//		refreshSyncing();
 	}
 
 	@Override
@@ -240,8 +236,6 @@ public class SensitActivity extends Activity {
 		super.onStop();
 
 		Log.d("SensIt", "onStop");
-
-//		unregisterReceiver(uiRefreshReceiver);
 
 		unregisterReceiver(uiRefreshReceiver);
 		dbAdapter.close();
@@ -402,28 +396,15 @@ public class SensitActivity extends Activity {
 				case SensitActions.DATA_SYNCED:
 					Log.d(TAG, "Action DATA_SYNCED received");
 
+					int type = intent.getIntExtra(SensitActions.EXTRA_SYNCED_TYPE, -1);
 					String dateStart = intent.getStringExtra(SensitActions.EXTRA_DATE_START);
 					String dateEnd = intent.getStringExtra(SensitActions.EXTRA_DATE_END);
 
 					Log.d(TAG, "Update");
-//					new Thread(new DataSyncedThread(SensitActivity.this, dateStart, dateEnd)).start();
-
-//					if (syncedToast == null) {
-//						syncedToast = Toast.makeText(SensitActivity.this, "", Toast.LENGTH_SHORT);
-//					}
-
-//					if (intent.getBooleanExtra(IcatUtil.EXTRA_SYNCED, false)) {
-//					}
-
-//					String msg = intent.getStringExtra(IcatUtil.EXTRA_MSG);
-//					if (msg != null) {
-//						syncedToast.setText(msg);
-//						syncedToast.show();
-//					}
+//					new Thread(new DataSyncedThread(SensingService.this, type, dateStart, dateEnd)).start();
 
 					Log.d(TAG, "Resetting intent");
 					abortBroadcast();
-
 					break;
 				case SensitActions.DATA_SYNC_DONE:
 					Log.d(TAG, "Action DATA_SYNC_DONE received");
