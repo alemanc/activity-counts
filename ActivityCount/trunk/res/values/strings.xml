@@ -33,27 +33,28 @@
     <string name="btn_start">Start</string>
     <string name="desc_sync">Sync data</string>
 
-    <!--Questions-->
+    <!--Survey-->
     <string name="survey_title">Contesta este cuestionario por favor</string>
     <string name="survey_question_stress">1. Indica tu nivel de estrés</string>
     <string name="survey_question_stress_min">muy relajado</string>
     <string name="survey_question_stress_max">muy estresado</string>
-    <string name="survey_question_challenge">2. Pienso que mi estudio es</string>
+    <string name="survey_question_challenge">2. Pienso que mis estudios de maestría son un reto</string>
     <string name="survey_question_challenge_min">1</string>
     <string name="survey_question_challenge_max">5</string>
-    <string name="survey_question_skill">3. Me siento capacitado para hacer este estudio</string>
+    <string name="survey_question_skill">3. Me siento capacitado para hacer este estudio de maestría</string>
     <string name="survey_question_skill_min">1</string>
     <string name="survey_question_skill_max">5</string>
-    <string name="survey_question_avoidance">4. Preferiría hacer otra cosa que hacer estudio de maestria</string>
+    <string name="survey_question_avoidance">4. Preferiría hacer otra cosa en lugar de la maestria</string>
     <string name="survey_question_avoidance_min">1</string>
     <string name="survey_question_avoidance_max">5</string>
-    <string name="survey_question_effort">5. Este estudio requiere mucho tiempo y esfuerzo</string>
+    <string name="survey_question_effort">5. La maestría requiere mucho tiempo y esfuerzo</string>
     <string name="survey_question_effort_min">1</string>
     <string name="survey_question_effort_max">5</string>
 
     <string name="survey_btn_save">Guardar</string>
     <string name="survey_btn_later">Posponer</string>
     <string name="survey_btn_cancel">Cancelar</string>
-    <string name="survey_saved_confirmation">Gracias, tu respuestas se han guardado</string>
+
+    <string name="survey_saved_confirmation">Gracias, tus respuestas se han guardado</string>
 
 </resources>

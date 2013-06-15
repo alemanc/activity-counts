@@ -43,39 +43,38 @@ import java.util.List;
  * Date: 12/06/13
  * Time: 05:51 PM
  */
-public class DataUploadTask extends AsyncTask<Void, Void, Void> {
-	private static final String TAG = "SensIt.DataUploadTask";
+public class DataUploadSurveysTask extends AsyncTask<Void, Void, Void> {
+	private static final String TAG = "SensIt.DataUploadSurveysTask";
 
-	private List<List<ActivityCount>> lists;
-	private List<List<Survey>> surveyLists;
+	private List<List<Survey>> lists;
 	private Context context;
 	private boolean syncError;
 
-	public DataUploadTask(Context context, List<List<ActivityCount>> lists, List<List<Survey>> surveyLists) {
+	public DataUploadSurveysTask(Context context, List<List<Survey>> lists) {
 		this.lists = lists;
-		this.surveyLists = surveyLists;
 		this.context = context;
 	}
+
 	@Override
 	protected final Void doInBackground(Void... voids) {
-		List<ActivityCount> counts = lists.get(0);
+		List<Survey> surveys = lists.get(0);
 		if (lists.get(0) != null) {
 			HttpClient httpclient = new DefaultHttpClient();
-			HttpPost httpPost = new HttpPost(IcatUtil.ICAT_URL + IcatUtil.ACTIVITY_COUNTS);
+			HttpPost httpPost = new HttpPost(IcatUtil.ICAT_URL + IcatUtil.SURVEYS);
 			HttpParams httpParams = httpPost.getParams();
 			ConnManagerParams.setTimeout(httpParams, IcatUtil.TIMEOUT);
 			HttpConnectionParams.setSoTimeout(httpParams, IcatUtil.TIMEOUT);
 			HttpConnectionParams.setConnectionTimeout(httpParams, IcatUtil.TIMEOUT);
 
 			try {
-				Type listOfTestObject = new TypeToken<List<ActivityCount>>() {}.getType();
+				Type listOfTestObject = new TypeToken<List<Survey>>() {}.getType();
 				Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-				String gsonCounts = gson.toJson(counts, listOfTestObject);
-				Log.d(TAG, "GSON! " + gsonCounts);
+				String gsonSurveys = gson.toJson(surveys, listOfTestObject);
+				Log.d(TAG, "GSON! " + gsonSurveys);
 
 				String username = Utilities.getMacAddress(context);
 				if (username != null) {
-					String bundle = "{\"api_key\":\"" + IcatUtil.API_KEY + "\",\"username\":\"" + username + "\",\"activity_counts\":" + gsonCounts + "}\n";
+					String bundle = "{\"api_key\":\"" + IcatUtil.API_KEY + "\",\"username\":\"" + username + "\",\"surveys\":" + gsonSurveys + "}\n";
 
 					// add parameters
 					List<NameValuePair> nameValuePairs = new ArrayList<>();
@@ -100,9 +99,9 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 						int status = joResponse.optInt(IcatUtil.ICAT_STATUS);
 						if (status == IcatUtil.ICAT_STATUS_OK || status == IcatUtil.ICAT_STATUS_OK_WITH_ERRORS) {
 							Intent broadcastIntent = new Intent(SensitActions.DATA_SYNCED);
-							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.TYPE_COUNT);
-							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, counts.get(0).getDate());
-							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, counts.get(counts.size() - 1).getDate());
+							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.TYPE_SURVEY);
+							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, surveys.get(0).getDate());
+							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, surveys.get(surveys.size() - 1).getDate());
 							context.sendOrderedBroadcast(broadcastIntent, null);
 						}
 
@@ -143,18 +142,11 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 			lists.remove(0);
 		}
 
-		if (!syncError && !isCancelled() ) {
-			if (!lists.isEmpty()) {
-				// continue syncing
-				new DataUploadTask(context, lists, surveyLists).execute();
-			}
-			else {
-				// sync surveys
-				new DataUploadSurveysTask(context, surveyLists).execute();
-			}
+		if (!lists.isEmpty() && !isCancelled() && !syncError) {
+			new DataUploadSurveysTask(context, lists).execute();
 		}
 		else {
-			Log.d(TAG, "SYNC DONE");
+			Log.d(TAG, "SURVEY SYNC DONE");
 			Utilities.setLastSync(context, System.currentTimeMillis());
 			Utilities.setSyncing(false);
 			Intent broadcastIntent = new Intent(SensitActions.DATA_SYNC_DONE);

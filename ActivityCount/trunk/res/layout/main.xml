@@ -14,12 +14,9 @@
 
         <Button
             android:id="@+id/btn_start"
-            android:background="@drawable/btn_blue"
             style="@style/big_blue_button"
-            android:text="@string/btn_start"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal" />
+            android:background="@drawable/btn_blue"
+            android:text="@string/btn_start" />
 
         <!--Chart-->
         <LinearLayout

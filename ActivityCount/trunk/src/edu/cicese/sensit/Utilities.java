@@ -1,12 +1,17 @@
 package edu.cicese.sensit;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import edu.cicese.sensit.util.Preferences;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -23,6 +28,11 @@ public class Utilities {
 	private static boolean ready = true;
 	private static boolean manuallyStopped = false;
 	private static boolean syncing;
+
+	public static final int TYPE_COUNT = 1;
+	public static final int TYPE_SURVEY = 2;
+
+	private static DataUploadThread dataUploadThread;
 
 	private static String macAddress = null;
 	private static String userID = null;
@@ -142,5 +152,41 @@ public class Utilities {
 			Log.d(TAG, "UserID:" + userID);
 		}
 		return userID;
+	}
+
+	private static final long SYNC_PERIOD = 1200000; //20 minutes
+
+	public static boolean syncNeeded(Context context) {
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+		long lastSync = settings.getLong(Preferences.KEY_PREF_LAST_SYNC, 0);
+
+		return (System.currentTimeMillis() - lastSync) > SYNC_PERIOD;
+	}
+
+	public static void setLastSync(Context context, long lastSync) {
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+		SharedPreferences.Editor editor = settings.edit();
+		editor.putLong(Preferences.KEY_PREF_LAST_SYNC, lastSync);
+	}
+
+	/*public static void startDataUploadThread(Context context) {
+		if (!isSyncing()) {
+			new Thread(new DataUploadThread(context)).start();
+		}
+	}*/
+
+	public static boolean startSync(Context context) {
+//		boolean
+
+		// check connection preferences
+		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
+		boolean wifiOnly = settings.getBoolean(Preferences.KEY_PREF_WIFI_ONLY, true);
+
+		// check connection
+		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo nWifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
+
+		return  (wifiOnly && nWifi.isConnected()) || (!wifiOnly && (activeNetworkInfo != null && activeNetworkInfo.isConnected()));
 	}
 }

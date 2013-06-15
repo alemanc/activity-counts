@@ -10,13 +10,16 @@ import com.google.gson.annotations.Expose;
 public class ActivityCount {
 	private final String TAG = "SensIt.ActivityCount";
 
-//	private Date date;
-	@Expose private String date;
-	@Expose private int counts;
-	@Expose private boolean charging;
+	//	private Date date;
+	@Expose
+	private String date;
+	@Expose
+	private int counts;
+	@Expose
+	private boolean charging;
 //	@Expose private int epoch = 60;
 
-//	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+	//	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
 	public ActivityCount(String date, int counts, int charging) {
 		this.counts = counts;
 		this.charging = (charging == 1);
