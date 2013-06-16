@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
-import edu.cicese.sensit.ui.SurveyNotification;
 import edu.cicese.sensit.util.SensitActions;
 
 /**
@@ -23,7 +22,7 @@ public class OnSensingAlarmReceiver extends BroadcastReceiver {
 		if (!Utilities.isSensing()) {
 			if (!Utilities.isManuallyStopped()) {
 				Intent sensingIntent = new Intent(context, SensingService.class);
-				sensingIntent.setAction(SensitActions.SENSING_START_ACTION);
+				sensingIntent.setAction(SensitActions.ACTION_SENSING_START);
 				WakefulIntentService.sendWakefulWork(context, sensingIntent);
 			}
 			else {

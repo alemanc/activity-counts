@@ -24,7 +24,7 @@ public class SurveyNotification {
 
 	private Context context;
 	private NotificationManager manager;
-	private final static int NOTIFICATION_ID = 1525;
+	public final static int NOTIFICATION_ID = 1525;
 
 	public SurveyNotification(Context context) {
 		this.context = context;

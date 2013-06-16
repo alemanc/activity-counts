@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.BatteryManager;
-import android.os.Build;
 import android.os.Handler;
 import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
@@ -51,8 +50,9 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 	public void onCreate() {
 		super.onCreate();
 
-		Log.d(TAG, "android.os.Build.SERIAL: " + Build.SERIAL);
-
+//		Log.d(TAG, "android.os.Build.SERIAL: " + Build.SERIAL);
+		// TODO Remove, Debug only
+		Log.d(TAG, "Needed: " + Utilities.surveyNeeded(this));
 		if (surveyNotification == null) {
 			surveyNotification = new SurveyNotification(this);
 		}
@@ -83,14 +83,14 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		registerReceiver(tickReceiver, intentTimeFilter);
 
 		// Register receiver to wait until is stopped
-//		IntentFilter intentFilter = new IntentFilter(SensingService.SENSING_STOP_ACTION);
+//		IntentFilter intentFilter = new IntentFilter(SensingService.ACTION_SENSING_STOP);
 		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(SensitActions.SENSING_START_ACTION_COMPLETE);
-		intentFilter.addAction(SensitActions.SENSING_STOP_ACTION_COMPLETE);
+		intentFilter.addAction(SensitActions.ACTION_SENSING_START_COMPLETE);
+		intentFilter.addAction(SensitActions.ACTION_SENSING_STOP_COMPLETE);
 		registerReceiver(sensingActionReceiver, intentFilter);
 
 		IntentFilter intentDBFilter = new IntentFilter();
-		intentDBFilter.addAction(SensitActions.DATA_SYNCED);
+		intentDBFilter.addAction(SensitActions.ACTION_DATA_SYNCED);
 		registerReceiver(dataSyncReceiver, intentDBFilter);
 
 //		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -133,7 +133,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 	 */
 	protected void doWakefulWork(Intent intent) {
 		switch (intent.getAction()) {
-			case SensitActions.SENSING_START_ACTION:
+			case SensitActions.ACTION_SENSING_START:
 				// Check if the user manually stopped the service
 				if (!Utilities.isManuallyStopped()) {
 					Log.i(TAG, "START!");
@@ -143,14 +143,14 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 					Log.e(TAG, "Manually stopped! Couldn't restart");
 				}
 				break;
-			case SensitActions.SENSING_STOP_ACTION:
+			case SensitActions.ACTION_SENSING_STOP:
 				Log.e(TAG, "STOP!");
 				stopSensing();
 				break;
 			default:
 				Log.e(TAG, "Unknown action received: " + intent.getAction());
 		}
-		/*if (intent.getAction().compareTo(SENSING_START_ACTION) == 0) {
+		/*if (intent.getAction().compareTo(ACTION_SENSING_START) == 0) {
 			Log.e(TAG, "START!");
 			startSensing();
 
@@ -158,12 +158,12 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			//Send broadcast the end of this process
 			actionId = intent.getLongExtra(ACTION_ID_FIELD_NAME, -1);
 			// Send broadcast the end of this process
-			Intent broadcastIntent = new Intent(SENSING_START_ACTION_COMPLETE);
+			Intent broadcastIntent = new Intent(ACTION_SENSING_START_COMPLETE);
 			broadcastIntent.putExtra(ACTION_ID_FIELD_NAME, actionId);
 			sendBroadcast(broadcastIntent);
 			*//*
 
-		} else if (intent.getAction().compareTo(SENSING_STOP_ACTION) == 0) {
+		} else if (intent.getAction().compareTo(ACTION_SENSING_STOP) == 0) {
 			Log.e(TAG, "STOP!");
 			stopSensing();
 		} else {
@@ -267,7 +267,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			// Start service for it to run the recording session
 			Intent sensingIntent = new Intent(SensingService.this, SensingService.class);
 			// Point out the action
-			sensingIntent.setAction(SensitActions.SENSING_START_ACTION);
+			sensingIntent.setAction(SensitActions.ACTION_SENSING_START);
 			WakefulIntentService.sendWakefulWork(SensingService.this, sensingIntent);
 
 			System.exit(0);
@@ -314,7 +314,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			Log.d(TAG, "Inserted at row ID " + inserted);
 			dbAdapter.close();
 
-			Intent broadcastIntent = new Intent(SensitActions.REFRESH_CHART);
+			Intent broadcastIntent = new Intent(SensitActions.ACTION_REFRESH_CHART);
 			sendBroadcast(broadcastIntent);
 		}
 	}
@@ -366,14 +366,14 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			switch (action) {
-				case SensitActions.SENSING_START_ACTION_COMPLETE:
-					Log.d(TAG, "Action SENSING_START_ACTION_COMPLETE received");
+				case SensitActions.ACTION_SENSING_START_COMPLETE:
+					Log.d(TAG, "Action ACTION_SENSING_START_COMPLETE received");
 					Log.d(TAG, "Sensing started. Start background threads");
 					startBackgroundThreads();
 					Utilities.setReady(true);
 					break;
-				case SensitActions.SENSING_STOP_ACTION_COMPLETE:
-					Log.d(TAG, "Action SENSING_STOP_ACTION_COMPLETE received");
+				case SensitActions.ACTION_SENSING_STOP_COMPLETE:
+					Log.d(TAG, "Action ACTION_SENSING_STOP_COMPLETE received");
 //					Utilities.setReady(true);
 					break;
 				default:
@@ -410,8 +410,8 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			switch (intent.getAction()) {
-				case SensitActions.DATA_SYNCED:
-					Log.d(TAG, "Action DATA_SYNCED received");
+				case SensitActions.ACTION_DATA_SYNCED:
+					Log.d(TAG, "Action ACTION_DATA_SYNCED received");
 
 					int type = intent.getIntExtra(SensitActions.EXTRA_SYNCED_TYPE, -1);
 					String dateStart = intent.getStringExtra(SensitActions.EXTRA_DATE_START);

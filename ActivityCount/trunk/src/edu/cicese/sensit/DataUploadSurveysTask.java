@@ -57,8 +57,8 @@ public class DataUploadSurveysTask extends AsyncTask<Void, Void, Void> {
 
 	@Override
 	protected final Void doInBackground(Void... voids) {
-		List<Survey> surveys = lists.get(0);
-		if (lists.get(0) != null) {
+		if (lists != null && !lists.isEmpty()) {
+			List<Survey> surveys = lists.get(0);
 			HttpClient httpclient = new DefaultHttpClient();
 			HttpPost httpPost = new HttpPost(IcatUtil.ICAT_URL + IcatUtil.SURVEYS);
 			HttpParams httpParams = httpPost.getParams();
@@ -98,7 +98,7 @@ public class DataUploadSurveysTask extends AsyncTask<Void, Void, Void> {
 
 						int status = joResponse.optInt(IcatUtil.ICAT_STATUS);
 						if (status == IcatUtil.ICAT_STATUS_OK || status == IcatUtil.ICAT_STATUS_OK_WITH_ERRORS) {
-							Intent broadcastIntent = new Intent(SensitActions.DATA_SYNCED);
+							Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNCED);
 							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.TYPE_SURVEY);
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, surveys.get(0).getDate());
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, surveys.get(surveys.size() - 1).getDate());
@@ -149,7 +149,7 @@ public class DataUploadSurveysTask extends AsyncTask<Void, Void, Void> {
 			Log.d(TAG, "SURVEY SYNC DONE");
 			Utilities.setLastSync(context, System.currentTimeMillis());
 			Utilities.setSyncing(false);
-			Intent broadcastIntent = new Intent(SensitActions.DATA_SYNC_DONE);
+			Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNC_DONE);
 			context.sendBroadcast(broadcastIntent);
 		}
 	}

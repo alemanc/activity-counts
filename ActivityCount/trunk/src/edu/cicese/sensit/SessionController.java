@@ -50,7 +50,7 @@ public class SessionController implements Runnable {
 	public void start() {
 		Log.d(TAG, "Start");
 		// Register receiver to wait until is stopped
-		IntentFilter intentFilter = new IntentFilter(SensitActions.SENSING_STOP_ACTION);
+		IntentFilter intentFilter = new IntentFilter(SensitActions.ACTION_SENSING_STOP);
 		context.registerReceiver(sensingStopReceiver, intentFilter);
 
 		if (getState() == ControllerState.INITIATED) {
@@ -115,7 +115,7 @@ public class SessionController implements Runnable {
 		}
 
 		// Send broadcast
-		Intent broadcastIntent = new Intent(SensitActions.SENSING_START_ACTION_COMPLETE);
+		Intent broadcastIntent = new Intent(SensitActions.ACTION_SENSING_START_COMPLETE);
 		context.sendBroadcast(broadcastIntent);
 
 		// Block execution until state changes
@@ -144,7 +144,7 @@ public class SessionController implements Runnable {
 		setState(ControllerState.STOPPED);
 
 		// Send broadcast
-		broadcastIntent = new Intent(SensitActions.SENSING_STOP_ACTION_COMPLETE);
+		broadcastIntent = new Intent(SensitActions.ACTION_SENSING_STOP_COMPLETE);
 		context.sendBroadcast(broadcastIntent);
 	}
 
@@ -160,8 +160,8 @@ public class SessionController implements Runnable {
 	BroadcastReceiver sensingStopReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
-			if (intent.getAction().compareTo(SensitActions.SENSING_STOP_ACTION) == 0) {
-				Log.d(TAG, "Action SENSING_STOP_ACTION received");
+			if (intent.getAction().compareTo(SensitActions.ACTION_SENSING_STOP) == 0) {
+				Log.d(TAG, "Action ACTION_SENSING_STOP received");
 				context.unregisterReceiver(this);
 				setState(ControllerState.STOPPING);
 			}

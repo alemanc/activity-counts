@@ -29,7 +29,8 @@ public class OnConnectionReceiver extends BroadcastReceiver {
 					}
 					Log.d(TAG, "Connected: " + connected);
 					if (connected) {
-						new Thread(new DataUploadThread(context)).start();
+						Intent syncIntent = new Intent(context, SyncService.class);
+						context.startService(syncIntent);
 					}
 				}
 			} catch (Exception e) {

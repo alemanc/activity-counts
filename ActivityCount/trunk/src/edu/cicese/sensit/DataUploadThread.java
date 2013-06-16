@@ -32,12 +32,14 @@ public class DataUploadThread implements Runnable {
 	private Context context;
 
 	public DataUploadThread(Context context) {
+		Log.d(TAG, "Created");
 		this.context = context;
 		dbAdapter = new DBAdapter(context);
 	}
 
 	@Override
 	public void run() {
+		Log.d(TAG, "Run");
 		if (!Utilities.isSyncing()) {
 			if (Utilities.syncNeeded(context)) {
 				Utilities.setSyncing(true);
@@ -52,7 +54,7 @@ public class DataUploadThread implements Runnable {
 				NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
 //		        NetworkInfo nMobile = cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
 
-				Intent syncingIntent = new Intent(SensitActions.DATA_SYNCING);
+				Intent syncingIntent = new Intent(SensitActions.ACTION_DATA_SYNCING);
 				context.sendBroadcast(syncingIntent);
 
 				if ((wifiOnly && nWifi.isConnected()) || (!wifiOnly && (activeNetworkInfo != null && activeNetworkInfo.isConnected()))) {
@@ -102,7 +104,7 @@ public class DataUploadThread implements Runnable {
 						Log.d(TAG, "Nothing to sync");
 
 						Utilities.setSyncing(false);
-						Intent syncedIntent = new Intent(SensitActions.DATA_SYNC_ERROR);
+						Intent syncedIntent = new Intent(SensitActions.ACTION_DATA_SYNC_ERROR);
 						syncedIntent.putExtra(SensitActions.EXTRA_MSG, "Nothing to sync");
 						context.sendBroadcast(syncedIntent);
 					} else {
@@ -139,7 +141,7 @@ public class DataUploadThread implements Runnable {
 					Log.d(TAG, "No connection");
 
 					Utilities.setSyncing(false);
-					Intent syncedIntent = new Intent(SensitActions.DATA_SYNC_ERROR);
+					Intent syncedIntent = new Intent(SensitActions.ACTION_DATA_SYNC_ERROR);
 					syncedIntent.putExtra(SensitActions.EXTRA_MSG, "No connection");
 					context.sendBroadcast(syncedIntent);
 				}

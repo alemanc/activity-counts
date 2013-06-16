@@ -78,7 +78,7 @@ public class BatterySensor extends Sensor {
 			Utilities.setCharging(plugged);
 			Utilities.setEpochCharging();
 
-			Intent broadcastIntent = new Intent(SensitActions.BATTERY_CHANGED);
+			Intent broadcastIntent = new Intent(SensitActions.ACTION_BATTERY_CHANGED);
 //			broadcastIntent.putExtra(SensitActions.EXTRA_PLUGGED, plugged);
 			context.sendBroadcast(broadcastIntent);
 
