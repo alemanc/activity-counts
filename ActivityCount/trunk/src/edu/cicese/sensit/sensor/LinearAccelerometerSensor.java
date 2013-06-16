@@ -62,7 +62,7 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 		Log.d(TAG, "Sensor initialized: " + accelerometer.getName());
 
 		IntentFilter batteryFilter = new IntentFilter();
-		batteryFilter.addAction(SensitActions.BATTERY_CHANGED);
+		batteryFilter.addAction(SensitActions.ACTION_BATTERY_CHANGED);
 		context.registerReceiver(batteryReceiver, batteryFilter);
 	}
 
@@ -397,7 +397,7 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 
 	BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
-			Log.d(TAG, "Action BATTERY_CHANGED received");
+			Log.d(TAG, "Action ACTION_BATTERY_CHANGED received");
 			if (Utilities.isCharging()) {
 				if (isRunning()) {
 					Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");

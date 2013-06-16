@@ -18,7 +18,7 @@ public class DBAdapter {
 	private static final String TAG = "SensIt.DBAdapter";
 
 	private static final String DATABASE_NAME = "sensit.db";
-	private static final int DATABASE_VERSION = 9;
+	private static final int DATABASE_VERSION = 10;
 	private static final String TABLE_ACTIVITY_COUNT = "activity_count";
 	private static final String TABLE_SURVEY = "survey";
 
@@ -53,10 +53,11 @@ public class DBAdapter {
 					"[" + COLUMN_ACTIVITY_COUNT_USER_ID + "] STRING NOT NULL,\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_COUNTS + "] INTEGER DEFAULT '-1' NOT NULL,\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_CALORIES + "] INTEGER DEFAULT '-1' NOT NULL,\n" +
-					"[" + COLUMN_ACTIVITY_COUNT_DATE + "] DATETIME NOT NULL,\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_DATE + "] DATETIME NOT NULL UNIQUE,\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_CHARGING + "] INTEGER DEFAULT '0' NOT NULL,\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_SYNCED + "] INTEGER DEFAULT '0' NOT NULL\n" +
-					");\n" +
+					");";
+					/* +
 					"\n" +
 					"CREATE UNIQUE INDEX [ux_activity_count_date] ON [" + TABLE_ACTIVITY_COUNT + "](\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_DATE + "] ASC\n" +
@@ -68,10 +69,11 @@ public class DBAdapter {
 					"\n" +
 					"CREATE INDEX [ix_activity_count_synced] ON [" + TABLE_ACTIVITY_COUNT + "](\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_SYNCED + "]  ASC\n" +
-					");";
+					");";*/
 
-	//TODO Create indexes!!!!!!!!!!!!!!!!!!!
-	//Check alarms
+	//TODO
+	//*Create indexes
+	//*Check alarms
 	//Test development mode, rails
 	//Update project to heroku (with migration)
 	//Tests
@@ -79,13 +81,10 @@ public class DBAdapter {
 	//Power saving bug when un/plugging
 	//Wakeful on Galaxy Ace
 
-	private static final String CREATE_INDEX_PK_ACTIVITY_COUNT = "";
-	private static final String CREATE_INDEX_UX_ACTIVITY_COUNT_DATE = "";
-	private static final String CREATE_INDEX_IX_ACTIVITY_COUNT_SYNCED = "";
-
-	private static final String CREATE_INDEX_PK_SURVEY = "";
-	private static final String CREATE_INDEX_UX_SURVEY_DATE = "";
-	private static final String CREATE_INDEX_IX_SURVEY_SYNCED = "";
+	private static final String CREATE_INDEX_IX_ACTIVITY_COUNT_SYNCED =
+			"CREATE INDEX IF NOT EXISTS ix_activity_count_synced ON " + TABLE_ACTIVITY_COUNT + "(" + COLUMN_ACTIVITY_COUNT_SYNCED + " ASC)";
+	private static final String CREATE_INDEX_IX_SURVEY_SYNCED =
+			"CREATE INDEX IF NOT EXISTS ix_survey_synced ON " + TABLE_SURVEY + "(" + COLUMN_SURVEY_SYNCED + " ASC)";
 
 	private static final String CREATE_SURVEY =
 			"CREATE TABLE IF NOT EXISTS [" + TABLE_SURVEY + "] (\n" +
@@ -97,7 +96,7 @@ public class DBAdapter {
 					"[" + COLUMN_SURVEY_VALUE_AVOIDANCE + "] STRING DEFAULT '3' NOT NULL,\n" +
 					"[" + COLUMN_SURVEY_VALUE_EFFORT + "] STRING DEFAULT '3' NOT NULL,\n" +
 					"[" + COLUMN_SURVEY_SYNCED + "] INTEGER DEFAULT '0' NOT NULL\n" +
-					");\n" +
+					");\n"/* +
 					"\n" +
 					"CREATE UNIQUE INDEX [ux_survey_date] ON [" + TABLE_SURVEY + "](\n" +
 					"[" + COLUMN_SURVEY_DATE + "] ASC\n" +
@@ -109,7 +108,7 @@ public class DBAdapter {
 					"\n" +
 					"CREATE INDEX [ix_survey_synced] ON [" + TABLE_SURVEY + "](\n" +
 					"[" + COLUMN_SURVEY_SYNCED + "]  ASC\n" +
-					");";
+					");"*/;
 
 //	private final String[] likertDBValues = new String[]{"STRONGLY_DISAGREE", "DISAGREE", "NEUTRAL", "AGREE", "STRONGLY_DISAGREE"};
 
@@ -129,14 +128,16 @@ public class DBAdapter {
 		public void onCreate(SQLiteDatabase db) {
 			db.execSQL(CREATE_ACTIVITY_COUNT);
 			db.execSQL(CREATE_SURVEY);
+			db.execSQL(CREATE_INDEX_IX_ACTIVITY_COUNT_SYNCED);
+			db.execSQL(CREATE_INDEX_IX_SURVEY_SYNCED);
 		}
 
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-			Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
-			/*Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion + ", which will destroy all old data");
-			db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACTIVITY_COUNT);
+			Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
+			/*
 			onCreate(db);*/
+			db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACTIVITY_COUNT);
 			db.execSQL("DROP TABLE IF EXISTS " + TABLE_SURVEY);
 			onCreate(db);
 		}
@@ -238,6 +239,19 @@ public class DBAdapter {
 				null,
 				null,
 				null);
+	}
+
+	public Cursor querySurveys(int max) {
+		return db.query(TABLE_SURVEY,
+				new String[]{
+						COLUMN_SURVEY_DATE
+				},
+				null,
+				null,
+				null,
+				null,
+				COLUMN_SURVEY_SURVEY_ID + " DESC",
+				max + "");
 	}
 
 	public int updateSurveys(String dateStart, String dateEnd) {

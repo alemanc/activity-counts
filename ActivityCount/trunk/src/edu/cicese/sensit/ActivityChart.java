@@ -31,7 +31,7 @@ public class ActivityChart {
 //	private final String DATE_FORMAT_LONG = "yyyy-MM-dd HH:mm:ss";
 
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm");
-	private static final SimpleDateFormat DATE_FORMAT_LONG = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	public static final SimpleDateFormat DATE_FORMAT_LONG = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
 	private XYSeries activitySeries, sleepSeries, awakeSeries;
 	private XYMultipleSeriesRenderer renderer;

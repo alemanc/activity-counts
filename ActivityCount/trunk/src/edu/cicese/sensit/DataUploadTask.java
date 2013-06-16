@@ -58,8 +58,8 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 	}
 	@Override
 	protected final Void doInBackground(Void... voids) {
-		List<ActivityCount> counts = lists.get(0);
-		if (lists.get(0) != null) {
+		if (lists != null && !lists.isEmpty()) {
+			List<ActivityCount> counts = lists.get(0);
 			HttpClient httpclient = new DefaultHttpClient();
 			HttpPost httpPost = new HttpPost(IcatUtil.ICAT_URL + IcatUtil.ACTIVITY_COUNTS);
 			HttpParams httpParams = httpPost.getParams();
@@ -99,7 +99,7 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 
 						int status = joResponse.optInt(IcatUtil.ICAT_STATUS);
 						if (status == IcatUtil.ICAT_STATUS_OK || status == IcatUtil.ICAT_STATUS_OK_WITH_ERRORS) {
-							Intent broadcastIntent = new Intent(SensitActions.DATA_SYNCED);
+							Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNCED);
 							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.TYPE_COUNT);
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, counts.get(0).getDate());
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, counts.get(counts.size() - 1).getDate());
@@ -157,7 +157,7 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 			Log.d(TAG, "SYNC DONE");
 			Utilities.setLastSync(context, System.currentTimeMillis());
 			Utilities.setSyncing(false);
-			Intent broadcastIntent = new Intent(SensitActions.DATA_SYNC_DONE);
+			Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNC_DONE);
 			context.sendBroadcast(broadcastIntent);
 		}
 	}

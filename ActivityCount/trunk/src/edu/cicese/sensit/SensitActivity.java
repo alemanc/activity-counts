@@ -133,7 +133,7 @@ public class SensitActivity extends Activity {
 						Utilities.setSensing(true);
 
 						// Point out the action triggered by a user
-						sensingIntent.setAction(SensitActions.SENSING_START_ACTION);
+						sensingIntent.setAction(SensitActions.ACTION_SENSING_START);
 						WakefulIntentService.sendWakefulWork(SensitActivity.this, sensingIntent);
 
 						btnAction.setText("Stop");
@@ -143,15 +143,15 @@ public class SensitActivity extends Activity {
 						Utilities.setReady(false);
 						Utilities.setSensing(false);
 
-						Intent broadcastIntent = new Intent(SensitActions.SENSING_STOP_ACTION);
+						Intent broadcastIntent = new Intent(SensitActions.ACTION_SENSING_STOP);
 						sendBroadcast(broadcastIntent);
 
 						// Point out the action triggered by a user
-//					sensingIntent.setAction(SensingService.SENSING_STOP_ACTION);
+//					sensingIntent.setAction(SensingService.ACTION_SENSING_STOP);
 
 					/*Intent stopIntent = new Intent(SensitActivity.this, SensingService.class);
 					// Point out this action was triggered by a user
-					stopIntent.setAction(SensingService.SENSING_STOP_ACTION);
+					stopIntent.setAction(SensingService.ACTION_SENSING_STOP);
 					// Send unique id for this action
 					long actionID = UUID.randomUUID().getLeastSignificantBits();
 					stopIntent.putExtra(SensingService.ACTION_ID_FIELD_NAME, actionID);
@@ -213,12 +213,12 @@ public class SensitActivity extends Activity {
 		refreshSyncing();
 
 		IntentFilter intentFilter = new IntentFilter();
-		intentFilter.addAction(SensitActions.REFRESH_CHART);
-		intentFilter.addAction(SensitActions.REFRESH_SENSOR);
-		intentFilter.addAction(SensitActions.DATA_SYNCING);
-		intentFilter.addAction(SensitActions.DATA_SYNCED);
-		intentFilter.addAction(SensitActions.DATA_SYNC_DONE);
-		intentFilter.addAction(SensitActions.DATA_SYNC_ERROR);
+		intentFilter.addAction(SensitActions.ACTION_REFRESH_CHART);
+		intentFilter.addAction(SensitActions.ACTION_REFRESH_SENSOR);
+		intentFilter.addAction(SensitActions.ACTION_DATA_SYNCING);
+		intentFilter.addAction(SensitActions.ACTION_DATA_SYNCED);
+		intentFilter.addAction(SensitActions.ACTION_DATA_SYNC_DONE);
+		intentFilter.addAction(SensitActions.ACTION_DATA_SYNC_ERROR);
 		registerReceiver(uiRefreshReceiver, intentFilter);
 	}
 
@@ -382,19 +382,19 @@ public class SensitActivity extends Activity {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			switch (intent.getAction()){
-				case SensitActions.REFRESH_CHART:
+				case SensitActions.ACTION_REFRESH_CHART:
 					Log.d(TAG, "Refresh Action received");
 					refreshChart();
 					break;
-				case SensitActions.REFRESH_SENSOR:
+				case SensitActions.ACTION_REFRESH_SENSOR:
 					refreshSensors();
 					break;
-				case SensitActions.DATA_SYNCING:
+				case SensitActions.ACTION_DATA_SYNCING:
 //					setSyncing(true);
 					refreshSyncing();
 					break;
-				case SensitActions.DATA_SYNCED:
-					Log.d(TAG, "Action DATA_SYNCED received");
+				case SensitActions.ACTION_DATA_SYNCED:
+					Log.d(TAG, "Action ACTION_DATA_SYNCED received");
 
 					int type = intent.getIntExtra(SensitActions.EXTRA_SYNCED_TYPE, -1);
 					String dateStart = intent.getStringExtra(SensitActions.EXTRA_DATE_START);
@@ -406,13 +406,13 @@ public class SensitActivity extends Activity {
 					Log.d(TAG, "Resetting intent");
 					abortBroadcast();
 					break;
-				case SensitActions.DATA_SYNC_DONE:
-					Log.d(TAG, "Action DATA_SYNC_DONE received");
+				case SensitActions.ACTION_DATA_SYNC_DONE:
+					Log.d(TAG, "Action ACTION_DATA_SYNC_DONE received");
 //					setSyncing(false);
 					refreshSyncing();
 					break;
-				case SensitActions.DATA_SYNC_ERROR:
-					Log.d(TAG, "Action DATA_SYNC_ERROR received");
+				case SensitActions.ACTION_DATA_SYNC_ERROR:
+					Log.d(TAG, "Action ACTION_DATA_SYNC_ERROR received");
 //					setSyncing(false);
 					refreshSyncing();
 

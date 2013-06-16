@@ -203,7 +203,7 @@ public abstract class Sensor/* implements Runnable*/ {
 
 
 	public void refreshStatus() {
-		Intent broadcastIntent = new Intent(SensitActions.REFRESH_SENSOR);
+		Intent broadcastIntent = new Intent(SensitActions.ACTION_REFRESH_SENSOR);
 		context.sendBroadcast(broadcastIntent);
 	}
 

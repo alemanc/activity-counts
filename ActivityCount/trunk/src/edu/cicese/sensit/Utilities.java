@@ -2,16 +2,19 @@ package edu.cicese.sensit;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.database.Cursor;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.telephony.TelephonyManager;
 import android.util.Log;
+import edu.cicese.sensit.db.DBAdapter;
 import edu.cicese.sensit.util.Preferences;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -135,7 +138,7 @@ public class Utilities {
 		return Utilities.syncing;
 	}
 
-	public static String getDeviceId(Context context) {
+	/*public static String getDeviceId(Context context) {
 		if (userID == null) {
 			String buildSerial = Build.SERIAL;
 			if (buildSerial != null) {
@@ -152,7 +155,7 @@ public class Utilities {
 			Log.d(TAG, "UserID:" + userID);
 		}
 		return userID;
-	}
+	}*/
 
 	private static final long SYNC_PERIOD = 1200000; //20 minutes
 
@@ -167,6 +170,7 @@ public class Utilities {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
 		SharedPreferences.Editor editor = settings.edit();
 		editor.putLong(Preferences.KEY_PREF_LAST_SYNC, lastSync);
+		editor.commit();
 	}
 
 	/*public static void startDataUploadThread(Context context) {
@@ -175,7 +179,7 @@ public class Utilities {
 		}
 	}*/
 
-	public static boolean startSync(Context context) {
+	/*public static boolean startSync(Context context) {
 //		boolean
 
 		// check connection preferences
@@ -188,5 +192,32 @@ public class Utilities {
 		NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
 
 		return  (wifiOnly && nWifi.isConnected()) || (!wifiOnly && (activeNetworkInfo != null && activeNetworkInfo.isConnected()));
+	}*/
+
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+	public static boolean surveyNeeded(Context context) {
+		boolean alreadyTaken = false;
+		DBAdapter dbAdapter = new DBAdapter(context);
+		dbAdapter.open();
+		Cursor cursor = dbAdapter.querySurveys(1);
+		// at least one entry
+		if (cursor.moveToFirst()) {
+			Date today = Calendar.getInstance().getTime();
+			try {
+				Date last = dateFormat.parse(cursor.getString(0));
+				if (last.before(today)) {
+					alreadyTaken = false;
+				}
+				else {
+					alreadyTaken = true;
+				}
+			} catch (ParseException e) {
+				Log.e(TAG, "", e);
+			}
+		}
+		dbAdapter.close();
+
+		return alreadyTaken;
 	}
 }

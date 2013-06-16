@@ -40,6 +40,7 @@
             android:launchMode="singleTask"
             android:taskAffinity=""
             android:excludeFromRecents="true">
+            <!--TODO: Add intent filters?-->
         </activity>
 
         <!--<activity
@@ -76,13 +77,13 @@
 
         <!--<receiver android:name=".dataSyncReceiver">
             <intent-filter android:priority="1">
-                <action android:name="edu.cicese.sensit.DATA_SYNCED" />
+                <action android:name="edu.cicese.sensit.ACTION_DATA_SYNCED" />
             </intent-filter>
         </receiver>
 
         <receiver android:name="edu.cicese.sensit.SensitActivityty.uiRefreshReceiver">
             <intent-filter android:priority="2">
-                <action android:name="edu.cicese.sensit.DATA_SYNCED" />
+                <action android:name="edu.cicese.sensit.ACTION_DATA_SYNCED" />
             </intent-filter>
         </receiver>-->
 
@@ -91,11 +92,17 @@
             android:launchMode="singleInstance"
             android:exported="false">
             <intent-filter>
-                <action android:name="edu.cicese.sensit.SENSING_START_ACTION" />
-                <action android:name="edu.cicese.sensit.SENSING_STOP_ACTION" />
+                <action android:name="edu.cicese.sensit.ACTION_SENSING_START" />
+                <action android:name="edu.cicese.sensit.ACTION_SENSING_STOP" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+        </service>
+
+        <service
+            android:name=".SyncService"
+            android:launchMode="singleInstance"
+            android:exported="false">
         </service>
 
     </application>

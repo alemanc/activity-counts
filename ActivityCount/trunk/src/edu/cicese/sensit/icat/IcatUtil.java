@@ -68,7 +68,7 @@ public class IcatUtil {
 				int status = response.optInt(ICAT_STATUS);
 				Log.d(TAG, "Success! " + response + " status " + status);
 				if (status == ICAT_STATUS_OK || status == ICAT_STATUS_OK_WITH_ERRORS) {
-					Intent broadcastIntent = new Intent(SensitActions.DATA_SYNCED);
+					Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNCED);
 					broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED, true);
 					broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, counts.get(0).getDate());
 					broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, counts.get(counts.size() - 1).getDate());
@@ -81,7 +81,7 @@ public class IcatUtil {
 			public void onFailure(Throwable throwable, String response) {
 				Log.e(TAG, "", throwable);
 
-				Intent broadcastIntent = new Intent(SensitActions.DATA_SYNCED);
+				Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNCED);
 				broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED, false);
 				broadcastIntent.putExtra(SensitActions.EXTRA_MSG, "Sync error");
 				context.sendOrderedBroadcast(broadcastIntent, null);

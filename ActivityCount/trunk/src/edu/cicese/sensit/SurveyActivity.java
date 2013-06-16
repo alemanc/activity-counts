@@ -1,10 +1,10 @@
 package edu.cicese.sensit;
 
 import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -14,6 +14,7 @@ import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 import edu.cicese.sensit.db.DBAdapter;
+import edu.cicese.sensit.util.SensitActions;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,7 +24,7 @@ import java.util.Date;
 public class SurveyActivity extends Activity implements OnSeekBarChangeListener {
 	private static final String TAG = "SensIt.SurveyActivity";
 
-//	private int valueStress = 0;
+	//	private int valueStress = 0;
 //	private int valueChallenge = 0;
 //	private int valueSkill = 0;
 //	private int valueAvoidance = 0;
@@ -31,11 +32,12 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 	private ArrayList<TextView> textViews = new ArrayList<>();
 	private ArrayList<SeekBar> seekBars = new ArrayList<>();
 	private int[] values = new int[5];
-//	private final String[] stringAnswers = new String[5];
+	//	private final String[] stringAnswers = new String[5];
 	private final String[] stressValues = new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9", "10"};
 	private final String[] likertTextValues = new String[]{"totalmente en desacuerdo", "en desacuerdo", "neutral", "de acuerdo", "totalmente de acuerdo"};
 
-
+	private final int LAST_VALID_HOUR = 5;
+	private final int FIRST_VALID_HOUR = 8;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -92,9 +94,11 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 		}
 
 		sbStress.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
-			public void onStopTrackingTouch(SeekBar seekBar) {}
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
 
-			public void onStartTrackingTouch(SeekBar seekBar) {}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
 
 			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
 //				valueStress = progress + 1;// seekbar start from 0 while Likert Scale from 1.
@@ -122,9 +126,11 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 
 		sbSkill.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 
-			public void onStopTrackingTouch(SeekBar seekBar) {}
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
 
-			public void onStartTrackingTouch(SeekBar seekBar) {}
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
 
 			public void onProgressChanged(SeekBar seekBar, int progress,
 			                              boolean fromUser) {
@@ -175,7 +181,6 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 				setAnswers();
 				Log.d(TAG, "Yei!");
 				for (int i = 0; i < values.length; i++) {
-//					int answer = stringAnswers[i];
 					Log.d(TAG, "Answer " + i + ": " + values[i]);
 				}
 
@@ -183,7 +188,7 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 				Date date = calendar.getTime();
 				new DataStoreThread(SurveyActivity.this, date).start();
 
-				SurveyActivity.super.onBackPressed();
+				onBackPressed();
 			}
 		});
 
@@ -191,8 +196,27 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 			@Override
 			public void onClick(View view) {
 				Log.d(TAG, "I don't want to take your freaking survey");
-				cancelAlarms();
-				SurveyActivity.super.onBackPressed();
+//				resetAlarms();
+				Calendar calendar = Calendar.getInstance();
+
+				// check which day this survey belongs to
+				int hour = calendar.get(Calendar.HOUR_OF_DAY);
+				// double check that the survey was taken during a valid period
+				if (hour < LAST_VALID_HOUR || hour >= FIRST_VALID_HOUR) {
+					Log.d(TAG, "Valid survey");
+					if (hour < LAST_VALID_HOUR) {
+						// if the survey is still valid for yesterday, correct date
+						calendar.add(Calendar.DAY_OF_MONTH, -1);
+					}
+					Date date = calendar.getTime();
+					new DataStoreThread(SurveyActivity.this, date, new int[]{-1, -1, -1, -1, -1}).start();
+				} else {
+					// invalid survey, doesn't belong to anywhere
+					// SurveyActivity should had been automatically closed at this point
+					Log.d(TAG, "Invalid survey");
+				}
+
+				onBackPressed();
 			}
 		});
 
@@ -200,17 +224,46 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 			@Override
 			public void onClick(View view) {
 				Log.d(TAG, "Sigh, I'll take it later okay?... maybe");
-				// set alarm
-				AlarmManager alarmManager = (AlarmManager) SurveyActivity.this.getSystemService(Context.ALARM_SERVICE);
+				onBackPressed();
+			}
+		});
 
-				// schedule alarms for SurveyNotification
-				Calendar calendar = Calendar.getInstance();
-				// 08:00 PM
-				calendar.set(Calendar.HOUR_OF_DAY, 20);
-				calendar.set(Calendar.MINUTE, 0);
-				calendar.set(Calendar.SECOND, 0);
+	}
 
-				long nextTimeInMillis = calendar.getTimeInMillis();
+	@Override
+	public void onResume() {
+		super.onResume();
+		IntentFilter intentFilter = new IntentFilter();
+		intentFilter.addAction(SensitActions.ACTION_CLOSE_SURVEY);
+		registerReceiver(closeActivityReceiver, intentFilter);
+	}
+
+	@Override
+	public void onStop() {
+		super.onStop();
+		unregisterReceiver(closeActivityReceiver);
+	}
+
+	private void resetAlarms() {
+		// cancel remaining alarms
+		/*AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+		Intent alarmSurveyIntent = new Intent(this, OnSurveyAlarmReceiver.class);
+		PendingIntent piSurvey = PendingIntent.getBroadcast(SurveyActivity.this, 0, alarmSurveyIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+		alarmManager.cancel(piSurvey);*/
+
+		/*// set new alarms
+		Calendar now = Calendar.getInstance();
+		// check is this survey is not
+
+		Calendar calendar1 = Calendar.getInstance();
+		Calendar calendar2 = Calendar.getInstance();
+		Calendar calendar3 = Calendar.getInstance();
+		// 08:00 PM
+		calendar1.set(Calendar.HOUR_OF_DAY, 20);
+		calendar1.set(Calendar.MINUTE, 0);
+		calendar1.set(Calendar.SECOND, 0);
+
+		long nextTimeInMillis = calendar1.getTimeInMillis();
 
 //				long offset = 300000;
 //				if ((System.currentTimeMillis() - offset) < nextTimeInMillis) {
@@ -219,24 +272,10 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 //					calendar.get(Calendar.HOUR_OF_DAY)
 //				}
 
-				Intent alarmSurveyIntent = new Intent(SurveyActivity.this, OnSurveyAlarmReceiver.class);
-				PendingIntent piSurvey = PendingIntent.getBroadcast(SurveyActivity.this, 0, alarmSurveyIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-
-				Log.d(TAG, "" + calendar.getTimeInMillis());
-
-				alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 20000, piSurvey);
-
-				SurveyActivity.super.onBackPressed();
-			}
-		});
-
-	}
-
-	private void cancelAlarms() {
-		AlarmManager alarmManager = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-		Intent alarmSurveyIntent = new Intent(this, OnSurveyAlarmReceiver.class);
+		Intent alarmSurveyIntent = new Intent(SurveyActivity.this, OnSurveyAlarmReceiver.class);
 		PendingIntent piSurvey = PendingIntent.getBroadcast(SurveyActivity.this, 0, alarmSurveyIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-		alarmManager.cancel(piSurvey);
+
+		alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendar1.getTimeInMillis(), 20000, piSurvey);*/
 	}
 
 	/*private void setControlsByAnswers() {
@@ -279,10 +318,17 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 		private Date date;
 		private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		private DBAdapter dbAdapter;
+		private int[] values;
 
 		public DataStoreThread(Context context, Date date) {
 			this.date = date;
 			dbAdapter = new DBAdapter(context);
+			values = SurveyActivity.this.values;
+		}
+
+		public DataStoreThread(Context context, Date date, int[] values) {
+			this(context, date);
+			this.values = values;
 		}
 
 		@Override
@@ -294,4 +340,18 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 			dbAdapter.close();
 		}
 	}
+
+	public BroadcastReceiver closeActivityReceiver = new BroadcastReceiver() {
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			// double-check
+			switch (intent.getAction()) {
+				case SensitActions.ACTION_CLOSE_SURVEY:
+					Log.d(TAG, "Action ACTION_CLOSE_SURVEY received");
+					Log.d(TAG, "Closing Survey. 'But why?' you say.. Because you took too freaking long.. and I'm tired");
+					onBackPressed();
+					break;
+			}
+		}
+	};
 }
