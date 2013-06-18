@@ -27,4 +27,11 @@ public class SensitActions {
 	public static final String EXTRA_SYNCED_TYPE = "extra_synced_type";
 
 	public static final String ACTION_CLOSE_SURVEY = "edu.cicese.sensit.ACTION_CLOSE_SURVEY";
+
+	public static final int REQUEST_CODE_RESTART = 1001;
+	public static final int REQUEST_CODE_SURVEY_1 = 1002;
+	public static final int REQUEST_CODE_SURVEY_2 = 1003;
+	public static final int REQUEST_CODE_SURVEY_3 = 1004;
+	public static final int REQUEST_CODE_CLEAR_SURVEY = 1005;
+	public static final int REQUEST_CODE_CLOSE_SURVEY = 1006;
 }

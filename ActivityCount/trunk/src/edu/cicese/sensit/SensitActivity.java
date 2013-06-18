@@ -172,8 +172,7 @@ public class SensitActivity extends Activity {
 		btnSync.setOnClickListener(new View.OnClickListener() {
 			public void onClick(View view) {
 				if (!Utilities.isSyncing()) {
-					new Thread(new DataUploadThread(SensitActivity.this)).start();
-//					Utilities.startDataUploadThread(SensitActivity.this);
+					new Thread(new DataUploadThread(SensitActivity.this, true)).start();
 				}
 			}
 		});
@@ -366,7 +365,7 @@ public class SensitActivity extends Activity {
 
 	private void refreshSyncing() {
 		boolean syncing = Utilities.isSyncing();
-		Log.d(TAG, "Setting " + syncing);
+//		Log.d(TAG, "Setting " + syncing);
 		btnSync.setEnabled(!syncing);
 		if (syncing) {
 			lySyncing.setVisibility(View.VISIBLE);
@@ -401,7 +400,7 @@ public class SensitActivity extends Activity {
 					String dateEnd = intent.getStringExtra(SensitActions.EXTRA_DATE_END);
 
 					Log.d(TAG, "Update");
-//					new Thread(new DataSyncedThread(SensingService.this, type, dateStart, dateEnd)).start();
+					new Thread(new DataSyncedThread(SensitActivity.this, type, dateStart, dateEnd)).start();
 
 					Log.d(TAG, "Resetting intent");
 					abortBroadcast();

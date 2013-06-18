@@ -142,12 +142,14 @@ public class DataUploadSurveysTask extends AsyncTask<Void, Void, Void> {
 			lists.remove(0);
 		}
 
-		if (!lists.isEmpty() && !isCancelled() && !syncError) {
+		if (!syncError && !isCancelled() && !lists.isEmpty()) {
 			new DataUploadSurveysTask(context, lists).execute();
 		}
 		else {
 			Log.d(TAG, "SURVEY SYNC DONE");
-			Utilities.setLastSync(context, System.currentTimeMillis());
+			if (!syncError) {
+				Utilities.setLastSync(context, System.currentTimeMillis());
+			}
 			Utilities.setSyncing(false);
 			Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNC_DONE);
 			context.sendBroadcast(broadcastIntent);

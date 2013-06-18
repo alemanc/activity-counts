@@ -84,18 +84,18 @@ public abstract class Sensor/* implements Runnable*/ {
 	 * Starts the sensing process, should be overridden by a child class.
 	 */
 	public synchronized void start() {
-		sensing = true;
+//		sensing = true;
 		sensingNotification.updateNotificationWith(name);
-		Log.d(TAG, "SensingNotification updated");
+//		Log.d(TAG, "SensingNotification updated");
 	}
 
 	/**
 	 * Stops the sensing process, should be overridden by a child class.
 	 */
 	public synchronized void stop() {
-		sensing = false;
+//		sensing = false;
 		sensingNotification.updateNotificationWithout(name);
-		Log.d(TAG, "SensingNotification updated");
+//		Log.d(TAG, "SensingNotification updated");
 
 //		thread = null;
 	}

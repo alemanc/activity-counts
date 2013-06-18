@@ -20,12 +20,16 @@ public class OnSurveyAlarmReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		Log.d(TAG, "Received at OnSurveyAlarmReceiver");
 
-		Log.d(TAG, "Needed: " + Utilities.surveyNeeded(context));
-		//TODO Add 'if' statement
+		if (Utilities.surveyNeeded(context)) {
+			Log.d(TAG, "Survey notification needed");
 
-		if (surveyNotification == null) {
-			surveyNotification = new SurveyNotification(context);
+			if (surveyNotification == null) {
+				surveyNotification = new SurveyNotification(context);
+			}
+			surveyNotification.updateNotification();
 		}
-		surveyNotification.updateNotification();
+		else {
+			Log.d(TAG, "Survey notification not needed");
+		}
 	}
 }

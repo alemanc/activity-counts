@@ -50,28 +50,11 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 	public void onCreate() {
 		super.onCreate();
 
-//		Log.d(TAG, "android.os.Build.SERIAL: " + Build.SERIAL);
-		// TODO Remove, Debug only
-		Log.d(TAG, "Needed: " + Utilities.surveyNeeded(this));
-		if (surveyNotification == null) {
-			surveyNotification = new SurveyNotification(this);
-		}
-		surveyNotification.updateNotification();
-
-		// Get unique ID
-		/*TelephonyManager tm = (TelephonyManager) getBaseContext().getSystemService(Context.TELEPHONY_SERVICE);
-		String tmDevice, tmSerial, androidId;
-		tmDevice = "" + tm.getDeviceId();
-		tmSerial = "" + tm.getSimSerialNumber();
-		androidId = "" + Settings.Secure.getString(getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
-
-		UUID deviceUuid = new UUID(androidId.hashCode(), (long) tmDevice.hashCode() << 32);
-		String deviceId = deviceUuid.toString();
-
-		Log.d("SensIt", "tmDevice: " + tmDevice);
-		Log.d("SensIt", "tmSerial: " + tmSerial);
-		Log.d("SensIt", "androidId: " + androidId);
-		Log.d("SensIt", "deviceId: " + deviceId);*/
+//		Log.d(TAG, "Needed: " + Utilities.surveyNeeded(this));
+//		if (surveyNotification == null) {
+//			surveyNotification = new SurveyNotification(this);
+//		}
+//		surveyNotification.updateNotification();
 
 		dbAdapter = new DBAdapter(this);
 
@@ -92,13 +75,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		IntentFilter intentDBFilter = new IntentFilter();
 		intentDBFilter.addAction(SensitActions.ACTION_DATA_SYNCED);
 		registerReceiver(dataSyncReceiver, intentDBFilter);
-
-//		notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-		// Display a notification about us starting. Put an icon in the status bar.
-//		showNotification();
-
-//		appContext = this.getApplicationContext();
-//		accelerometerManager = new AccelerometerManager();
 
 		Thread.setDefaultUncaughtExceptionHandler(onRuntimeError);
 		Log.d(TAG, "SensingService created");
@@ -150,26 +126,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			default:
 				Log.e(TAG, "Unknown action received: " + intent.getAction());
 		}
-		/*if (intent.getAction().compareTo(ACTION_SENSING_START) == 0) {
-			Log.e(TAG, "START!");
-			startSensing();
-
-			*//*
-			//Send broadcast the end of this process
-			actionId = intent.getLongExtra(ACTION_ID_FIELD_NAME, -1);
-			// Send broadcast the end of this process
-			Intent broadcastIntent = new Intent(ACTION_SENSING_START_COMPLETE);
-			broadcastIntent.putExtra(ACTION_ID_FIELD_NAME, actionId);
-			sendBroadcast(broadcastIntent);
-			*//*
-
-		} else if (intent.getAction().compareTo(ACTION_SENSING_STOP) == 0) {
-			Log.e(TAG, "STOP!");
-			stopSensing();
-		} else {
-			Log.e(TAG, "Unknown action received: " + intent.getAction());
-			return;
-		}*/
 	}
 
 	/*@Override
@@ -202,48 +158,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			controller.stop();
 		}
 	}
-
-
-	/**
-	 * Show a notification while this service is running.
-	 */
-	/*private void showNotification() {
-		// In this sample, we'll use the same text for the ticker and the expanded notification
-		CharSequence text = getText(R.string.service_text);
-
-		// Set the icon, scrolling text and timestamp
-		notification = new Notification(R.drawable.icon, text, System.currentTimeMillis());
-
-		// The PendingIntent to launch our activity if the user selects this notification
-		Intent intent = new Intent(this, SensitActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
-
-		// Set the info for the views that show in the notification panel
-		notification.setLatestEventInfo(this, getText(R.string.service_title), text, contentIntent);
-
-		// Set the vibration
-//		notification.defaults |= Notification.DEFAULT_VIBRATE;
-
-		// Send the notification
-//		notificationManager.notify(NOTIFICATION, notification);
-
-		// Prevent service self kill
-		notification.flags |= Notification.FLAG_NO_CLEAR;
-		startForeground(1234, notification);
-	}
-
-	public void updateNotification(int count) {
-		// The PendingIntent to launch our activity if the user selects this notification
-		Intent intent = new Intent(this, SensitActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, intent, 0);
-
-		notification.setLatestEventInfo(this, getText(R.string.service_title), getText(R.string.service_text) + " / " +
-				count + " acs / " + Utilities.getBatteryLevel() + "%", contentIntent);
-
-		startForeground(1234, notification);
-	}*/
 
 	private Thread.UncaughtExceptionHandler onRuntimeError = new Thread.UncaughtExceptionHandler() {
 		public void uncaughtException(Thread thread, Throwable ex) {
@@ -418,7 +332,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 					String dateEnd = intent.getStringExtra(SensitActions.EXTRA_DATE_END);
 
 					Log.d(TAG, "Update");
-//					new Thread(new DataSyncedThread(SensingService.this, type, dateStart, dateEnd)).start();
+					new Thread(new DataSyncedThread(SensingService.this, type, dateStart, dateEnd)).start();
 
 					Log.d(TAG, "Resetting intent");
 					abortBroadcast();

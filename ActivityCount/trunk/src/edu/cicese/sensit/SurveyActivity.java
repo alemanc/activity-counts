@@ -348,10 +348,12 @@ public class SurveyActivity extends Activity implements OnSeekBarChangeListener 
 			switch (intent.getAction()) {
 				case SensitActions.ACTION_CLOSE_SURVEY:
 					Log.d(TAG, "Action ACTION_CLOSE_SURVEY received");
-					Log.d(TAG, "Closing Survey. 'But why?' you say.. Because you took too freaking long.. and I'm tired");
+					Log.d(TAG, "Closing Survey. 'But why?' you wonder.. Because it took too freaking long.. and I'm tired");
 					onBackPressed();
 					break;
 			}
 		}
 	};
+
+	//TODO 'Later' needs to set new alarm (depending on the hour)?
 }

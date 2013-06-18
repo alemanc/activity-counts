@@ -18,6 +18,7 @@ import java.util.Calendar;
  */
 public class OnBootReceiver extends BroadcastReceiver {
 	private static final int RESTART_PERIOD = 300000; // 5 minutes
+	private static final int WAIT_PERIOD = 180000; // 2 minutes
 	private static final String TAG = "SensIt.OnBootReceiver";
 
 	@Override
@@ -30,8 +31,8 @@ public class OnBootReceiver extends BroadcastReceiver {
 
 			// schedule alarms to start the Sensing service if not running
 			Intent alarmSensingIntent = new Intent(context, OnSensingAlarmReceiver.class);
-			PendingIntent piSensing = PendingIntent.getBroadcast(context, 0, alarmSensingIntent, 0);
-			alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + 120000, RESTART_PERIOD, piSensing);
+			PendingIntent piSensing = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_RESTART, alarmSensingIntent, 0);
+			alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + WAIT_PERIOD, RESTART_PERIOD, piSensing);
 
 			// schedule alarms to show Survey notification at 11:55, 20:00 and 21:00
 			Calendar calendarShowNotification = Calendar.getInstance();
@@ -40,9 +41,9 @@ public class OnBootReceiver extends BroadcastReceiver {
 			calendarShowNotification.set(Calendar.SECOND, 0);
 
 			Intent alarmSurveyIntent = new Intent(context, OnSurveyAlarmReceiver.class);
-			PendingIntent piSurvey1 = PendingIntent.getBroadcast(context, (int) System.currentTimeMillis(), alarmSurveyIntent, 0);
-			PendingIntent piSurvey2 = PendingIntent.getBroadcast(context, (int) System.currentTimeMillis(), alarmSurveyIntent, 0);
-			PendingIntent piSurvey3 = PendingIntent.getBroadcast(context, (int) System.currentTimeMillis(), alarmSurveyIntent, 0);
+			PendingIntent piSurvey1 = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_SURVEY_1, alarmSurveyIntent, 0);
+			PendingIntent piSurvey2 = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_SURVEY_2, alarmSurveyIntent, 0);
+			PendingIntent piSurvey3 = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_SURVEY_3, alarmSurveyIntent, 0);
 			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarShowNotification.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piSurvey1);
 			calendarShowNotification.set(Calendar.HOUR_OF_DAY, 20);
 			calendarShowNotification.set(Calendar.MINUTE, 0);
@@ -50,16 +51,16 @@ public class OnBootReceiver extends BroadcastReceiver {
 			calendarShowNotification.set(Calendar.HOUR_OF_DAY, 21);
 			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarShowNotification.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piSurvey3);
 
-			PendingIntent piSurvey4 = PendingIntent.getBroadcast(context, (int) System.currentTimeMillis(), alarmSurveyIntent, 0);
-			PendingIntent piSurvey5 = PendingIntent.getBroadcast(context, (int) System.currentTimeMillis(), alarmSurveyIntent, 0);
-			PendingIntent piSurvey6 = PendingIntent.getBroadcast(context, (int) System.currentTimeMillis(), alarmSurveyIntent, 0);
-			calendarShowNotification.set(Calendar.HOUR_OF_DAY, 21);
-			calendarShowNotification.set(Calendar.MINUTE, 10);
-			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarShowNotification.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piSurvey4);
-			calendarShowNotification.set(Calendar.MINUTE, 11);
-			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarShowNotification.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piSurvey5);
-			calendarShowNotification.set(Calendar.MINUTE, 12);
-			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarShowNotification.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piSurvey6);
+//			PendingIntent piSurvey4 = PendingIntent.getBroadcast(context, 121, alarmSurveyIntent, 0);
+//			PendingIntent piSurvey5 = PendingIntent.getBroadcast(context, 122, alarmSurveyIntent, 0);
+//			PendingIntent piSurvey6 = PendingIntent.getBroadcast(context, 123, alarmSurveyIntent, 0);
+//			calendarShowNotification.set(Calendar.HOUR_OF_DAY, 9);
+//			calendarShowNotification.set(Calendar.MINUTE, 57);
+//			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarShowNotification.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piSurvey4);
+//			calendarShowNotification.set(Calendar.MINUTE, 58);
+//			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarShowNotification.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piSurvey5);
+//			calendarShowNotification.set(Calendar.MINUTE, 59);
+//			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarShowNotification.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piSurvey6);
 
 			// schedule alarms to clear Survey notifications at midnight
 			Calendar calendarClearNotifications = Calendar.getInstance();
@@ -69,7 +70,7 @@ public class OnBootReceiver extends BroadcastReceiver {
 			calendarClearNotifications.set(Calendar.SECOND, 0);
 
 			Intent alarmClearIntent = new Intent(context, OnClearNotificationsAlarmReceiver.class);
-			PendingIntent piClear = PendingIntent.getBroadcast(context, 0, alarmClearIntent, 0);
+			PendingIntent piClear = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_CLEAR_SURVEY, alarmClearIntent, 0);
 			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarClearNotifications.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piClear);
 
 			// schedule alarms to close a Survey, if open at 5 AM
@@ -80,8 +81,8 @@ public class OnBootReceiver extends BroadcastReceiver {
 			calendarCloseSurvey.set(Calendar.SECOND, 0);
 
 			Intent alarmCloseSurveyIntent = new Intent(SensitActions.ACTION_CLOSE_SURVEY);
-			PendingIntent piCloseSurvey = PendingIntent.getBroadcast(context, 0, alarmCloseSurveyIntent, 0);
-			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarCloseSurvey.getTimeInMillis(), 60000, piCloseSurvey);
+			PendingIntent piCloseSurvey = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_CLOSE_SURVEY, alarmCloseSurveyIntent, 0);
+			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarCloseSurvey.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piCloseSurvey);
 		}
 	}
 }
