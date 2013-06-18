@@ -9,9 +9,12 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
 import edu.cicese.sensit.Utilities;
+import edu.cicese.sensit.datatask.data.AccelerometerData;
+import edu.cicese.sensit.datatask.data.WriteThread;
 import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.SensitActions;
 
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +28,8 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 //	public static final String ATT_DURATION = "duration";
 //	public static final int MAX_FRAME_SIZE = 20;
 
+	private ArrayList<AccelerometerData> frame = new ArrayList<>();
+
 	private static final String TAG = "SensIt.AccelerometerSensor";
 
 	/* Attributes needed to resume SensorEventListener */
@@ -37,8 +42,8 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 	private long wantedPeriod; // In nanoseconds
 
 	/* Attributes needed to control frame times */
-	private long frameTime; // frame time wanted
-	private long duration; // duration of reading wanted within a frame
+//	private long frameTime; // frame time wanted
+//	private long duration; // duration of reading wanted within a frame
 //	private long frameStartTime; // starting time of a frame
 //	private Queue<double[]> frame;
 
@@ -49,8 +54,8 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 	public LinearAccelerometerSensor(Context context, int sensorType, long frameTime, long duration) {
 		super(context);
 //		this.sensorType = sensorType;
-		this.frameTime = frameTime;
-		this.duration = duration;
+//		this.frameTime = frameTime;
+//		this.duration = duration;
 //		frameStartTime = System.currentTimeMillis();
 //		frame = new LinkedList<double[]>(); // Adding null elements to the LinkedList implementation of Queue should be prevented.
 
@@ -110,12 +115,10 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 
 	private void resume() {
 		super.start();
-
 		setRunning(true);
-
 		Log.d(TAG, "Starting " + getName() + " sensor");
 
-		if (duration > frameTime) {
+		/*if (duration > frameTime) {
 			duration = frameTime;
 		}
 		if (this.getPeriodTime() > duration) {
@@ -124,9 +127,7 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 		wantedPeriod = getPeriodTime() * 1000000L; // milliseconds to nanoseconds?
 		if (getSampleFrequency() == 44 || getSampleFrequency() == 4) {
 			wantedPeriod = 1000000L;
-		}
-		lastTimestamp = 0;
-		boolean success;
+		}*/
 		/*if (this.getSampleFrequency() > 4) {
 			Log.d(TAG, "SENSOR_DELAY_GAME");
 			success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -134,28 +135,26 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 			Log.d(TAG, "SENSOR_DELAY_NORMAL");
 			success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		}*/
-		success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
-
-		wantedPeriod = 40 * 1000000L;
+		wantedPeriod = 19 * 1000000L;
+		lastTimestamp = 0;
+		boolean success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
 		if (success) {
 			sensingNotification.updateNotificationWith(getName());
-			Log.d(TAG, "SensingNotification updated");
-			super.setSensing(true);
-			Log.d(TAG, "SensorEventLister registered!");
+			Log.d(TAG, "Starting " + getName() + " sensor [done]");
+//			super.setSensing(true);
 		} else {
-			super.setSensing(false);
-			Log.d(TAG, "SensorEventLister NOT registered!");
+			sensingNotification.updateNotificationWithout(getName());
+			Log.d(TAG, "Starting " + getName() + " sensor [error: NOT registered]");
+//			super.setSensing(false);
 		}
-
-		Log.d(TAG, "Starting " + getName() + " sensor [done]");
 
 		Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_ON);
 		refreshStatus();
 
 		if (stpe == null) {
 			stpe = new ScheduledThreadPoolExecutor(1);
-			stpe.scheduleAtFixedRate(pauseController, 0, Utilities.ACCELEROMETER_CHECK_TIME, TimeUnit.MILLISECONDS);
+			stpe.scheduleAtFixedRate(pauseController, Utilities.ACCELEROMETER_CHECK_TIME, Utilities.ACCELEROMETER_CHECK_TIME, TimeUnit.MILLISECONDS);
 		}
 	}
 
@@ -165,112 +164,13 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 		Log.d(TAG, "Pausing " + getName() + " sensor, counts: " + ActivityUtil.counts);
 
 		sensorManager.unregisterListener(this);
-		Log.d(TAG, "SensorEventLister unregistered!");
+//		Log.d(TAG, "SensorEventLister unregistered!");
 
 		Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_PAUSED);
 		refreshStatus();
 
 		Log.d(TAG, "Pausing " + getName() + " sensor [done]");
 	}
-
-	/**
-	 * Stores new axis values in a AccelerometerData object.
-	 */
-//	long n = 100000;
-
-	/*private void setNewReadings(double newX, double newY, double newZ, long timestamp, int counts) {
-		long currentFrameTime = timestamp - frameStartTime;
-		if (currentFrameTime > frameTime) {
-			frameStartTime = frameStartTime + frameTime;
-		}
-
-		if (currentFrameTime <= duration) {
-			frame.offer(new double[]{newX, newY, newZ, timestamp});
-
-//			Log.d(TAG, "Counts: " + counts);
-
-			if (frame.size() >= this.getSampleFrequency()) {
-				// Make available to DataSource
-				currentData = createNewData();
-			}
-		} else if (!frame.isEmpty()) {
-			*//*Log.d(TAG, "----------------------------Counts [L]: " + counts);
-			Bundle bundle = new Bundle();
-			bundle.putInt("counts", counts);
-			updateUI(Utilities.UPDATE_ACCELEROMETER, bundle);
-			this.counts -= counts;
-			// Make available to DataSource
-			currentData = createNewData();*//*
-		}
-	}*/
-
-	/*private void setNewCountReading(long timestamp) {
-		long currentFrameTime = timestamp - frameStartTime;
-		if (currentFrameTime > frameTime) {
-			frameStartTime = frameStartTime + frameTime;
-		}
-
-		if (currentFrameTime <= duration) {
-			frame.offer(new double[]{newX, newY, newZ, timestamp});
-			if (frame.size() >= this.getSampleFrequency()) {
-				// Make available to DataSource
-				currentData = createNewData();
-			}
-		} else if (!frame.isEmpty()) {
-			// Make available to DataSource
-			currentData = createNewData();
-		}
-	}*/
-
-	/*private AccelerometerFrameData createNewData() {
-		double[][] doubleFrame = frame.toArray(new double[frame.size()][]);
-		AccelerometerFrameData data;
-		switch (sensorType) {
-			case Sensor.TYPE_ACCELEROMETER:
-				data = new AccelerometerFrameData(DataType.ACCELEROMETER, doubleFrame);
-				break;
-			case Sensor.TYPE_GYROSCOPE:
-				data = new AccelerometerFrameData(DataType.GYROSCOPE, doubleFrame);
-				break;
-			default:
-				data = new AccelerometerFrameData(DataType.LINEAR_ACCELEROMETER, doubleFrame);
-		}
-
-		if (frame.size() > 0) {
-			long time = (long) (doubleFrame[frame.size() - 1][3] - doubleFrame[0][3]);
-			int freq = computeFrameFrequency(time);
-			autoFixFrequency(freq);
-
-//			Log.d(TAG, "Accelerometer: " + (doubleFrame[frame.size() - 1][3]) + " - " + (doubleFrame[0][3]));
-//			Log.d(TAG, "Accelerometer with time: " + time + "ms " + frame.size() + " samples.");
-//			Log.d(TAG, "Accelerometer with frequency: " + freq + "Hz");
-		}
-		frame.clear();
-		return data;
-	}*/
-
-	/*private int computeFrameFrequency(long frameTime) {
-		// Careful not to divide by zero
-		return (int) (frame.size() / (frameTime / 1000f));
-	}
-
-	private void autoFixFrequency(int freq) {
-		// Auto regulate frequency
-		if (freq != getSampleFrequency() && getSampleFrequency() != 44 || getSampleFrequency() != 4) {
-			long e = 2;
-			if (freq > (this.getSampleFrequency() + e)) {
-				wantedPeriod = wantedPeriod < (n * 1000L) ? wantedPeriod + n : wantedPeriod;
-			} else if (freq < (this.getSampleFrequency() - e)) {
-				wantedPeriod = wantedPeriod > n ? wantedPeriod - n : wantedPeriod;
-			} else if (n > 100) {
-				n /= 10;
-			}
-		}
-	}
-
-	int counts = 0;*/
-
-    /* SensorEventListener methods */
 
 	/**
 	 * Stores new accelerometer values when a change is sensed
@@ -285,6 +185,15 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 			double axisZ = event.values[2];
 
 			double magnitude = Math.floor(Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ)));
+
+			//TODO Remove frame
+			frame.add(new AccelerometerData(magnitude, System.currentTimeMillis()));
+			if (frame.size() >= 2000) {
+				ArrayList<AccelerometerData> tmp = (ArrayList<AccelerometerData>) frame.clone();
+				frame.clear();
+				new Thread(new WriteThread(tmp)).start();
+			}
+
 			ActivityUtil.counts += magnitude;
 			ActivityUtil.checkEpochCounts += magnitude;
 
@@ -378,8 +287,7 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 				}
 			}*/
 
-			//TODO Bug la primera vez que se desconecta el cable, se queda pausado.
-
+			//TODO Remove comments
 			/*if (!Utilities.isCharging()) {
 				if (!isRunning()) {
 					Log.d(TAG, "Starting " + getName() + " sensor [check]");

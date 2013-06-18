@@ -5,12 +5,17 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import edu.cicese.sensit.db.DBAdapter;
 import edu.cicese.sensit.util.Preferences;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -197,20 +202,25 @@ public class Utilities {
 	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	public static boolean surveyNeeded(Context context) {
-		boolean alreadyTaken = false;
+		boolean needed = true;
 		DBAdapter dbAdapter = new DBAdapter(context);
 		dbAdapter.open();
 		Cursor cursor = dbAdapter.querySurveys(1);
 		// at least one entry
 		if (cursor.moveToFirst()) {
-			Date today = Calendar.getInstance().getTime();
+			Calendar calendarToday = Calendar.getInstance();
+			calendarToday.set(Calendar.HOUR_OF_DAY, 0);
+			calendarToday.set(Calendar.MINUTE, 0);
+			calendarToday.set(Calendar.SECOND, 0);
+			calendarToday.set(Calendar.MILLISECOND, 0);
+			Date today = calendarToday.getTime();
 			try {
 				Date last = dateFormat.parse(cursor.getString(0));
 				if (last.before(today)) {
-					alreadyTaken = false;
+					needed = true;
 				}
 				else {
-					alreadyTaken = true;
+					needed = false;
 				}
 			} catch (ParseException e) {
 				Log.e(TAG, "", e);
@@ -218,6 +228,42 @@ public class Utilities {
 		}
 		dbAdapter.close();
 
-		return alreadyTaken;
+		return needed;
+	}
+
+	public static void writeToFile(String json) {
+		File root = Environment.getExternalStorageDirectory();
+		File dir = new File(root.getAbsolutePath() + "/sensit");
+		dir.mkdirs();
+		File file = new File(root + "/sensit", System.currentTimeMillis() + ".json");
+		try {
+			if (root.canWrite()) {
+				FileWriter filewriter = new FileWriter(file);
+				BufferedWriter out = new BufferedWriter(filewriter);
+				out.write(json);
+				out.close();
+			}
+		} catch (IOException e) {
+			Log.e("TAG", "Could not write file " + e.getMessage());
+		}
+	}
+
+	private boolean checkExternalMedia() {
+		boolean mExternalStorageAvailable;
+		boolean mExternalStorageWriteable;
+		String state = Environment.getExternalStorageState();
+
+		if (Environment.MEDIA_MOUNTED.equals(state)) {
+			// Can read and write the media
+			mExternalStorageAvailable = mExternalStorageWriteable = true;
+		} else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals(state)) {
+			// Can only read the media
+			mExternalStorageAvailable = true;
+			mExternalStorageWriteable = false;
+		} else {
+			// Can't read or write
+			mExternalStorageAvailable = mExternalStorageWriteable = false;
+		}
+		return mExternalStorageWriteable;
 	}
 }

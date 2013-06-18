@@ -18,7 +18,7 @@ public class DBAdapter {
 	private static final String TAG = "SensIt.DBAdapter";
 
 	private static final String DATABASE_NAME = "sensit.db";
-	private static final int DATABASE_VERSION = 10;
+	private static final int DATABASE_VERSION = 12;
 	private static final String TABLE_ACTIVITY_COUNT = "activity_count";
 	private static final String TABLE_SURVEY = "survey";
 
@@ -137,7 +137,7 @@ public class DBAdapter {
 			Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
 			/*
 			onCreate(db);*/
-			db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACTIVITY_COUNT);
+//			db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACTIVITY_COUNT);
 			db.execSQL("DROP TABLE IF EXISTS " + TABLE_SURVEY);
 			onCreate(db);
 		}

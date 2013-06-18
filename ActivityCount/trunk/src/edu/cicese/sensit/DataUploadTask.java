@@ -155,7 +155,9 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 		}
 		else {
 			Log.d(TAG, "SYNC DONE");
-			Utilities.setLastSync(context, System.currentTimeMillis());
+			if (!syncError) {
+				Utilities.setLastSync(context, System.currentTimeMillis());
+			}
 			Utilities.setSyncing(false);
 			Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNC_DONE);
 			context.sendBroadcast(broadcastIntent);
