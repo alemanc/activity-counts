@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 import edu.cicese.sensit.ui.SurveyNotification;
+import edu.cicese.sensit.util.Utilities;
 
 /**
  * Created by: Eduardo Quintana Contreras

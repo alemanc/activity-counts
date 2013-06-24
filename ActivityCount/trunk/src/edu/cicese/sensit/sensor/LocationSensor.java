@@ -8,7 +8,7 @@ import android.content.IntentFilter;
 import android.location.Location;
 import android.location.LocationManager;
 import android.util.Log;
-import edu.cicese.sensit.Utilities;
+import edu.cicese.sensit.util.Utilities;
 import edu.cicese.sensit.util.LocationUtil;
 
 import java.util.List;
@@ -112,10 +112,6 @@ public class LocationSensor extends Sensor {
 			location = registerProvider(LocationManager.GPS_PROVIDER);
 		}
 
-		/*if (location != null) {
-			LocationData newData = new LocationData(location);
-			currentData = newData;
-		}*/
 		// Very important flags
 //		lastLocationTime = System.currentTimeMillis();
 //		locationAdded = true;
@@ -169,17 +165,6 @@ public class LocationSensor extends Sensor {
 //					Log.e(ex.getClass().getName(), "", ex);
 //				}
 
-
-
-//				LocationData data = new LocationData(location);
-//				currentData = data;
-//				lastLocationTime = data.getTimestamp();
-
-				/*Bundle bundle = new Bundle();
-				bundle.putString("provider", location.getProvider());
-				bundle.putDouble("latitude", location.getLatitude());
-				bundle.putDouble("longitude", location.getLongitude());
-				updateUI(Utilities.UPDATE_LOCATION, bundle);*/
 			}
 		}
 	};

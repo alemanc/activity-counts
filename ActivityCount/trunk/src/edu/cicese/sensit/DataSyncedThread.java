@@ -3,6 +3,7 @@ package edu.cicese.sensit;
 import android.content.Context;
 import android.util.Log;
 import edu.cicese.sensit.db.DBAdapter;
+import edu.cicese.sensit.util.Utilities;
 
 /**
  * Makes the necessary changes to the local DB to indicate which data has been synced.
@@ -32,10 +33,10 @@ public class DataSyncedThread implements Runnable {
 
 		dbAdapter.open();
 		switch (type) {
-			case Utilities.TYPE_COUNT:
+			case Utilities.SYNC_TYPE_COUNT:
 				rowsUpdated = dbAdapter.updateCounts(dateStart, dateEnd);
 				break;
-			case Utilities.TYPE_SURVEY:
+			case Utilities.SYNC_TYPE_SURVEY:
 				rowsUpdated = dbAdapter.updateSurveys(dateStart, dateEnd);
 				break;
 			default:

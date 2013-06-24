@@ -8,11 +8,11 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
-import edu.cicese.sensit.Utilities;
+import edu.cicese.sensit.util.AccelerometerCountUtil;
 import edu.cicese.sensit.datatask.data.AccelerometerData;
-import edu.cicese.sensit.datatask.data.WriteThread;
 import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.SensitActions;
+import edu.cicese.sensit.util.Utilities;
 
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -24,58 +24,49 @@ import java.util.concurrent.TimeUnit;
  * Time: 12:31 PM
  */
 public class LinearAccelerometerSensor extends Sensor implements SensorEventListener {
-//	public static final String ATT_FRAME_TIME = "frameTime";
-//	public static final String ATT_DURATION = "duration";
-//	public static final int MAX_FRAME_SIZE = 20;
+	private static final String TAG = "SensIt.AccelerometerSensor";
 
 	private ArrayList<AccelerometerData> frame = new ArrayList<>();
 
-	private static final String TAG = "SensIt.AccelerometerSensor";
-
-	/* Attributes needed to resume SensorEventListener */
 	private SensorManager sensorManager;
 	private android.hardware.Sensor accelerometer;
-//	private int sensorType;
-
-	/* Attributes need to control sample rate */
 	private long lastTimestamp; // last reading time
-	private long wantedPeriod; // In nanoseconds
-
-	/* Attributes needed to control frame times */
-//	private long frameTime; // frame time wanted
-//	private long duration; // duration of reading wanted within a frame
-//	private long frameStartTime; // starting time of a frame
-//	private Queue<double[]> frame;
-
-//	private boolean forcedPaused = false;
+	private long wantedPeriod; // sample rate in nanoseconds
+	private boolean hasGravity = false;
 
 	private ScheduledThreadPoolExecutor stpe;
 
-	public LinearAccelerometerSensor(Context context, int sensorType, long frameTime, long duration) {
+	public LinearAccelerometerSensor(Context context) {
 		super(context);
-//		this.sensorType = sensorType;
-//		this.frameTime = frameTime;
-//		this.duration = duration;
-//		frameStartTime = System.currentTimeMillis();
-//		frame = new LinkedList<double[]>(); // Adding null elements to the LinkedList implementation of Queue should be prevented.
 
-		// AccelerometerManager initialization
+		/*List<android.hardware.Sensor> sensorList = sensorManager.getSensorList(android.hardware.Sensor.TYPE_ALL);
+		for (int i = 0; i < sensorList.size(); i++) {
+			Log.d(TAG, "Sensor: " + sensorList.get(i).getName());
+			Log.d(TAG, "Sensor: " + sensorList.get(i).getType());
+		}*/
+
+		// Check if hardware is available
 		String service = Context.SENSOR_SERVICE;
 		sensorManager = (SensorManager) context.getSystemService(service);
-		accelerometer = sensorManager.getDefaultSensor(sensorType);
+		accelerometer = sensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_LINEAR_ACCELERATION);
+		if (accelerometer == null) {
+			hasGravity = true;
+			accelerometer = sensorManager.getDefaultSensor(android.hardware.Sensor.TYPE_ACCELEROMETER);
+		}
 
-		Log.d(TAG, "Sensor initialized: " + accelerometer.getName());
+		if (accelerometer == null) {
+			Log.d(TAG, "Linear Accelerometer not found");
+		} else {
+			Log.d(TAG, "Sensor initialized: " + accelerometer.getName());
+		}
 
 		IntentFilter batteryFilter = new IntentFilter();
 		batteryFilter.addAction(SensitActions.ACTION_BATTERY_CHANGED);
 		context.registerReceiver(batteryReceiver, batteryFilter);
 	}
 
-	/**
-	 * Static method to construct an LinearAccelerometerSensor with Linear accelerometer readings
-	 */
-	public static LinearAccelerometerSensor createLinearAccelerometer(Context context, long frameTime, long duration) {
-		LinearAccelerometerSensor sensor = new LinearAccelerometerSensor(context, android.hardware.Sensor.TYPE_LINEAR_ACCELERATION, frameTime, duration);
+	public static LinearAccelerometerSensor createLinearAccelerometer(Context context) {
+		LinearAccelerometerSensor sensor = new LinearAccelerometerSensor(context);
 		Log.d(TAG, "Linear Accelerometer sensor created");
 		sensor.setName("LA");
 		return sensor;
@@ -85,10 +76,11 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 	public void start() {
 		super.start();
 
-		if (!Utilities.isCharging()) {
+		wantedPeriod = getSampleFrequency() * 1000000L;
+
+		if (Utilities.isEnabled()) {
 			resume();
-		}
-		else {
+		} else {
 			Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_PAUSED);
 			refreshStatus();
 		}
@@ -135,7 +127,7 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 			Log.d(TAG, "SENSOR_DELAY_NORMAL");
 			success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 		}*/
-		wantedPeriod = 19 * 1000000L;
+//		wantedPeriod = 19 * 1000000L;
 		lastTimestamp = 0;
 		boolean success = sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 
@@ -177,22 +169,29 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 	 */
 	public void onSensorChanged(SensorEvent event) {
 		long period = event.timestamp - lastTimestamp;
-//		Log.d(TAG, "Substracting: "+event.timestamp+" - "+lastTimestamp+" = "+period);
-//		Log.d(TAG, "Comparing: "+period+" >= "+wantedPeriod);
+//		Log.d(TAG, "Subtracting: " + event.timestamp + " - " + lastTimestamp + " = " + period);
+//		Log.d(TAG, "Comparing: " + period + " >= " + wantedPeriod);
 		if (period >= wantedPeriod) {
 			double axisX = event.values[0];
 			double axisY = event.values[1];
 			double axisZ = event.values[2];
 
-			double magnitude = Math.floor(Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ)));
+			double magnitude;
+			if (!hasGravity) {
+				magnitude = Math.floor(Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ)));
+			} else {
+				double[] axises = AccelerometerCountUtil.getFilteredAcceleration(axisX, axisY, axisZ);
+				magnitude = Math.floor(Math.sqrt((axises[0] * axises[0]) + (axises[1] * axises[1]) + (axises[2] * axises[2])));
+			}
 
-			//TODO Remove frame
-			frame.add(new AccelerometerData(magnitude, System.currentTimeMillis()));
+			//Remove frame
+			//TODO Save 'Stop' action in settings**
+			/*frame.add(new AccelerometerData(magnitude, System.currentTimeMillis()));
 			if (frame.size() >= 2000) {
 				ArrayList<AccelerometerData> tmp = (ArrayList<AccelerometerData>) frame.clone();
 				frame.clear();
 				new Thread(new WriteThread(tmp)).start();
-			}
+			}*/
 
 			ActivityUtil.counts += magnitude;
 			ActivityUtil.checkEpochCounts += magnitude;
@@ -213,109 +212,61 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 			// reset check-epoch counts
 			ActivityUtil.checkEpochCounts -= checkEpochCounts;
 
-			// check if the device was charging within the check-epoch
-//			boolean checkEpochCharging = Utilities.isCheckEpochCharging();
-			// reset charging-within-check-epoch flag
-//			Utilities.resetCheckEpochCharging();
-
-			/*if (Utilities.isCharging()*//* || LocationUtil.isAtHome()*//*) {
-				if (isRunning()) {
-					Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
-					pause();
-				}
-//				ActivityUtil.setEpochsInactive(0);
-			} else {
-				if (!isRunning()) {
-					Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
-					start();
-				}
-				*//*else {
-					// if the user was active in the check-epoch
-					if (isMoving(checkEpochCounts)) {
-						// reset inactivity check-epoch counter
-						ActivityUtil.setEpochsInactive(0);
-					}
-					else {
-						ActivityUtil.addEpochInactive();
-						if (ActivityUtil.getEpochsInactive() > 3)
-					}
-				}*//*
-			}*/
-
-
-
-			/*// check if the user was active in the check-epoch
-			boolean isMoving = isMoving(checkEpochCounts);
-
-			if (checkEpochCharging) {
-				Log.d(TAG, "Adding pause queue [charging]");
-				ActivityUtil.setPauseQueue(1);
-			} else {
-				Log.d(TAG, "Epoch not-charging");
-				if (isRunning()) {
-					Log.d(TAG, "Running");
-					// if inactive, schedule pause-epoch
-					if (!isMoving) {
-						// the number of paused epochs depends on the inactivity level
-						Log.d(TAG, "Adding pause queue [inactivity]");
-						ActivityUtil.setPauseQueue(1);
-					}
-					else {
-						Log.d(TAG, "Reset pause queue");
-						ActivityUtil.resetPauseQueue();
+			// if checking battery status
+			if (Utilities.isBatteryCheckEnabled()) {
+				if (!Utilities.isCharging()) {
+					if (!isRunning()) {
+						Log.d(TAG, "Starting " + getName() + " sensor [check]");
+						resume();
+					} else {
+						if (!isMoving(checkEpochCounts)) {
+							Log.d(TAG, "Pausing " + getName() + " sensor [check]");
+							pause();
+						} else {
+							Log.d(TAG, "Continuing: " + getName() + " sensor [check][" + checkEpochCounts + "]");
+						}
 					}
 				}
 				else {
-					Log.d(TAG, "Not running");
-				}
-			}
-
-			Log.d(TAG, "Pause queue: " + ActivityUtil.getPauseQueue());
-			// if a paused-epoch is scheduled
-			if (ActivityUtil.getPauseQueue() != 0) {
-				ActivityUtil.setPauseQueue(-1);
-
-				if (isRunning()) {
-					Log.d(TAG, "Pausing " + getName() + " sensor [check]");
-					pause();
+					if (isRunning()) {
+						Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
+						pause();
+					}
 				}
 			}
 			else {
 				if (!isRunning()) {
 					Log.d(TAG, "Starting " + getName() + " sensor [check]");
-					start();
-				}
-			}*/
-
-			//TODO Remove comments
-			/*if (!Utilities.isCharging()) {
-				if (!isRunning()) {
-					Log.d(TAG, "Starting " + getName() + " sensor [check]");
 					resume();
-				}
-				else {
-					if (!isMoving(checkEpochCounts)) {
+				} else {
+					if (!isMoving(checkEpochCounts) && !Utilities.isCharging()) {
 						Log.d(TAG, "Pausing " + getName() + " sensor [check]");
 						pause();
+					} else {
+						Log.d(TAG, "Continuing: " + getName() + " sensor [check][" + checkEpochCounts + "]");
 					}
 				}
-			}*/
+			}
 		}
 	};
 
 	BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
 			Log.d(TAG, "Action ACTION_BATTERY_CHANGED received");
-			if (Utilities.isCharging()) {
-				if (isRunning()) {
-					Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
-					pause();
+			if (Utilities.isBatteryCheckEnabled()) {
+				if (Utilities.isCharging()) {
+					if (isRunning()) {
+						Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
+						pause();
+					}
+				} else {
+					if (!isRunning()) {
+						Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
+						resume();
+					}
 				}
 			} else {
-				if (!isRunning()) {
-					Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
-					resume();
-				}
+				Log.d(TAG, "Ignore [battery check]");
 			}
 		}
 	};

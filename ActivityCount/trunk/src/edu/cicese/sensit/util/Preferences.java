@@ -10,4 +10,5 @@ public class Preferences {
 	public static final String KEY_PREF_WEIGHT = "pref_key_weight";
 	public static final String KEY_PREF_WIFI_ONLY = "pref_key_wifi_only";
 	public static final String KEY_PREF_LAST_SYNC = "pref_key_last_sync";
+	public static final String KEY_PREF_MANUALLY_STOPPED = "pref_key_manually_stopped";
 }

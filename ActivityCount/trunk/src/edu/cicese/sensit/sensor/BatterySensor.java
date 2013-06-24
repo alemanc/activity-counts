@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
-import edu.cicese.sensit.Utilities;
+import edu.cicese.sensit.util.Utilities;
 import edu.cicese.sensit.util.SensitActions;
 
 /**

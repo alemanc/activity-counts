@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.SystemClock;
 import android.util.Log;
 import edu.cicese.sensit.util.SensitActions;
+import edu.cicese.sensit.util.Utilities;
 
 import java.util.Calendar;
 
@@ -83,6 +84,24 @@ public class OnBootReceiver extends BroadcastReceiver {
 			Intent alarmCloseSurveyIntent = new Intent(SensitActions.ACTION_CLOSE_SURVEY);
 			PendingIntent piCloseSurvey = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_CLOSE_SURVEY, alarmCloseSurveyIntent, 0);
 			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarCloseSurvey.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piCloseSurvey);
+
+			// schedule alarm to enable/disable battery check
+			Calendar calendarEnableBatteryCheck = Calendar.getInstance();
+			// 9:00 PM
+			calendarEnableBatteryCheck.set(Calendar.HOUR_OF_DAY, Utilities.BATTERY_CHECK_DISABLED_AT);
+			calendarEnableBatteryCheck.set(Calendar.MINUTE, 0);
+			calendarEnableBatteryCheck.set(Calendar.SECOND, 0);
+
+			Intent alarmDisableBatteryCheckIntent = new Intent(SensitActions.ACTION_DISABLE_BATTERY_CHECK);
+			PendingIntent piDisableBatteryCheck = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_DISABLE_BATTERY_CHECK, alarmDisableBatteryCheckIntent, 0);
+			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarEnableBatteryCheck.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piDisableBatteryCheck);
+
+			// 9:00 AM
+			calendarEnableBatteryCheck.set(Calendar.HOUR_OF_DAY, Utilities.BATTERY_CHECK_ENABLED_AT);
+
+			Intent alarmEnableBatteryCheckIntent = new Intent(SensitActions.ACTION_ENABLE_BATTERY_CHECK);
+			PendingIntent piEnableBatteryCheck = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_ENABLE_BATTERY_CHECK, alarmEnableBatteryCheckIntent, 0);
+			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarEnableBatteryCheck.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piEnableBatteryCheck);
 		}
 	}
 }

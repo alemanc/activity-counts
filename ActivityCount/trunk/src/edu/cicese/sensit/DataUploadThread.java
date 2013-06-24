@@ -15,6 +15,7 @@ import edu.cicese.sensit.db.DBAdapter;
 import edu.cicese.sensit.icat.IcatUtil;
 import edu.cicese.sensit.util.Preferences;
 import edu.cicese.sensit.util.SensitActions;
+import edu.cicese.sensit.util.Utilities;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -237,7 +238,7 @@ public class DataUploadThread implements Runnable {
 						int status = joResponse.optInt(IcatUtil.ICAT_STATUS);
 						if (status == IcatUtil.ICAT_STATUS_OK || status == IcatUtil.ICAT_STATUS_OK_WITH_ERRORS) {
 							Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNCED);
-							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.TYPE_COUNT);
+							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.SYNC_TYPE_COUNT);
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, countList.get(0).getDate());
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, countList.get(countList.size() - 1).getDate());
 							context.sendOrderedBroadcast(broadcastIntent, null);
@@ -315,7 +316,7 @@ public class DataUploadThread implements Runnable {
 						int status = joResponse.optInt(IcatUtil.ICAT_STATUS);
 						if (status == IcatUtil.ICAT_STATUS_OK || status == IcatUtil.ICAT_STATUS_OK_WITH_ERRORS) {
 							Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNCED);
-							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.TYPE_SURVEY);
+							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.SYNC_TYPE_SURVEY);
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, surveys.get(0).getDate());
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, surveys.get(surveys.size() - 1).getDate());
 							context.sendOrderedBroadcast(broadcastIntent, null);

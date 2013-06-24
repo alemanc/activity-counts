@@ -4,8 +4,6 @@ import android.content.Context;
 import edu.cicese.sensit.datatask.data.DataType;
 import edu.cicese.sensit.sensor.AccelerometerSensor;
 import edu.cicese.sensit.sensor.BatterySensor;
-import edu.cicese.sensit.sensor.BluetoothSensor;
-import edu.cicese.sensit.sensor.LocationSensor;
 import edu.cicese.sensit.sensor.LinearAccelerometerSensor;
 import edu.cicese.sensit.sensor.Sensor;
 
@@ -14,38 +12,35 @@ import edu.cicese.sensit.sensor.Sensor;
  * Date: 9/05/13
  * Time: 05:37 PM
  */
-public class DataTaskFactory {
-	public static DataTask createDataTask(DataType dataType, Context context) {
-		DataTask dataTask = null;
+public class DataSourceFactory {
+	public static DataSource createDataSource(DataType dataType, Context context) {
+		DataSource dataSource = null;
 
 		switch (dataType) {
-			case ACCELEROMETER:
-				long frameTime = 60000;
-				long duration = 60000;
-				Sensor AccSensor = AccelerometerSensor.createAccelerometer(context, frameTime, duration);
+			/*case ACCELEROMETER:
+				Sensor AccSensor = AccelerometerSensor.createAccelerometer(context);
 				AccSensor.setSampleFrequency(25);
 				AccSensor.setPeriodTime(0);
 				dataTask = new DataSource(AccSensor);
 				dataTask.setName("ACCELEROMETER");
-				break;
+				break;*/
 			case LINEAR_ACCELEROMETER:
-				long frameTime3 = 60000;
-				long duration3 = 60000;
-				Sensor LASensor = LinearAccelerometerSensor.createLinearAccelerometer(context, frameTime3, duration3);
-				LASensor.setSampleFrequency(25);
-				LASensor.setPeriodTime(0);
-				dataTask = new DataSource(LASensor);
-				dataTask.setName("LINEAR ACCELEROMETER");
+				Sensor LASensor = LinearAccelerometerSensor.createLinearAccelerometer(context);
+//				LASensor.setSampleFrequency(25);
+//				LASensor.setPeriodTime(0);
+				LASensor.setSampleFrequency(AccelerometerSensor.FREQUENCY_10_HZ);
+				dataSource = new DataSource(LASensor);
+				dataSource.setName("LINEAR ACCELEROMETER");
 				break;
-			case BLUETOOTH:
+			/*case BLUETOOTH:
 				dataTask = new DataSource(new BluetoothSensor(context));
 				dataTask.setName("BLUETOOTH");
 				break;
 			case LOCATION:
 				dataTask = new DataSource(new LocationSensor(context));
 				dataTask.setName("LOCATION");
-				break;
-			case GYROSCOPE:
+				break;*/
+			/*case GYROSCOPE:
 				long frameTime2 = 1000;
 				long duration2 = 500;
 				Sensor GyroSensor = AccelerometerSensor.createGyroscope(context, frameTime2, duration2);
@@ -53,13 +48,13 @@ public class DataTaskFactory {
 				GyroSensor.setPeriodTime(0);
 				dataTask = new DataSource(GyroSensor);
 				dataTask.setName("GYROSCOPE");
-				break;
+				break;*/
 			case BATTERY_LEVEL:
-				dataTask = new DataSource(new BatterySensor(context));
-				dataTask.setName("BATTERY_LEVEL");
+				dataSource = new DataSource(new BatterySensor(context));
+				dataSource.setName("BATTERY_LEVEL");
 				break;
 
 		}
-		return dataTask;
+		return dataSource;
 	}
 }

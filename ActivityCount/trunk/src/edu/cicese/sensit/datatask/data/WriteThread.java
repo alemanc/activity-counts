@@ -4,7 +4,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import edu.cicese.sensit.Utilities;
+import edu.cicese.sensit.util.Utilities;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;

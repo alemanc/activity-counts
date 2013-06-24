@@ -5,10 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
-import edu.cicese.sensit.datatask.DataTask;
-import edu.cicese.sensit.datatask.DataTaskFactory;
+import edu.cicese.sensit.datatask.DataSource;
+import edu.cicese.sensit.datatask.DataSourceFactory;
 import edu.cicese.sensit.datatask.data.DataType;
 import edu.cicese.sensit.util.SensitActions;
+import edu.cicese.sensit.util.Utilities;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.List;
 public class SessionController implements Runnable {
 	private static final String TAG = "SensIt.SessionController";
 
-	private List<DataTask> tasks = new ArrayList<DataTask>();
+	private List<DataSource> dataSources = new ArrayList<>();
 
 	public static enum ControllerState {
 		INITIATED, PREPARED, STARTED, STOPPING, STOPPED
@@ -36,13 +37,13 @@ public class SessionController implements Runnable {
 	}
 
 	private void prepareSession() {
-		tasks.clear();
+		dataSources.clear();
 
-		tasks.add(DataTaskFactory.createDataTask(DataType.BATTERY_LEVEL, context));
-		tasks.add(DataTaskFactory.createDataTask(DataType.LINEAR_ACCELEROMETER, context));
-//		tasks.add(DataTaskFactory.createDataTask(DataType.ACCELEROMETER, context));
-//		tasks.add(DataTaskFactory.createDataTask(DataType.BLUETOOTH, context));
-//		tasks.add(DataTaskFactory.createDataTask(DataType.LOCATION, context));
+		dataSources.add(DataSourceFactory.createDataSource(DataType.BATTERY_LEVEL, context));
+		dataSources.add(DataSourceFactory.createDataSource(DataType.LINEAR_ACCELEROMETER, context));
+//		dataSources.add(DataSourceFactory.createDataSource(DataType.ACCELEROMETER, context));
+//		dataSources.add(DataSourceFactory.createDataSource(DataType.BLUETOOTH, context));
+//		dataSources.add(DataSourceFactory.createDataSource(DataType.LOCATION, context));
 
 		setState(ControllerState.PREPARED);
 	}
@@ -75,41 +76,13 @@ public class SessionController implements Runnable {
 					Log.e(TAG, "Runnable sleep failed", e);
 				}
 			}
-
-			/*Log.i(TAG, "Size: " + tasks.size() + " sensing: " + Utilities.isSensing());
-			for (DataTask dt : tasks) {
-				Log.i(TAG, "Stopping: " + dt.getName());
-				dt.stop();
-			}
-			setState(ControllerState.STOPPED);
-			Utilities.setSensing(false);*/
-
-
-
-
-			/*Log.d(TAG, "Wait for every sensor to stop." + " sensing: " + Utilities.isSensing());
-			while (isSensing()) {
-				try {
-					Thread.sleep(100);
-				} catch (Exception e) {
-					Log.e(TAG, "Runnable sleep failed", e);
-				}
-			}*/
 		}
 	}
 
-	/*private boolean isSensing() {
-		boolean isSensing = false;
-		for(DataTask dt : tasks) {
-			isSensing |= ((DataSource) dt).isSensing();
-		}
-
-		return isSensing;
-	}*/
 
 	public void run() {
-		// Start DataTasks
-		for (DataTask dt : tasks) {
+		// Start DataSources
+		for (DataSource dt : dataSources) {
 			Log.d(TAG, "Starting: " + dt.getName());
 			dt.start();
 		}
@@ -128,19 +101,12 @@ public class SessionController implements Runnable {
 		}
 
 		// Stop DataTasks
-		Log.d(TAG, "Size: " + tasks.size() + " sensing: " + Utilities.isSensing());
-		for (DataTask dt : tasks) {
+		Log.d(TAG, "Size: " + dataSources.size() + " sensing: " + Utilities.isSensing());
+		for (DataSource dt : dataSources) {
 			Log.d(TAG, "Stopping: " + dt.getName());
 			dt.stop();
 		}
 
-		/*for (DataTask dt : tasks) {
-			Log.i(TAG, "Stoping: " + dt.getClass().getName());
-			if (dt.isRunning()) {
-				dt.stop();
-			}
-//			dt.clear();
-		}*/
 		setState(ControllerState.STOPPED);
 
 		// Send broadcast
