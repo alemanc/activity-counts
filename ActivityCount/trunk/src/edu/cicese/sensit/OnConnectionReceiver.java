@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.util.Log;
+import edu.cicese.sensit.util.Utilities;
 
 /**
  * Created by: Eduardo Quintana Contreras

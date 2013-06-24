@@ -1,4 +1,4 @@
-package edu.cicese.sensit;
+package edu.cicese.sensit.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,10 +7,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.preference.PreferenceManager;
-import android.provider.Settings;
 import android.util.Log;
 import edu.cicese.sensit.db.DBAdapter;
-import edu.cicese.sensit.util.Preferences;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -36,11 +34,14 @@ public class Utilities {
 	private static boolean ready = true;
 	private static boolean manuallyStopped = false;
 	private static boolean syncing;
+	private static boolean batteryCheckEnabled = true;
 
-	public static final int TYPE_COUNT = 1;
-	public static final int TYPE_SURVEY = 2;
+	private static final long SYNC_RATE = 1200000; //20 minutes
+	public static final int SYNC_TYPE_COUNT = 1;
+	public static final int SYNC_TYPE_SURVEY = 2;
 
-	private static DataUploadThread dataUploadThread;
+	public static final int BATTERY_CHECK_ENABLED_AT = 9;
+	public static final int BATTERY_CHECK_DISABLED_AT = 21;
 
 	private static String macAddress = null;
 	private static String userID = null;
@@ -48,10 +49,7 @@ public class Utilities {
 	public static final long ACCELEROMETER_CHECK_TIME = 10000l;
 	public static final long LOCATION_CHECK_TIME = 10000l;
 
-	// Sample RATE
-//	public static final int RATE = 40000; // 1000000 = 1 second | 40000 -> 25 samples per second (1000000/40000) = 25Hz
-	public static final int RATE = 40;
-
+	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	public static boolean isReady() {
 		return ready;
@@ -71,6 +69,10 @@ public class Utilities {
 
 	public static boolean isCharging() {
 		return charging;
+	}
+
+	public static boolean isEnabled() {
+		return !charging || !batteryCheckEnabled;
 	}
 
 	public static void setCharging(boolean charging) {
@@ -119,21 +121,21 @@ public class Utilities {
 		return macAddress;
 	}
 
-	public static String getUserID(Context context) {
+	/*public static String getUserID(Context context) {
 		if (userID == null) {
-			/*TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
+			*//*TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
 			String tmDevice, tmSerial, androidId;
 			tmDevice = "" + tm.getDeviceId();
 			tmSerial = "" + tm.getSimSerialNumber();
 			androidId = "" + Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 
 			UUID deviceUuid = new UUID(androidId.hashCode(), (long) tmDevice.hashCode() << 32);
-			userID = deviceUuid.toString();*/
+			userID = deviceUuid.toString();*//*
 
 			userID = Settings.Secure.getString(context.getContentResolver(), android.provider.Settings.Secure.ANDROID_ID);
 		}
 		return userID;
-	}
+	}*/
 
 	public static void setSyncing(boolean syncing) {
 		Utilities.syncing = syncing;
@@ -141,6 +143,14 @@ public class Utilities {
 
 	public static boolean isSyncing() {
 		return Utilities.syncing;
+	}
+
+	public static boolean isBatteryCheckEnabled() {
+		return batteryCheckEnabled;
+	}
+
+	public static void setBatteryCheckEnabled(boolean batteryCheckEnabled) {
+		Utilities.batteryCheckEnabled = batteryCheckEnabled;
 	}
 
 	/*public static String getDeviceId(Context context) {
@@ -162,13 +172,11 @@ public class Utilities {
 		return userID;
 	}*/
 
-	private static final long SYNC_PERIOD = 1200000; //20 minutes
-
 	public static boolean syncNeeded(Context context) {
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
 		long lastSync = settings.getLong(Preferences.KEY_PREF_LAST_SYNC, 0);
 
-		return (System.currentTimeMillis() - lastSync) > SYNC_PERIOD;
+		return (System.currentTimeMillis() - lastSync) > SYNC_RATE;
 	}
 
 	public static void setLastSync(Context context, long lastSync) {
@@ -177,29 +185,6 @@ public class Utilities {
 		editor.putLong(Preferences.KEY_PREF_LAST_SYNC, lastSync);
 		editor.commit();
 	}
-
-	/*public static void startDataUploadThread(Context context) {
-		if (!isSyncing()) {
-			new Thread(new DataUploadThread(context)).start();
-		}
-	}*/
-
-	/*public static boolean startSync(Context context) {
-//		boolean
-
-		// check connection preferences
-		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(context);
-		boolean wifiOnly = settings.getBoolean(Preferences.KEY_PREF_WIFI_ONLY, true);
-
-		// check connection
-		ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo nWifi = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		NetworkInfo activeNetworkInfo = cm.getActiveNetworkInfo();
-
-		return  (wifiOnly && nWifi.isConnected()) || (!wifiOnly && (activeNetworkInfo != null && activeNetworkInfo.isConnected()));
-	}*/
-
-	private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	public static boolean surveyNeeded(Context context) {
 		boolean needed = true;
@@ -248,7 +233,7 @@ public class Utilities {
 		}
 	}
 
-	private boolean checkExternalMedia() {
+	/*private boolean checkExternalMedia() {
 		boolean mExternalStorageAvailable;
 		boolean mExternalStorageWriteable;
 		String state = Environment.getExternalStorageState();
@@ -265,5 +250,5 @@ public class Utilities {
 			mExternalStorageAvailable = mExternalStorageWriteable = false;
 		}
 		return mExternalStorageWriteable;
-	}
+	}*/
 }

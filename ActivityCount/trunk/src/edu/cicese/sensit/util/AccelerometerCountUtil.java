@@ -1,4 +1,4 @@
-package edu.cicese.sensit;
+package edu.cicese.sensit.util;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -34,7 +34,7 @@ public class AccelerometerCountUtil {
 	}
 
 	public static void initiateGravity() {
-		gravity = new double[]{0, 0, 0};
+		gravity = new double[]{-9, 0, 0};
 	}
 
 	public static double[] getFilteredAcceleration(double axisX, double axisY, double axisZ) {

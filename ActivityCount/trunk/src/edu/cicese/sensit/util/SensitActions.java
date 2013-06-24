@@ -21,12 +21,15 @@ public class SensitActions {
 
 	public static final String ACTION_BATTERY_CHANGED = "edu.cicese.sensit.ACTION_BATTERY_CHANGED";
 
+	public static final String ACTION_CLOSE_SURVEY = "edu.cicese.sensit.ACTION_CLOSE_SURVEY";
+
+	public static final String ACTION_ENABLE_BATTERY_CHECK = "edu.cicese.sensit.ACTION_ENABLE_BATTERY_CHECK";
+	public static final String ACTION_DISABLE_BATTERY_CHECK = "edu.cicese.sensit.ACTION_DISABLE_BATTERY_CHECK";
+
 	public static final String EXTRA_DATE_START = "extra_date_start";
 	public static final String EXTRA_DATE_END = "extra_date_end";
 	public static final String EXTRA_MSG = "extra_message";
 	public static final String EXTRA_SYNCED_TYPE = "extra_synced_type";
-
-	public static final String ACTION_CLOSE_SURVEY = "edu.cicese.sensit.ACTION_CLOSE_SURVEY";
 
 	public static final int REQUEST_CODE_RESTART = 1001;
 	public static final int REQUEST_CODE_SURVEY_1 = 1002;
@@ -34,4 +37,6 @@ public class SensitActions {
 	public static final int REQUEST_CODE_SURVEY_3 = 1004;
 	public static final int REQUEST_CODE_CLEAR_SURVEY = 1005;
 	public static final int REQUEST_CODE_CLOSE_SURVEY = 1006;
+	public static final int REQUEST_CODE_ENABLE_BATTERY_CHECK = 1007;
+	public static final int REQUEST_CODE_DISABLE_BATTERY_CHECK = 1008;
 }

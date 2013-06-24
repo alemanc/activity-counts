@@ -5,10 +5,8 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.util.Log;
-import edu.cicese.sensit.AccelerometerCountUtil;
-import edu.cicese.sensit.Utilities;
-import edu.cicese.sensit.datatask.data.AccelerometerFrameData;
-import edu.cicese.sensit.datatask.data.DataType;
+import edu.cicese.sensit.util.AccelerometerCountUtil;
+import edu.cicese.sensit.util.Utilities;
 
 import java.util.LinkedList;
 import java.util.Queue;
@@ -21,6 +19,12 @@ import java.util.concurrent.TimeUnit;
  * Time: 12:31 PM
  */
 public class AccelerometerSensor extends Sensor implements SensorEventListener {
+	public static final int FREQUENCY_50_HZ = 19; // ms
+	public static final int FREQUENCY_25_HZ = 38;
+	public static final int FREQUENCY_20_HZ = 48;
+	public static final int FREQUENCY_12_5_HZ = 75;
+	public static final int FREQUENCY_10_HZ = 95;
+
 	public static final String ATT_FRAME_TIME = "frameTime";
 	public static final String ATT_DURATION = "duration";
 	public static final int MAX_FRAME_SIZE = 20;
@@ -108,7 +112,7 @@ public class AccelerometerSensor extends Sensor implements SensorEventListener {
 
 		Log.d(TAG, "Starting " + getName() + " sensor");
 
-		counts = 0;
+//		counts = 0;
 
 		if (duration > frameTime) {
 			duration = frameTime;
@@ -164,7 +168,7 @@ public class AccelerometerSensor extends Sensor implements SensorEventListener {
 	private void pause() {
 		setRunning(false);
 
-		Log.d(TAG, "Pausing " + getName() + " sensor, counts: " + counts);
+//		Log.d(TAG, "Pausing " + getName() + " sensor, counts: " + counts);
 
 		sensorManager.unregisterListener(this);
 		Log.d(TAG, "SensorEventLister unregistered!");
@@ -195,7 +199,7 @@ public class AccelerometerSensor extends Sensor implements SensorEventListener {
 
 			if (frame.size() >= this.getSampleFrequency()) {
 				// Make available to DataSource
-				currentData = createNewData();
+//				currentData = createNewData();
 			}
 		} else if (!frame.isEmpty()) {
 			Log.d(TAG, "----------------------------Counts: " + counts);
@@ -203,7 +207,7 @@ public class AccelerometerSensor extends Sensor implements SensorEventListener {
 			bundle.putInt("counts", counts);
 			updateUI(Utilities.UPDATE_ACCELEROMETER, bundle);*/
 
-			this.counts -= counts;
+//			this.counts -= counts;
 
 			// Make available to DataSource
 //			currentData = createNewData();
@@ -232,7 +236,7 @@ public class AccelerometerSensor extends Sensor implements SensorEventListener {
 		}
 	}*/
 
-	private AccelerometerFrameData createNewData() {
+	/*private AccelerometerFrameData createNewData() {
 		double[][] doubleFrame = frame.toArray(new double[frame.size()][]);
 		AccelerometerFrameData data;
 		switch (sensorType) {
@@ -257,9 +261,9 @@ public class AccelerometerSensor extends Sensor implements SensorEventListener {
 		}
 		frame.clear();
 		return data;
-	}
+	}*/
 
-	private int computeFrameFrequency(long frameTime) {
+	/*private int computeFrameFrequency(long frameTime) {
 		// Careful not to divide by zero
 		return (int) (frame.size() / (frameTime / 1000f));
 	}
@@ -278,7 +282,7 @@ public class AccelerometerSensor extends Sensor implements SensorEventListener {
 		}
 	}
 
-	int counts = 0;
+	int counts = 0;*/
 
     /* SensorEventListener methods */
 
@@ -296,13 +300,13 @@ public class AccelerometerSensor extends Sensor implements SensorEventListener {
 				double axisY = event.values[1];
 				double axisZ = event.values[2];
 				if (sensorType == android.hardware.Sensor.TYPE_LINEAR_ACCELERATION) {
-					setNewReadings(axisX, axisY, axisZ, currentTime, counts);
-					counts += Math.floor(Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ)));
+//					setNewReadings(axisX, axisY, axisZ, currentTime, counts);
+//					counts += Math.floor(Math.sqrt((axisX * axisX) + (axisY * axisY) + (axisZ * axisZ)));
 				}
 				else {
 					double[] axises = getFilteredReadings(axisX, axisY, axisZ);
-					counts += Math.floor(Math.sqrt((axises[0] * axises[0]) + (axises[1] * axises[1]) + (axises[2] * axises[2])));
-					setNewReadings(axises[0], axises[1], axises[2], currentTime, counts);
+//					counts += Math.floor(Math.sqrt((axises[0] * axises[0]) + (axises[1] * axises[1]) + (axises[2] * axises[2])));
+//					setNewReadings(axises[0], axises[1], axises[2], currentTime, counts);
 				}
 
 				lastTimestamp = event.timestamp;

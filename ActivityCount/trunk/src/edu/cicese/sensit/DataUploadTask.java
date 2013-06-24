@@ -9,6 +9,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import edu.cicese.sensit.icat.IcatUtil;
 import edu.cicese.sensit.util.SensitActions;
+import edu.cicese.sensit.util.Utilities;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -100,7 +101,7 @@ public class DataUploadTask extends AsyncTask<Void, Void, Void> {
 						int status = joResponse.optInt(IcatUtil.ICAT_STATUS);
 						if (status == IcatUtil.ICAT_STATUS_OK || status == IcatUtil.ICAT_STATUS_OK_WITH_ERRORS) {
 							Intent broadcastIntent = new Intent(SensitActions.ACTION_DATA_SYNCED);
-							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.TYPE_COUNT);
+							broadcastIntent.putExtra(SensitActions.EXTRA_SYNCED_TYPE, Utilities.SYNC_TYPE_COUNT);
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_START, counts.get(0).getDate());
 							broadcastIntent.putExtra(SensitActions.EXTRA_DATE_END, counts.get(counts.size() - 1).getDate());
 							context.sendOrderedBroadcast(broadcastIntent, null);

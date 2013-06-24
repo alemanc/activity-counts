@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import edu.cicese.sensit.util.SensitActions;
+import edu.cicese.sensit.util.Utilities;
 
 /**
  * Created by: Eduardo Quintana Contreras

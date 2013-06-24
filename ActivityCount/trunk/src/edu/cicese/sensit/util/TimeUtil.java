@@ -1,4 +1,4 @@
-package edu.cicese.sensit;
+package edu.cicese.sensit.util;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

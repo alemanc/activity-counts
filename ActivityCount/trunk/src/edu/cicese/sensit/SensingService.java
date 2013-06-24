@@ -9,9 +9,9 @@ import android.os.Handler;
 import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import edu.cicese.sensit.db.DBAdapter;
-import edu.cicese.sensit.ui.SurveyNotification;
 import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.SensitActions;
+import edu.cicese.sensit.util.Utilities;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -33,14 +33,10 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 
 	private ScheduledExecutorService scheduleTaskExecutor;
 	private DBAdapter dbAdapter;
+	private SessionController controller;
 
-	protected static SurveyNotification surveyNotification;
+//	protected static SurveyNotification surveyNotification;
 
-
-	/**
-	 * This constructor is never used directly, it is used by the superclass
-	 * methods when it's first created.
-	 */
 	public SensingService() {
 		super("SensingService");
 	}
@@ -61,15 +57,16 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		// Register the broadcast receiver to receive TIME_TICK
 		IntentFilter intentTimeFilter = new IntentFilter();
 		intentTimeFilter.addAction(Intent.ACTION_TIME_TICK);
-		intentTimeFilter.addAction(Intent.ACTION_TIME_CHANGED);
-		intentTimeFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
+//		intentTimeFilter.addAction(Intent.ACTION_TIME_CHANGED);
+//		intentTimeFilter.addAction(Intent.ACTION_TIMEZONE_CHANGED);
 		registerReceiver(tickReceiver, intentTimeFilter);
 
 		// Register receiver to wait until is stopped
-//		IntentFilter intentFilter = new IntentFilter(SensingService.ACTION_SENSING_STOP);
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(SensitActions.ACTION_SENSING_START_COMPLETE);
 		intentFilter.addAction(SensitActions.ACTION_SENSING_STOP_COMPLETE);
+		intentFilter.addAction(SensitActions.ACTION_ENABLE_BATTERY_CHECK);
+		intentFilter.addAction(SensitActions.ACTION_DISABLE_BATTERY_CHECK);
 		registerReceiver(sensingActionReceiver, intentFilter);
 
 		IntentFilter intentDBFilter = new IntentFilter();
@@ -96,6 +93,8 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		if (scheduleTaskExecutor != null) {
 			scheduleTaskExecutor.shutdown();
 		}
+		Log.d(TAG, "Resetting counts");
+		ActivityUtil.counts = 0;
 
 		handler.removeCallbacksAndMessages(null);
 
@@ -128,21 +127,11 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		}
 	}
 
-	/*@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
-		startSensing();
-
-		// We want this service to continue running until it is explicitly stopped, so return sticky.
-		return START_STICKY;
-	}*/
-
-
-	private SessionController controller;
-
 	private void startSensing() {
 		Log.d(TAG, "Start sensing");
 
 		Utilities.setCharging(isPowerConnected());
+		Utilities.setBatteryCheckEnabled(enableBatteryCheck());
 		Utilities.setEpochCharging();
 		Utilities.setSensing(true);
 
@@ -233,48 +222,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		}
 	}
 
-	/*private Runnable dataSyncThread = new Runnable() {
-		public void run() {
-			Log.d(TAG, "Sync data");
-			// Upload new data to server using the iCAT REST API
-			// Make the necessary changes to the local db to indicate which data has been synced
-
-			// Check connection preferences
-
-
-			// Check if WiFi connection available
-
-
-			dbAdapter.open();
-
-			Log.d(TAG, "Query data");
-			Cursor cursor = dbAdapter.queryCounts();
-
-			List<ActivityCount> counts = new ArrayList<>();
-
-			// at least one entry
-			if (cursor.moveToFirst()) {
-				do {
-					counts.add(new ActivityCount(cursor.getString(3), cursor.getInt(1), cursor.getInt(4)));
-				} while (cursor.moveToNext());
-			}
-
-			if (!counts.isEmpty()) {
-				Log.d(TAG, "Sending from " + counts.get(0).getDate() + " to " + counts.get(counts.size() - 1).getDate());
-				IcatUtil.postActivityCounts(SensingService.this, counts);
-			}
-			else {
-				Log.d(TAG, "Nothing to sync.");
-			}
-
-			if (!cursor.isClosed()) {
-				cursor.close();
-			}
-
-			dbAdapter.close();
-		}
-	};*/
-
 	BroadcastReceiver sensingActionReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -290,6 +237,14 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 					Log.d(TAG, "Action ACTION_SENSING_STOP_COMPLETE received");
 //					Utilities.setReady(true);
 					break;
+				case SensitActions.ACTION_ENABLE_BATTERY_CHECK:
+					Log.d(TAG, "Action ACTION_ENABLE_BATTERY_CHECK received");
+					setBatteryCheckEnabled();
+					break;
+				case SensitActions.ACTION_DISABLE_BATTERY_CHECK:
+					Log.d(TAG, "Action ACTION_DISABLE_BATTERY_CHECK received");
+					setBatteryCheckEnabled();
+					break;
 				default:
 					Log.e(TAG, "Unknown action received [sensingActionReceiver]");
 			}
@@ -303,6 +258,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		@Override
 		public void onReceive (Context context, Intent intent){
 			Calendar calendar = Calendar.getInstance();
+			//TODO Add -1 minute to the date, we are saving the PAST minute
 			long timestamp = calendar.getTimeInMillis();
 			Date date = calendar.getTime();
 			switch (intent.getAction()) {
@@ -310,12 +266,12 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 					Log.d(TAG, "Action ACTION_TIME_TICK Received at: " + timestamp + ", " + date);
 					(new DataStoreThread(date)).start();
 					break;
-				case Intent.ACTION_TIME_CHANGED:
+				/*case Intent.ACTION_TIME_CHANGED:
 					Log.d(TAG, "Action ACTION_TIME_CHANGED Received at: " + timestamp + ", " + date);
 					break;
 				case Intent.ACTION_TIMEZONE_CHANGED:
 					Log.d(TAG, "Action ACTION_TIMEZONE_CHANGED Received at: " + timestamp + ", " + date);
-					break;
+					break;*/
 			}
 		}
 	};
@@ -341,9 +297,34 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		}
 	};
 
-	public boolean isPowerConnected() {
+	private boolean isPowerConnected() {
 		Intent batteryIntent = registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
 		Log.d(TAG, "Initial charging: " + (batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0));
 		return batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
+	}
+
+	private void setBatteryCheckEnabled() {
+		Utilities.setBatteryCheckEnabled(enableBatteryCheck());
+	}
+
+	private boolean enableBatteryCheck() {
+		// offset the current time by +5 minutes, just in case
+		Calendar now = Calendar.getInstance();
+
+		Calendar calendar = (Calendar) now.clone();
+		calendar.set(Calendar.SECOND, 0);
+		calendar.set(Calendar.MINUTE, 0);
+
+		Calendar beginEnable = (Calendar) calendar.clone();
+		beginEnable.set(Calendar.HOUR_OF_DAY, Utilities.BATTERY_CHECK_ENABLED_AT);
+//		beginEnable.add(Calendar.MINUTE, -5);
+
+		Calendar endEnable = (Calendar) calendar.clone();
+		endEnable.set(Calendar.HOUR_OF_DAY, Utilities.BATTERY_CHECK_DISABLED_AT);
+//		endEnable.add(Calendar.MINUTE, -5);
+
+		now.add(Calendar.MINUTE, 5);
+
+		return (now.after(beginEnable) && now.before(endEnable));
 	}
 }

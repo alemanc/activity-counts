@@ -7,10 +7,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
-import edu.cicese.sensit.datatask.data.BluetoothData;
-import edu.cicese.sensit.datatask.data.Data;
-
-import java.util.ArrayList;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -26,7 +22,7 @@ public class BluetoothSensor extends Sensor {
 
 		setName("BT");
 		// Initialize list where results will be stored
-		dataList = new ArrayList<Data>();
+//		dataList = new ArrayList<Data>();
 		context.registerReceiver(bluetoothReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
 	}
 
@@ -43,10 +39,10 @@ public class BluetoothSensor extends Sensor {
 			updateUI(Utilities.UPDATE_BLUETOOTH, bundle);*/
 
 			BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-			BluetoothData data = new BluetoothData(remoteDevice);
-			if (!dataList.contains(data)) {
+//			BluetoothData data = new BluetoothData(remoteDevice);
+/*			if (!dataList.contains(data)) {
 				dataList.add(data);
-			}
+			}*/
 		}
 	};
 

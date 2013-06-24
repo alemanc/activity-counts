@@ -57,29 +57,6 @@ public class DBAdapter {
 					"[" + COLUMN_ACTIVITY_COUNT_CHARGING + "] INTEGER DEFAULT '0' NOT NULL,\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_SYNCED + "] INTEGER DEFAULT '0' NOT NULL\n" +
 					");";
-					/* +
-					"\n" +
-					"CREATE UNIQUE INDEX [ux_activity_count_date] ON [" + TABLE_ACTIVITY_COUNT + "](\n" +
-					"[" + COLUMN_ACTIVITY_COUNT_DATE + "] ASC\n" +
-					");\n" +
-					"\n" +
-					"CREATE UNIQUE INDEX [pk_activity_count] ON [" + TABLE_ACTIVITY_COUNT + "](\n" +
-					"[" + COLUMN_ACTIVITY_COUNT_ACTIVITY_COUNT_ID + "] ASC\n" +
-					");\n" +
-					"\n" +
-					"CREATE INDEX [ix_activity_count_synced] ON [" + TABLE_ACTIVITY_COUNT + "](\n" +
-					"[" + COLUMN_ACTIVITY_COUNT_SYNCED + "]  ASC\n" +
-					");";*/
-
-	//TODO
-	//*Create indexes
-	//*Check alarms
-	//Test development mode, rails
-	//Update project to heroku (with migration)
-	//Tests
-	//Power saving (on/off 10 minutes)
-	//Power saving bug when un/plugging
-	//Wakeful on Galaxy Ace
 
 	private static final String CREATE_INDEX_IX_ACTIVITY_COUNT_SYNCED =
 			"CREATE INDEX IF NOT EXISTS ix_activity_count_synced ON " + TABLE_ACTIVITY_COUNT + "(" + COLUMN_ACTIVITY_COUNT_SYNCED + " ASC)";
@@ -96,21 +73,7 @@ public class DBAdapter {
 					"[" + COLUMN_SURVEY_VALUE_AVOIDANCE + "] STRING DEFAULT '3' NOT NULL,\n" +
 					"[" + COLUMN_SURVEY_VALUE_EFFORT + "] STRING DEFAULT '3' NOT NULL,\n" +
 					"[" + COLUMN_SURVEY_SYNCED + "] INTEGER DEFAULT '0' NOT NULL\n" +
-					");\n"/* +
-					"\n" +
-					"CREATE UNIQUE INDEX [ux_survey_date] ON [" + TABLE_SURVEY + "](\n" +
-					"[" + COLUMN_SURVEY_DATE + "] ASC\n" +
-					");\n" +
-					"\n" +
-					"CREATE UNIQUE INDEX [pk_survey] ON [" + TABLE_SURVEY + "](\n" +
-					"[" + COLUMN_SURVEY_SURVEY_ID + "] ASC\n" +
-					");\n" +
-					"\n" +
-					"CREATE INDEX [ix_survey_synced] ON [" + TABLE_SURVEY + "](\n" +
-					"[" + COLUMN_SURVEY_SYNCED + "]  ASC\n" +
-					");"*/;
-
-//	private final String[] likertDBValues = new String[]{"STRONGLY_DISAGREE", "DISAGREE", "NEUTRAL", "AGREE", "STRONGLY_DISAGREE"};
+					");\n";
 
 	private DatabaseHelper DBHelper;
 	private SQLiteDatabase db;
@@ -135,10 +98,8 @@ public class DBAdapter {
 		@Override
 		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 			Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);
-			/*
-			onCreate(db);*/
 //			db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACTIVITY_COUNT);
-			db.execSQL("DROP TABLE IF EXISTS " + TABLE_SURVEY);
+//			db.execSQL("DROP TABLE IF EXISTS " + TABLE_SURVEY);
 			onCreate(db);
 		}
 	}

@@ -25,6 +25,7 @@ import edu.cicese.sensit.sensor.Sensor;
 import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.Preferences;
 import edu.cicese.sensit.util.SensitActions;
+import edu.cicese.sensit.util.Utilities;
 import org.achartengine.GraphicalView;
 
 import java.util.ArrayList;
