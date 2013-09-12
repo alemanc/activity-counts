@@ -1,0 +1,24 @@
+<resources>
+    <color name="white">#ffffff</color>
+    <color name="black">#000000</color>
+    <color name="gray">#ff9a9a9a</color>
+    <color name="light_gray">#ffc6c6c6</color>
+    <color name="red">#ff0000</color>
+    <color name="green">#ff00de00</color>
+    <color name="blue">#0000ff</color>
+    <color name="question_blue">#ffd0eaff</color>
+    <color name="question_odd">#f6f6f6</color>
+    <color name="question_even">#ffe6e6e6</color>
+
+    <!--buttons-->
+    <color name="blue_btn">#449def</color>
+    <color name="blue_dark_btn">#2f6699</color>
+    <color name="yellow_btn">#ffefb200</color>
+    <color name="yellow_dark_btn">#ffd39f00</color>
+    <color name="green_btn">#ff86d451</color>
+    <color name="green_dark_btn">#ff6dae43</color>
+    <color name="red_btn">#ffd05d57</color>
+    <color name="red_dark_btn">#ffaa0000</color>
+
+    <color name="transparent">#00000000</color>
+</resources>
