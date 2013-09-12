@@ -10,6 +10,7 @@ import android.util.Log;
 import com.commonsware.cwac.wakeful.WakefulIntentService;
 import edu.cicese.sensit.db.DBAdapter;
 import edu.cicese.sensit.util.ActivityUtil;
+import edu.cicese.sensit.util.AlarmUtil;
 import edu.cicese.sensit.util.SensitActions;
 import edu.cicese.sensit.util.Utilities;
 
@@ -131,7 +132,7 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		Log.d(TAG, "Start sensing");
 
 		Utilities.setCharging(isPowerConnected());
-		Utilities.setBatteryCheckEnabled(enableBatteryCheck());
+//		Utilities.setBatteryCheckEnabled(enableBatteryCheck());
 		Utilities.setEpochCharging();
 		Utilities.setSensing(true);
 
@@ -232,18 +233,22 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 					Log.d(TAG, "Sensing started. Start background threads");
 					startBackgroundThreads();
 					Utilities.setReady(true);
+
+					Intent broadcastIntent = new Intent(SensitActions.ACTION_REFRESH_BUTTON);
+					context.sendBroadcast(broadcastIntent);
 					break;
 				case SensitActions.ACTION_SENSING_STOP_COMPLETE:
 					Log.d(TAG, "Action ACTION_SENSING_STOP_COMPLETE received");
+					// setReady(true) gets called in onDestroy()
 //					Utilities.setReady(true);
 					break;
 				case SensitActions.ACTION_ENABLE_BATTERY_CHECK:
 					Log.d(TAG, "Action ACTION_ENABLE_BATTERY_CHECK received");
-					setBatteryCheckEnabled();
+//					setBatteryCheckEnabled();
 					break;
 				case SensitActions.ACTION_DISABLE_BATTERY_CHECK:
 					Log.d(TAG, "Action ACTION_DISABLE_BATTERY_CHECK received");
-					setBatteryCheckEnabled();
+//					setBatteryCheckEnabled();
 					break;
 				default:
 					Log.e(TAG, "Unknown action received [sensingActionReceiver]");
@@ -258,12 +263,13 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		@Override
 		public void onReceive (Context context, Intent intent){
 			Calendar calendar = Calendar.getInstance();
-			//TODO Add -1 minute to the date, we are saving the PAST minute
-			long timestamp = calendar.getTimeInMillis();
+			// add -1 minute to the date, we are saving the last minute
+			calendar.add(Calendar.MINUTE, -1);
+//			long timestamp = calendar.getTimeInMillis();
 			Date date = calendar.getTime();
 			switch (intent.getAction()) {
 				case Intent.ACTION_TIME_TICK:
-					Log.d(TAG, "Action ACTION_TIME_TICK Received at: " + timestamp + ", " + date);
+					Log.d(TAG, "Action ACTION_TIME_TICK Received at: " + date);
 					(new DataStoreThread(date)).start();
 					break;
 				/*case Intent.ACTION_TIME_CHANGED:
@@ -303,12 +309,11 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		return batteryIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, 0) != 0;
 	}
 
-	private void setBatteryCheckEnabled() {
-		Utilities.setBatteryCheckEnabled(enableBatteryCheck());
-	}
+//	private void setBatteryCheckEnabled() {
+//		Utilities.setBatteryCheckEnabled(enableBatteryCheck());
+//	}
 
 	private boolean enableBatteryCheck() {
-		// offset the current time by +5 minutes, just in case
 		Calendar now = Calendar.getInstance();
 
 		Calendar calendar = (Calendar) now.clone();
@@ -316,13 +321,14 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 		calendar.set(Calendar.MINUTE, 0);
 
 		Calendar beginEnable = (Calendar) calendar.clone();
-		beginEnable.set(Calendar.HOUR_OF_DAY, Utilities.BATTERY_CHECK_ENABLED_AT);
+		beginEnable.set(Calendar.HOUR_OF_DAY, AlarmUtil.BATTERY_CHECK_ENABLED_AT_HOUR);
 //		beginEnable.add(Calendar.MINUTE, -5);
 
 		Calendar endEnable = (Calendar) calendar.clone();
-		endEnable.set(Calendar.HOUR_OF_DAY, Utilities.BATTERY_CHECK_DISABLED_AT);
+		endEnable.set(Calendar.HOUR_OF_DAY, AlarmUtil.BATTERY_CHECK_DISABLED_AT_HOUR);
 //		endEnable.add(Calendar.MINUTE, -5);
 
+		// offset the current time by +5 minutes, just in case
 		now.add(Calendar.MINUTE, 5);
 
 		return (now.after(beginEnable) && now.before(endEnable));

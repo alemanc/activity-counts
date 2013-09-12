@@ -78,12 +78,12 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 
 		wantedPeriod = getSampleFrequency() * 1000000L;
 
-		if (Utilities.isEnabled()) {
-			resume();
-		} else {
-			Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_PAUSED);
-			refreshStatus();
-		}
+		resume();
+//		if (Utilities.isEnabled()) {
+//		} else {
+//			Sensor.setSensorStatus(Sensor.SENSOR_LINEAR_ACCELEROMETER, Sensor.SENSOR_PAUSED);
+//			refreshStatus();
+//		}
 	}
 
 	@Override
@@ -212,8 +212,22 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 			// reset check-epoch counts
 			ActivityUtil.checkEpochCounts -= checkEpochCounts;
 
+			if (!Utilities.isCharging()) {
+				if (!isRunning()) {
+					Log.d(TAG, "Starting " + getName() + " sensor [check]");
+					resume();
+				} else {
+					if (!isMoving(checkEpochCounts)) {
+						Log.d(TAG, "Pausing " + getName() + " sensor [check]");
+						pause();
+					} else {
+						Log.d(TAG, "Continuing: " + getName() + " sensor [check][" + checkEpochCounts + "]");
+					}
+				}
+			}
+
 			// if checking battery status
-			if (Utilities.isBatteryCheckEnabled()) {
+			/*if (Utilities.isBatteryCheckEnabled()) {
 				if (!Utilities.isCharging()) {
 					if (!isRunning()) {
 						Log.d(TAG, "Starting " + getName() + " sensor [check]");
@@ -246,28 +260,35 @@ public class LinearAccelerometerSensor extends Sensor implements SensorEventList
 						Log.d(TAG, "Continuing: " + getName() + " sensor [check][" + checkEpochCounts + "]");
 					}
 				}
-			}
+			}*/
 		}
 	};
 
 	BroadcastReceiver batteryReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
 			Log.d(TAG, "Action ACTION_BATTERY_CHANGED received");
-			if (Utilities.isBatteryCheckEnabled()) {
-				if (Utilities.isCharging()) {
-					if (isRunning()) {
-						Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
-						pause();
-					}
-				} else {
-					if (!isRunning()) {
-						Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
-						resume();
-					}
+			if (Utilities.isCharging()) {
+				if (!isRunning()) {
+					Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
+					resume();
 				}
-			} else {
-				Log.d(TAG, "Ignore [battery check]");
 			}
+
+//			if (Utilities.isBatteryCheckEnabled()) {
+//				if (Utilities.isCharging()) {
+//					if (isRunning()) {
+//						Log.d(TAG, "Pausing " + getName() + " sensor [battery check]");
+//						pause();
+//					}
+//				} else {
+//					if (!isRunning()) {
+//						Log.d(TAG, "Starting " + getName() + " sensor [battery check]");
+//						resume();
+//					}
+//				}
+//			} else {
+//				Log.d(TAG, "Ignore [battery check]");
+//			}
 		}
 	};
 

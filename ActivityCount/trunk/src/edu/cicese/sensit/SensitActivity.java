@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -23,6 +25,7 @@ import com.commonsware.cwac.wakeful.WakefulIntentService;
 import edu.cicese.sensit.db.DBAdapter;
 import edu.cicese.sensit.sensor.Sensor;
 import edu.cicese.sensit.util.ActivityUtil;
+import edu.cicese.sensit.util.AlarmUtil;
 import edu.cicese.sensit.util.Preferences;
 import edu.cicese.sensit.util.SensitActions;
 import edu.cicese.sensit.util.Utilities;
@@ -91,8 +94,33 @@ public class SensitActivity extends Activity {
 		txtHeight = (EditText) findViewById(R.id.txt_height);
 		txtWeight = (EditText) findViewById(R.id.txt_weight);
 
+		int currentVersion;
+		try {
+			PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+			currentVersion = pInfo.versionCode;
+		} catch (PackageManager.NameNotFoundException e) {
+			currentVersion = 0;
+		}
+
 		// Load settings
 		SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
+
+		if (settings.getInt(Preferences.KEY_PREF_LAST_VERSION, 0) < currentVersion) {
+			Log.d(TAG, "Running new version for the first time");
+			AlarmUtil.setAlarms(this);
+
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putInt(Preferences.KEY_PREF_LAST_VERSION, currentVersion);
+			editor.commit();
+		}
+		/*if (settings.getBoolean(Preferences.KEY_PREF_FIRST_TIME, true)) {
+			Log.d(TAG, "First time using app");
+			AlarmUtil.setAlarms(this);
+
+			SharedPreferences.Editor editor = settings.edit();
+			editor.putBoolean(Preferences.KEY_PREF_FIRST_TIME, false);
+			editor.commit();
+		}*/
 
 		// Load home location settings
 		/*float latitude = settings.getFloat(KEY_PREF_HOME_LATITUDE, -1);
@@ -146,17 +174,6 @@ public class SensitActivity extends Activity {
 
 						Intent broadcastIntent = new Intent(SensitActions.ACTION_SENSING_STOP);
 						sendBroadcast(broadcastIntent);
-
-						// Point out the action triggered by a user
-//					sensingIntent.setAction(SensingService.ACTION_SENSING_STOP);
-
-					/*Intent stopIntent = new Intent(SensitActivity.this, SensingService.class);
-					// Point out this action was triggered by a user
-					stopIntent.setAction(SensingService.ACTION_SENSING_STOP);
-					// Send unique id for this action
-					long actionID = UUID.randomUUID().getLeastSignificantBits();
-					stopIntent.putExtra(SensingService.ACTION_ID_FIELD_NAME, actionID);
-					startService(stopIntent);*/
 
 						btnAction.setText("Start");
 					}
@@ -215,6 +232,7 @@ public class SensitActivity extends Activity {
 		IntentFilter intentFilter = new IntentFilter();
 		intentFilter.addAction(SensitActions.ACTION_REFRESH_CHART);
 		intentFilter.addAction(SensitActions.ACTION_REFRESH_SENSOR);
+		intentFilter.addAction(SensitActions.ACTION_REFRESH_BUTTON);
 		intentFilter.addAction(SensitActions.ACTION_DATA_SYNCING);
 		intentFilter.addAction(SensitActions.ACTION_DATA_SYNCED);
 		intentFilter.addAction(SensitActions.ACTION_DATA_SYNC_DONE);
@@ -389,6 +407,9 @@ public class SensitActivity extends Activity {
 				case SensitActions.ACTION_REFRESH_SENSOR:
 					refreshSensors();
 					break;
+				case SensitActions.ACTION_REFRESH_BUTTON:
+					refreshButton();
+					break;
 				case SensitActions.ACTION_DATA_SYNCING:
 //					setSyncing(true);
 					refreshSyncing();
@@ -429,4 +450,10 @@ public class SensitActivity extends Activity {
 			}
 		}
 	};
+
+	private void refreshButton() {
+		if (Utilities.isSensing()) {
+			btnAction.setText("Stop");
+		}
+	}
 }

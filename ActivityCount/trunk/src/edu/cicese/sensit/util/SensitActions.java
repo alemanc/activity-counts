@@ -18,6 +18,7 @@ public class SensitActions {
 
 	public static final String ACTION_REFRESH_CHART = "edu.cicese.sensit.ACTION_REFRESH_CHART";
 	public static final String ACTION_REFRESH_SENSOR = "edu.cicese.sensit.ACTION_REFRESH_SENSOR";
+	public static final String ACTION_REFRESH_BUTTON = "edu.cicese.sensit.ACTION_REFRESH_BUTTON";
 
 	public static final String ACTION_BATTERY_CHANGED = "edu.cicese.sensit.ACTION_BATTERY_CHANGED";
 
@@ -35,8 +36,11 @@ public class SensitActions {
 	public static final int REQUEST_CODE_SURVEY_1 = 1002;
 	public static final int REQUEST_CODE_SURVEY_2 = 1003;
 	public static final int REQUEST_CODE_SURVEY_3 = 1004;
+	public static final int REQUEST_CODE_SURVEY_4 = 1009;
 	public static final int REQUEST_CODE_CLEAR_SURVEY = 1005;
 	public static final int REQUEST_CODE_CLOSE_SURVEY = 1006;
 	public static final int REQUEST_CODE_ENABLE_BATTERY_CHECK = 1007;
 	public static final int REQUEST_CODE_DISABLE_BATTERY_CHECK = 1008;
+
+	//last 1009
 }

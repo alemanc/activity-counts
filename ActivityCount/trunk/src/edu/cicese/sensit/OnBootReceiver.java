@@ -1,16 +1,10 @@
 package edu.cicese.sensit;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
 import android.util.Log;
-import edu.cicese.sensit.util.SensitActions;
-import edu.cicese.sensit.util.Utilities;
-
-import java.util.Calendar;
+import edu.cicese.sensit.util.AlarmUtil;
 
 /**
  * Created by: Eduardo Quintana Contreras
@@ -18,8 +12,8 @@ import java.util.Calendar;
  * Time: 06:05 PM
  */
 public class OnBootReceiver extends BroadcastReceiver {
-	private static final int RESTART_PERIOD = 300000; // 5 minutes
-	private static final int WAIT_PERIOD = 180000; // 2 minutes
+//	private static final int RESTART_PERIOD = 300000; // 5 minutes
+//	private static final int WAIT_PERIOD = 180000; // 2 minutes
 	private static final String TAG = "SensIt.OnBootReceiver";
 
 	@Override
@@ -28,7 +22,9 @@ public class OnBootReceiver extends BroadcastReceiver {
 		if (intent.getAction().equalsIgnoreCase(Intent.ACTION_BOOT_COMPLETED)) {
 			Log.d(TAG, "Action ACTION_BOOT_COMPLETED received");
 
-			AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+			AlarmUtil.setAlarms(context);
+
+			/*AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
 			// schedule alarms to start the Sensing service if not running
 			Intent alarmSensingIntent = new Intent(context, OnSensingAlarmReceiver.class);
@@ -101,7 +97,7 @@ public class OnBootReceiver extends BroadcastReceiver {
 
 			Intent alarmEnableBatteryCheckIntent = new Intent(SensitActions.ACTION_ENABLE_BATTERY_CHECK);
 			PendingIntent piEnableBatteryCheck = PendingIntent.getBroadcast(context, SensitActions.REQUEST_CODE_ENABLE_BATTERY_CHECK, alarmEnableBatteryCheckIntent, 0);
-			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarEnableBatteryCheck.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piEnableBatteryCheck);
+			alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, calendarEnableBatteryCheck.getTimeInMillis(), AlarmManager.INTERVAL_DAY, piEnableBatteryCheck);*/
 		}
 	}
 }

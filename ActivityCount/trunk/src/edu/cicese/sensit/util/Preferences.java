@@ -11,4 +11,6 @@ public class Preferences {
 	public static final String KEY_PREF_WIFI_ONLY = "pref_key_wifi_only";
 	public static final String KEY_PREF_LAST_SYNC = "pref_key_last_sync";
 	public static final String KEY_PREF_MANUALLY_STOPPED = "pref_key_manually_stopped";
+	public static final String KEY_PREF_FIRST_TIME = "pref_key_first_time";
+	public static final String KEY_PREF_LAST_VERSION = "pref_key_last_version";
 }
