@@ -34,14 +34,11 @@ public class Utilities {
 	private static boolean ready = true;
 	private static boolean manuallyStopped = false;
 	private static boolean syncing;
-	private static boolean batteryCheckEnabled = true;
+//	private static boolean batteryCheckEnabled = true;
 
 	private static final long SYNC_RATE = 1200000; //20 minutes
 	public static final int SYNC_TYPE_COUNT = 1;
 	public static final int SYNC_TYPE_SURVEY = 2;
-
-	public static final int BATTERY_CHECK_ENABLED_AT = 9;
-	public static final int BATTERY_CHECK_DISABLED_AT = 21;
 
 	private static String macAddress = null;
 	private static String userID = null;
@@ -71,9 +68,9 @@ public class Utilities {
 		return charging;
 	}
 
-	public static boolean isEnabled() {
+	/*public static boolean isEnabled() {
 		return !charging || !batteryCheckEnabled;
-	}
+	}*/
 
 	public static void setCharging(boolean charging) {
 		Utilities.charging = charging;
@@ -145,13 +142,13 @@ public class Utilities {
 		return Utilities.syncing;
 	}
 
-	public static boolean isBatteryCheckEnabled() {
-		return batteryCheckEnabled;
-	}
+//	public static boolean isBatteryCheckEnabled() {
+//		return batteryCheckEnabled;
+//	}
 
-	public static void setBatteryCheckEnabled(boolean batteryCheckEnabled) {
-		Utilities.batteryCheckEnabled = batteryCheckEnabled;
-	}
+//	public static void setBatteryCheckEnabled(boolean batteryCheckEnabled) {
+//		Utilities.batteryCheckEnabled = batteryCheckEnabled;
+//	}
 
 	/*public static String getDeviceId(Context context) {
 		if (userID == null) {
