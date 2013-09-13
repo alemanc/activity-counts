@@ -1,9 +1,6 @@
 <component name="libraryTable">
   <library name="lib">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../misc/jackson-core-2.1.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../misc/jackson-databind-2.1.0.jar!/" />
-      <root url="jar://$PROJECT_DIR$/../misc/jackson-annotations-2.1.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/achartengine-1.1.0.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/android-async-http-1.4.3.jar!/" />
       <root url="jar://$PROJECT_DIR$/libs/gson-2.2.4.jar!/" />
