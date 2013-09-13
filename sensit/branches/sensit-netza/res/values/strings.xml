@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">SensIt</string>
+    <string name="chart_title">Activity Chart</string>
+    <string name="value">Count</string>
+    <string name="date">Date</string>
+    <string name="sensing_notification_ticker_text">SensIt is active</string>
+    <string name="sensing_notification_text">Sensing</string>
+    <string name="sensing_notification_title">Open SensIt</string>
+    <string name="survey_notification_ticker_text">Daily survey</string>
+    <string name="survey_notification_text">Open survey</string>
+    <string name="survey_notification_title">Daily Survey</string>
+    <string name="height">Height (cm)</string>
+    <string name="weight">Weight (kg)</string>
+    <string name="weight_example">e.g. 75</string>
+    <string name="height_example">e.g. 180</string>
+    <string name="bmi">Body Mass Index</string>
+    <string name="desc_save_changes">Save changes</string>
+    <string name="longitude_example">e.g. -116.606428</string>
+    <string name="latitude_example">e.g. 31.8595769</string>
+    <string name="longitude">Longitude</string>
+    <string name="latitude">Latitude</string>
+    <string name="home_location">Home location</string>
+    <string name="advanced_options">PREFERENCES</string>
+    <string name="bluetooth">Bluetooth</string>
+    <string name="battery">Battery</string>
+    <string name="location">Location</string>
+    <string name="accelerometer">Accelerometer</string>
+    <string name="sensor_off">off]</string>
+    <string name="sensor_paused">paused</string>
+    <string name="sensor_on">on</string>
+    <string name="sensors">Sensors [</string>
+    <string name="btn_start">Start</string>
+    <string name="desc_sync">Sync data</string>
+
+    <!--Survey-->
+    <string name="survey_title">Contesta este cuestionario por favor</string>
+    <string name="survey_question_stress">1. Indica tu nivel de estrés</string>
+    <string name="survey_question_stress_min">muy relajado</string>
+    <string name="survey_question_stress_max">muy estresado</string>
+    <string name="survey_question_challenge">2. Pienso que mis estudios de maestría son un reto</string>
+    <string name="survey_question_challenge_min">1</string>
+    <string name="survey_question_challenge_max">5</string>
+    <string name="survey_question_skill">3. Me siento capacitado para hacer este estudio de maestría</string>
+    <string name="survey_question_skill_min">1</string>
+    <string name="survey_question_skill_max">5</string>
+    <string name="survey_question_avoidance">4. Preferiría hacer otra cosa en lugar de la maestria</string>
+    <string name="survey_question_avoidance_min">1</string>
+    <string name="survey_question_avoidance_max">5</string>
+    <string name="survey_question_effort">5. La maestría requiere mucho tiempo y esfuerzo</string>
+    <string name="survey_question_effort_min">1</string>
+    <string name="survey_question_effort_max">5</string>
+
+    <string name="survey_btn_save">Guardar</string>
+    <string name="survey_btn_later">Posponer</string>
+    <string name="survey_btn_cancel">Cancelar</string>
+
+    <string name="survey_saved_confirmation">Gracias, tus respuestas se han guardado</string>
+
+</resources>

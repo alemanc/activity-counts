@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="edu.cicese.sensit"
+    android:versionCode="8"
+    android:versionName="1.4.1">
+
+    <uses-sdk
+        android:minSdkVersion="9"
+        android:targetSdkVersion="11" />
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <!--<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
+    <!--<uses-permission android:name="android.permission.BLUETOOTH" />-->
+    <!--<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />-->
+
+    <application
+        android:label="@string/app_name"
+        android:icon="@drawable/icon"
+        android:theme="@style/SensIt.Theme">
+        <activity
+            android:name=".SensitActivity"
+            android:label="@string/app_name"
+            android:windowSoftInputMode="stateAlwaysHidden"
+            android:screenOrientation="portrait"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".SurveyActivity"
+            android:launchMode="singleTask"
+            android:taskAffinity=""
+            android:excludeFromRecents="true">
+            <!--TODO: Add intent filters?-->
+        </activity>
+
+        <!--<activity
+            android:name=".SurveyActivity"
+            android:parentActivityName=".SensitActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".SensitActivity" />
+        </activity>-->
+
+        <receiver android:name=".OnBootReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name=".OnSurveyAlarmReceiver">
+        </receiver>
+
+        <receiver android:name=".OnSensingAlarmReceiver">
+        </receiver>
+
+        <receiver android:name=".OnClearNotificationsAlarmReceiver">
+        </receiver>
+
+        <receiver android:name=".OnConnectionReceiver">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+
+        <!--<receiver android:name=".OnSensingAlarmReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>-->
+
+        <!--<receiver android:name=".dataSyncReceiver">
+            <intent-filter android:priority="1">
+                <action android:name="edu.cicese.sensit.ACTION_DATA_SYNCED" />
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="edu.cicese.sensit.SensitActivityty.uiRefreshReceiver">
+            <intent-filter android:priority="2">
+                <action android:name="edu.cicese.sensit.ACTION_DATA_SYNCED" />
+            </intent-filter>
+        </receiver>-->
+
+        <service
+            android:name=".SensingService"
+            android:launchMode="singleInstance"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="edu.cicese.sensit.ACTION_SENSING_START" />
+                <action android:name="edu.cicese.sensit.ACTION_SENSING_STOP" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".SyncService"
+            android:launchMode="singleInstance"
+            android:exported="false">
+        </service>
+
+    </application>
+</manifest>
