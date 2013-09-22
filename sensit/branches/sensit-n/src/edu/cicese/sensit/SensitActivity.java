@@ -51,6 +51,7 @@ public class SensitActivity extends Activity {
 	private View accIndicator, /*locationIndicator, */batteryIndicator/*, bluetoothIndicator*/;
 	private EditText /*txtLatitude, txtLongitude, */txtHeight, txtWeight;
 	private View lySyncing;
+    private static Context context;
 
 //	public static final String KEY_PREF_HOME_LATITUDE = "pref_key_home_latitude";
 //	public static final String KEY_PREF_HOME_LONGITUDE = "pref_key_home_longitude";
@@ -62,6 +63,9 @@ public class SensitActivity extends Activity {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        // Added just to get Toast message without problem. It's really not necessary for pedometer activity
+        //this.context = this.getApplicationContext();
+
 		Log.d("SensIt", "OnCreated " + (savedInstanceState != null));
 
 		setContentView(R.layout.main);
@@ -165,7 +169,11 @@ public class SensitActivity extends Activity {
 						sensingIntent.setAction(SensitActions.ACTION_SENSING_START);
 						WakefulIntentService.sendWakefulWork(SensitActivity.this, sensingIntent);
 
+                        // Pedometer counter starts
+                        startStepService();
+
 						btnAction.setText("Stop");
+
 					} else {
 						Utilities.setManuallyStopped(true);
 
@@ -174,6 +182,9 @@ public class SensitActivity extends Activity {
 
 						Intent broadcastIntent = new Intent(SensitActions.ACTION_SENSING_STOP);
 						sendBroadcast(broadcastIntent);
+
+                        // Pedometer counter stops
+                        stopStepService();
 
 						btnAction.setText("Start");
 					}
@@ -207,12 +218,29 @@ public class SensitActivity extends Activity {
 		layout.addView(chartView);
 	}
 
+    // Added just to get Toast message without problem. It's really not necessary for pedometer activity
+    /*public static Context getContext(){
+        return context;
+    }*/
+
+
 	@Override
 	public void onStart() {
 		super.onStart();
-
 		Log.d("SensIt", "onStart");
 	}
+
+    private void startStepService() {
+        Log.i(TAG, "[Pedometer] Starts");
+        startService(new Intent(SensitActivity.this,
+                StepService.class));
+    }
+
+    private void stopStepService(){
+        Log.i(TAG, "[Pedometer] Stops");
+        stopService(new Intent(SensitActivity.this,
+                StepService.class));
+    }
 
 	@Override
 	public void onResume() {
