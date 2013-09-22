@@ -17,7 +17,7 @@
     <uses-permission android:name="android.permission.VIBRATE" />
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <!--<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" xxxxx/>-->
+    <!--<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />-->
     <!--<uses-permission android:name="android.permission.BLUETOOTH" />-->
     <!--<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />-->
 
@@ -109,6 +109,8 @@
             android:launchMode="singleInstance"
             android:exported="false">
         </service>
+
+        <service android:name=".StepService"/>
 
     </application>
 </manifest>

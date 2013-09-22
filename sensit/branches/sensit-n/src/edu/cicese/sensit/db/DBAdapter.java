@@ -31,6 +31,7 @@ public class DBAdapter {
 	private static final String COLUMN_ACTIVITY_COUNT_DATE = "date";
 	private static final String COLUMN_ACTIVITY_COUNT_CHARGING = "charging";
 	private static final String COLUMN_ACTIVITY_COUNT_SYNCED = "synced";
+    private static final String COLUMN_STEP_COUNT = "steps";
 
 	private static final String COLUMN_SURVEY_SURVEY_ID = "survey_id";
 	private static final String COLUMN_SURVEY_DATE = "date";
@@ -55,7 +56,8 @@ public class DBAdapter {
 					"[" + COLUMN_ACTIVITY_COUNT_CALORIES + "] INTEGER DEFAULT '-1' NOT NULL,\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_DATE + "] DATETIME NOT NULL UNIQUE,\n" +
 					"[" + COLUMN_ACTIVITY_COUNT_CHARGING + "] INTEGER DEFAULT '0' NOT NULL,\n" +
-					"[" + COLUMN_ACTIVITY_COUNT_SYNCED + "] INTEGER DEFAULT '0' NOT NULL\n" +
+					"[" + COLUMN_ACTIVITY_COUNT_SYNCED + "] INTEGER DEFAULT '0' NOT NULL, \n" +
+                    "[" + COLUMN_STEP_COUNT + "] INTEGER DEFAULT '0' NOT NULL\n" +
 					");";
 
 	private static final String CREATE_INDEX_IX_ACTIVITY_COUNT_SYNCED =
@@ -77,10 +79,17 @@ public class DBAdapter {
 
 	private DatabaseHelper DBHelper;
 	private SQLiteDatabase db;
+    private static Context context;
 
 	public DBAdapter(Context context) {
+        this.context = context;
 		DBHelper = new DatabaseHelper(context);
 	}
+
+    public DBAdapter() {
+        DBHelper = new DatabaseHelper(context);
+        //this.context = context;
+    }
 
 	private static class DatabaseHelper extends SQLiteOpenHelper {
 		DatabaseHelper(Context context) {
@@ -117,7 +126,7 @@ public class DBAdapter {
 		}
 	}
 
-	public long insertCounts(/*String userId, */int counts, String date, boolean epochCharging, int synced) {
+	public long insertCounts(/*String userId, */int counts, String date, boolean epochCharging, int synced, int steps) {
 		// date example: "2010-11-17 14:12:23"
 		ContentValues values = new ContentValues();
 //		values.put(COLUMN_ACTIVITY_COUNT_USER_ID, userId);
@@ -127,6 +136,7 @@ public class DBAdapter {
 		values.put(COLUMN_ACTIVITY_COUNT_DATE, date);
 		values.put(COLUMN_ACTIVITY_COUNT_CHARGING, epochCharging);
 		values.put(COLUMN_ACTIVITY_COUNT_SYNCED, synced);
+        values.put(COLUMN_STEP_COUNT, steps);
 		return db.insert(TABLE_ACTIVITY_COUNT, null, values);
 	}
 

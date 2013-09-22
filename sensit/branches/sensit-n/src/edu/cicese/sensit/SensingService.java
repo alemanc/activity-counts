@@ -13,6 +13,7 @@ import edu.cicese.sensit.util.ActivityUtil;
 import edu.cicese.sensit.util.AlarmUtil;
 import edu.cicese.sensit.util.SensitActions;
 import edu.cicese.sensit.util.Utilities;
+import edu.cicese.sensit.util.StepDetector;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -41,7 +42,6 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 	public SensingService() {
 		super("SensingService");
 	}
-
 
 	@Override
 	public void onCreate() {
@@ -211,10 +211,12 @@ public class SensingService extends WakefulIntentService/* extends WakefulIntent
 			Log.d(TAG, "Store data");
 			dbAdapter.open();
 			int counts = ActivityUtil.getCounts();
-			Log.d(TAG, "Stored " + counts + " counts.");
+            int steps = StepDetector.getCounts();
+			Log.d(TAG, "Stored " + counts + " counts and " + steps + " steps");
+            StepDetector.resetStepCounter();
 			boolean epochCharging = Utilities.isEpochCharging();
 			Utilities.resetEpochCharging();
-			long inserted = dbAdapter.insertCounts(counts, dateFormat.format(date), epochCharging, 0);
+			long inserted = dbAdapter.insertCounts(counts, dateFormat.format(date), epochCharging, 0, steps);
 			Log.d(TAG, "Inserted at row ID " + inserted);
 			dbAdapter.close();
 
