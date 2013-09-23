@@ -51,7 +51,7 @@ public class SensitActivity extends Activity {
 	private View accIndicator, /*locationIndicator, */batteryIndicator/*, bluetoothIndicator*/;
 	private EditText /*txtLatitude, txtLongitude, */txtHeight, txtWeight;
 	private View lySyncing;
-    private static Context context;
+    //private static Context context;
 
 //	public static final String KEY_PREF_HOME_LATITUDE = "pref_key_home_latitude";
 //	public static final String KEY_PREF_HOME_LONGITUDE = "pref_key_home_longitude";
