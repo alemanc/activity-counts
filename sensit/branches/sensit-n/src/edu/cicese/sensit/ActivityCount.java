@@ -17,6 +17,8 @@ public class ActivityCount {
 	private int counts;
 	@Expose
 	private boolean charging;
+    @Expose
+    private int steps;
 //	@Expose private int epoch = 60;
 
 	//	SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
@@ -32,6 +34,20 @@ public class ActivityCount {
 			Log.d(TAG, "Unable to parse date string " + date);
 		}*/
 	}
+
+    public ActivityCount(String date, int counts, int charging, int steps) {
+        this.counts = counts;
+        this.charging = (charging == 1);
+        this.date = date;
+        this.steps = steps;
+
+        // date format: 2013-06-03 13:27:00
+		/*try {
+			this.date = sdf.parse(date);
+		} catch (ParseException e) {
+			Log.d(TAG, "Unable to parse date string " + date);
+		}*/
+    }
 
 	public String getDate() {
 		return date;

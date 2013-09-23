@@ -101,7 +101,7 @@ public class DataUploadThread implements Runnable {
 					// at least one entry
 					if (countsCursor.moveToFirst()) {
 						do {
-							counts.add(new ActivityCount(countsCursor.getString(1), countsCursor.getInt(0), countsCursor.getInt(2)));
+							counts.add(new ActivityCount(countsCursor.getString(1), countsCursor.getInt(0), countsCursor.getInt(2), countsCursor.getInt(3)));
 						} while (countsCursor.moveToNext());
 					}
 
