@@ -78,7 +78,6 @@ public class StepDetector implements SensorEventListener
     }
 
     public void setSensitivity(float sensitivity) {
-        //Log.i(TAG, "qqq sensitivity");
         //dbh = new DatabaseHandler();
         dbAdapter = new DBAdapter();
         mLimit = sensitivity; // 1.97  2.96  4.44  6.66  10.00  15.00  22.50  33.75  50.62

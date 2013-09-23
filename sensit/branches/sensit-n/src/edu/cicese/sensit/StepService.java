@@ -76,7 +76,7 @@ public class StepService extends Service {
     public void loadSettings() {
         if (mStepDetector != null) {
             mStepDetector.setSensitivity(
-                    Float.valueOf("13")
+                    Float.valueOf("22.5")
             );
         }
     }
